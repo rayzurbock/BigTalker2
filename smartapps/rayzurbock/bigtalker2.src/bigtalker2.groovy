@@ -1,13 +1,13 @@
 definition(
-    name: "BigTalker2",
+    name: "BigTalker2-Dev",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
     description: "Let's talk about mode changes, switches, motions, and so on.",
     category: "Fun & Social",
     singleInstance: true,
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.0.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.0.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.0.png")
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-AlphaVersion.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png")
 
 preferences {
     page(name: "pageStart")
