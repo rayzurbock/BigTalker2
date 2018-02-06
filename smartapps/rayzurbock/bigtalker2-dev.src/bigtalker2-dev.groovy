@@ -20,8 +20,8 @@ preferences {
 }
 
 def pageStart(){
-    state.childAppName = "BigTalker2-Child"
-    state.parentAppName = "BigTalker2"
+    state.childAppName = "BigTalker2-Child-Dev"
+    state.parentAppName = "BigTalker2-Dev"
     state.namespace = "rayzurbock"
 	setAppVersion()
     state.supportedVoices = ["Ivy(en-us)","Joanna(en-us)","Joey(en-us)","Justin(en-us)","Kendra(en-us)","Kimberly(en-us)","Salli(en-us)","Amy(en-gb)","Brian(en-gb)","Emma(en-gb)","Miguel(es-us)","Penelope(es-us)"]
