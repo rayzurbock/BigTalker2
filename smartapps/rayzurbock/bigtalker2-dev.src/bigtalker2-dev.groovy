@@ -5,7 +5,7 @@ definition(
     description: "Let's talk about mode changes, switches, motions, and so on.",
     category: "Fun & Social",
     singleInstance: true,
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-AlphaVersion.png",
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-BetaVersion.png",
     iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png",
     iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png")
 
