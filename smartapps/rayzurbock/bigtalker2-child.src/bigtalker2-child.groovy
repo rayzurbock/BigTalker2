@@ -1,13 +1,13 @@
 definition(
-    name: "BigTalker2-Child",
+    name: "BigTalker2-Child-Dev",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
     description: "Dependency for BigTalker -- Save but don't install/publish",
     category: "Fun & Social",
-    parent: "rayzurbock:BigTalker2",
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.0.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.0.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.0.png")
+    parent: "rayzurbock:BigTalker2-Dev",
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-BetaVersion.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png")
 
 preferences {
     page(name: "pageConfigureEvents")
