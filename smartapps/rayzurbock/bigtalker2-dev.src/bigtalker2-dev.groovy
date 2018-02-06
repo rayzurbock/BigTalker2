@@ -1854,7 +1854,7 @@ def pageHelpPhraseTokens(){
        	   def AvailTokens = ""
            AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n"
            AvailTokens += "%groupname% = Name that you gave for the event group\n\n"
-           AvailTokens += "%date% = Current date; January 01 2018\n\n"
+           AvailTokens += "%date% = Current date; January 01\n\n"
            AvailTokens += "%day% = Current day; Monday\n\n"
            AvailTokens += "%devicename% = Triggering devices display name\n\n"
            AvailTokens += "%devicetype% = Triggering device type; motion, switch, etc\n\n"
@@ -2148,7 +2148,7 @@ def processPhraseVariables(appname, phrase, evt){
         }
     }
     if (phrase.contains("%date%")) {
-    	phrase=phrase.replace("%date%",(new Date().format( 'MMMM dd yyyy' )))
+    	phrase=phrase.replace("%date%",(new Date().format( 'MMMM dd' )))
     }
     if (phrase.contains("%day%")) {
     	phrase=phrase.replace("%day%",(new Date().format( 'EEEE' )))
