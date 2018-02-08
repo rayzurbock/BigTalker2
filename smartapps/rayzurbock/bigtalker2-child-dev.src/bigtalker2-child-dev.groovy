@@ -542,11 +542,11 @@ def pageConfigSHM(){
 
 def pageConfigTime(){
     dynamicPage(name: "pageConfigTime", title: "Configure talk at specific time", install: false, uninstall: false) {
-        section(){
+        section("Schedule 1"){
             input name: "timeSlotDays1", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "timeSlotTime1", type: "time", title: "Time of day", required: false
             input name: "timeSlotOnTime1", type: "text", title: "Say on schedule:", required: false
-            input name: "timePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "timeSlotPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "timeSlotSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
             	input name: "timeSlotVolume1", type: "number", title: "Set volume to (overrides default):", required: false
@@ -554,6 +554,32 @@ def pageConfigTime(){
                 input name: "timeSlotVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "timeSlotModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+        }
+		section("Schedule 2"){
+            input name: "timeSlotDays2", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "timeSlotTime2", type: "time", title: "Time of day", required: false
+            input name: "timeSlotOnTime2", type: "text", title: "Say on schedule:", required: false
+            input name: "timeSlotPersonality2", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "timeSlotSpeechDevice2", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            	input name: "timeSlotVolume2", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "timeSlotResumePlay2", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
+                input name: "timeSlotVoice2", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            }
+            input name: "timeSlotModes2", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+        }
+		section("Schedule 3"){
+            input name: "timeSlotDays3", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "timeSlotTime3", type: "time", title: "Time of day", required: false
+            input name: "timeSlotOnTime3", type: "text", title: "Say on schedule:", required: false
+            input name: "timeSlotPersonality3", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "timeSlotSpeechDevice3", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            	input name: "timeSlotVolume3", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "timeSlotResumePlay3", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
+                input name: "timeSlotVoice3", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            }
+            input name: "timeSlotModes3", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -657,6 +683,8 @@ def initSchedule(){
     LOGDEBUG ("BEGIN initSchedule()")
     //Subscribe Schedule
     if (timeSlotTime1) { schedule(timeSlotTime1, onSchedule1Event) }
+    if (timeSlotTime2) { schedule(timeSlotTime2, onSchedule2Event) }
+    if (timeSlotTime3) { schedule(timeSlotTime3, onSchedule3Event) }
     LOGDEBUG ("END initSchedule()")
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -952,6 +980,34 @@ def modeAllowed(devicetype,index) {
                     return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
+            if (index == 2) {
+                //TimeSlot Group 2
+                if (settings.timeSlotModes2) {
+                    if (settings.timeSlotModes2.contains(location.mode)) {
+                        //Custom mode for this event is in use and we are in one of those modes
+                        return true
+                    } else {
+                        //Custom mode for this event is in use and we are not in one of those modes
+                        return false
+                    }
+                } else {
+                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                }
+            }
+            if (index == 3) {
+                //TimeSlot Group 3
+                if (settings.timeSlotModes3) {
+                    if (settings.timeSlotModes3.contains(location.mode)) {
+                        //Custom mode for this event is in use and we are in one of those modes
+                        return true
+                    } else {
+                        //Custom mode for this event is in use and we are not in one of those modes
+                        return false
+                    }
+                } else {
+                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                }
+            }
         //End: case "timeSlot"
     } //End: switch (devicetype)
 }
@@ -1009,12 +1065,31 @@ private def myRunIn(delay_s, func) {
 def onSchedule1Event(){
     processScheduledEvent(1, timeSlotTime1, timeSlotDays1)
 }
+def onSchedule2Event(){
+    processScheduledEvent(2, timeSlotTime2, timeSlotDays2)
+}
+def onSchedule3Event(){
+    processScheduledEvent(3, timeSlotTime3, timeSlotDays3)
+}
 
 def processScheduledEvent(index, eventtime, alloweddays){
 	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
     def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
-    def myVoice = getMyVoice(settings?.timeSlotVoice1)
+	switch (index) {
+		case 1 : 
+			def myVoice = getMyVoice(settings?.timeSlotVoice1)
+			break
+		case 2 : 
+			def myVoice = getMyVoice(settings?.timeSlotVoice2) 
+			break
+		case 3 : 
+			def myVoice = getMyVoice(settings?.timeSlotVoice3)
+			break
+		default: 
+			def myVoice = getMyVoice(settings?.timeSlotVoice1)
+			break
+	}
     def calendar = Calendar.getInstance()
 	calendar.setTimeZone(location.timeZone)
 	def today = calendar.get(Calendar.DAY_OF_WEEK)
@@ -1041,22 +1116,46 @@ def processScheduledEvent(index, eventtime, alloweddays){
                return
             }
 			if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
-				if (index == 1) {
-					if (!settings?.timeSlotResumePlay1 == null) { resume = settings.timeSlotResumePlay1 }
-				}
-                if (resume == null) { resume = true }
+				switch (index) {
+					case 1 :
+						if (!settings?.timeSlotResumePlay1 == null) { resume = settings.timeSlotResumePlay1 }
+						break
+					case 2 :
+						if (!settings?.timeSlotResumePlay2 == null) { resume = settings.timeSlotResumePlay2 }
+						break
+					case 3 :
+						if (!settings?.timeSlotResumePlay3 == null) { resume = settings.timeSlotResumePlay3 }
+						break
+				}	
+			}
+            if (resume == null) { resume = true }
 			} else { resume = false }
-            if (settings?.timeSlotPersonality1 == "Yes") {
+            if (index == 1 && settings?.timeSlotPersonality1 == "Yes") {
             	personality = true
             }
-            if (settings?.timeSlotPersonality1 == "No") {
+            if (index == 1 && settings?.timeSlotPersonality1 == "No") {
             	personality = false
             }
-            if (index == 1) { state.TalkPhrase = settings.timeSlotOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1)}
+            if (index == 2 && settings?.timeSlotPersonality2 == "Yes") {
+            	personality = true
+            }
+            if (index == 2 && settings?.timeSlotPersonality2 == "No") {
+            	personality = false
+            }
+            if (index == 3 && settings?.timeSlotPersonality3 == "Yes") {
+            	personality = true
+            }
+            if (index == 3 && settings?.timeSlotPersonality3 == "No") {
+            	personality = false
+            }
+            switch (index) {
+				case 1 : state.TalkPhrase = settings.timeSlotOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1)
+				case 2 : state.TalkPhrase = settings.timeSlotOnTime2; state.speechDevice = timeSlotSpeechDevice2; myVolume = getDesiredVolume(settings.timeSlotVolume2)
+				case 3 : state.TalkPhrase = settings.timeSlotOnTime3; state.speechDevice = timeSlotSpeechDevice3; myVolume = getDesiredVolume(settings.timeSlotVolume3)
+			}
             def customevent = [displayName: 'BigTalker:OnSchedule', name: 'OnSchedule', value: "${todayStr}@${timeNow}"]
             parent.Talk(app.label,state.TalkPhrase, state.speechDevice, myVolume,resume, personality, myVoice, customevent)
         }
-    }
     if (!dayMatch) { 
     	LOGDEBUG("Time matches, but day does not match schedule; remaining silent") 
     }
@@ -1724,5 +1823,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.0"
+    state.appversion = "C2.0.1"
 }
