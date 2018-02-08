@@ -5,9 +5,9 @@ definition(
     description: "Dependency for BigTalker -- Save but don't install/publish",
     category: "Fun & Social",
     parent: "rayzurbock:BigTalker2",
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.0.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.0.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.0.png")
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.1.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.1.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.1.png")
 
 preferences {
     page(name: "pageConfigureEvents")
