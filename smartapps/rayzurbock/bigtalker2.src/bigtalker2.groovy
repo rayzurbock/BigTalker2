@@ -2061,7 +2061,12 @@ def processPhraseVariables(appname, phrase, evt){
     if (phrase.toLowerCase().contains("%locationname%")) {phrase = phrase.toLowerCase().replace('%locationname%', location.name)}
     if (phrase.toLowerCase().contains("%lastmode%")) {phrase = phrase.toLowerCase().replace('%lastmode%', state.lastMode)}
     if (phrase.toLowerCase().contains("%mode%")) {phrase = phrase.toLowerCase().replace('%mode%', location.mode)}
-    if (phrase.toLowerCase().contains("%time%")) {phrase = phrase.toLowerCase().replace('%time%', getTimeFromCalendar(false,true))}
+    if (phrase.toLowerCase().contains("%time%")) {
+    	phrase = phrase.toLowerCase().replace('%time%', getTimeFromCalendar(false,true))
+        if ((phrase.toLowerCase().contains("00:")) && (phrase.toLowerCase().contains("am"))) {phrase = phrase.toLowerCase().replace('00:', "12:")}
+        if ((phrase.toLowerCase().contains("24:")) && (phrase.toLowerCase().contains("am"))) {phrase = phrase.toLowerCase().replace('24:', "12:")}
+        if ((phrase.toLowerCase().contains("0:")) && (!phrase.toLowerCase().contains("10:")) && (phrase.toLowerCase().contains("am"))) {phrase = phrase.toLowerCase().replace('0:', "12:")}
+    }
     if (phrase.toLowerCase().contains("%weathercurrent%")) {phrase = phrase.toLowerCase().replace('%weathercurrent%', getWeather("current", zipCode)); phrase = adjustWeatherPhrase(phrase)}
     if (phrase.toLowerCase().contains("%weathertoday%")) {phrase = phrase.toLowerCase().replace('%weathertoday%', getWeather("today", zipCode)); phrase = adjustWeatherPhrase(phrase)}
     if (phrase.toLowerCase().contains("%weathertonight%")) {phrase = phrase.toLowerCase().replace('%weathertonight%', getWeather("tonight", zipCode));phrase = adjustWeatherPhrase(phrase)}
@@ -2290,7 +2295,7 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
    	def smartAppSpeechDevice = false
     def playAudioFile = false
    	def spoke = false
-    LOGDEBUG ("TALK(myDelay=${myDelay}, voice=${myVoice})")
+    LOGDEBUG ("TALK(app=${appname},customdevice=${customSpeechDevice},volume=${volume},resume=${resume},personality=${personality},myDelay=${myDelay}, voice=${myVoice},evt=${evt},phrase=${phrase})")
    	if ((phrase?.toLowerCase())?.contains("%askalexa%")) {smartAppSpeechDevice = true}
    	if (!(phrase == null) && !(phrase == "")) {
 		phrase = processPhraseVariables(appname, phrase, evt)
@@ -3539,5 +3544,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "P2.0.0"
+    state.appversion = "P2.0.1"
 }
