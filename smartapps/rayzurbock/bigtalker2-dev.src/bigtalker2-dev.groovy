@@ -2012,154 +2012,160 @@ def initialize() {
 }
 
 def processPhraseVariables(appname, phrase, evt){
-    def zipCode = location.zipCode
-    def mp3Url = ""
-    if (phrase.toLowerCase().contains("%mp3(")) { 
-    	if (phrase.toLowerCase().contains(".mp3)%")) {
-            def phraseMP3Start = (phrase.toLowerCase().indexOf("%mp3(") + 5)
-            def phraseMP3End = (phrase.toLowerCase().indexOf(".mp3)%"))
-            mp3Url = phrase.substring(phraseMP3Start, phraseMP3End)
-            LOGDEBUG("MP3 URL: ${mp3Url}")
-            phrase = phrase.replace("%mp3(","")
-            phrase = phrase.replace(".mp3)%", ".mp3")
-            phrase = phrase.replace (" ", "%20")
-            phrase = phrase.replace ("+", "%2B")
-            phrase = phrase.replace ("-", "%2D")
-        } else {
-            phrase = "Invalid M P 3 URL found in M P 3 token"
-        }
-        return phrase
-    }
-    if (phrase.toLowerCase().contains(" percent ")) { phrase = phrase.replace(" percent ","%") }
-    if (phrase.toLowerCase().contains("%groupname%")) {
-    	phrase = phrase.toLowerCase().replace('%groupname%', appname)
-    }
-    if (phrase.toLowerCase().contains("%devicename%")) {
-    	try {
-        	phrase = phrase.toLowerCase().replace('%devicename%', evt.displayName)  //User given name of the device triggering the event
-        }
-        catch (ex) { 
-        	LOGDEBUG("evt.displayName failed; trying evt.device.displayName")
-        	try {
-                phrase = phrase.toLowerCase().replace('%devicename%', evt.device.displayName) //User given name of the device triggering the event
-            }
-            catch (ex2) {
-            	LOGDEBUG("evt.device.displayName filed; trying evt.device.name")
-                try {
-                	phrase = phrase.toLowerCase().replace('%devicename%', evt.device.name) //SmartThings name for the device triggering the event
-                }
-                catch (ex3) {
-                	LOGDEBUG("evt.device.name filed; Giving up")
-                    phrase = phrase.toLowerCase().replace('%devicename%', "Device Name Unknown")
-                }
-            }
-       }
-    }
-    if (phrase.toLowerCase().contains("%devicetype%")) {phrase = phrase.toLowerCase().replace('%devicetype%', evt.name)}  //Device type: motion, switch, etc...
-    if (phrase.toLowerCase().contains("%devicechange%")) {phrase = phrase.toLowerCase().replace('%devicechange%', evt.value)}  //State change that occurred: on/off, active/inactive, etc...
-    if (phrase.toLowerCase().contains("%description%")) {phrase = phrase.toLowerCase().replace('%description%', evt.descriptionText)}  //Description of the event which occurred via device-specific text`
-    if (phrase.toLowerCase().contains("%locationname%")) {phrase = phrase.toLowerCase().replace('%locationname%', location.name)}
-    if (phrase.toLowerCase().contains("%lastmode%")) {phrase = phrase.toLowerCase().replace('%lastmode%', state.lastMode)}
-    if (phrase.toLowerCase().contains("%mode%")) {phrase = phrase.toLowerCase().replace('%mode%', location.mode)}
-    if (phrase.toLowerCase().contains("%time%")) {
-    	phrase = phrase.toLowerCase().replace('%time%', getTimeFromCalendar(false,true))
-        if ((phrase.toLowerCase().contains("00:")) && (phrase.toLowerCase().contains("am"))) {phrase = phrase.toLowerCase().replace('00:', "12:")}
-        if ((phrase.toLowerCase().contains("24:")) && (phrase.toLowerCase().contains("am"))) {phrase = phrase.toLowerCase().replace('24:', "12:")}
-        if ((phrase.toLowerCase().contains("0:")) && (!phrase.toLowerCase().contains("10:")) && (phrase.toLowerCase().contains("am"))) {phrase = phrase.toLowerCase().replace('0:', "12:")}
-    }
-    if (phrase.toLowerCase().contains("%weathercurrent%")) {phrase = phrase.toLowerCase().replace('%weathercurrent%', getWeather("current", zipCode)); phrase = adjustWeatherPhrase(phrase)}
-    if (phrase.toLowerCase().contains("%weathertoday%")) {phrase = phrase.toLowerCase().replace('%weathertoday%', getWeather("today", zipCode)); phrase = adjustWeatherPhrase(phrase)}
-    if (phrase.toLowerCase().contains("%weathertonight%")) {phrase = phrase.toLowerCase().replace('%weathertonight%', getWeather("tonight", zipCode));phrase = adjustWeatherPhrase(phrase)}
-    if (phrase.toLowerCase().contains("%weathertomorrow%")) {phrase = phrase.toLowerCase().replace('%weathertomorrow%', getWeather("tomorrow", zipCode));phrase = adjustWeatherPhrase(phrase)}
-    if (phrase.toLowerCase().contains("%weathercurrent(")) {
-        if (phrase.toLowerCase().contains(")%")) {
-            def phraseZipStart = (phrase.toLowerCase().indexOf("%weathercurrent(") + 16)
-            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
-            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
-            LOGDEBUG("Custom zipCode: ${zipCode}")
-            phrase = phrase.toLowerCase().replace("%weathercurrent(${zipCode})%", getWeather("current", zipCode))
-            phrase = adjustWeatherPhrase(phrase.toLowerCase())
-        } else {
-            phrase = "Custom Zip Code format error in request for current weather"
-        }
-    }
-    if (phrase.toLowerCase().contains("%weathertoday(")) {
-        if (phrase.contains(")%")) {
-            def phraseZipStart = (phrase.toLowerCase().indexOf("%weathertoday(") + 14)
-            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
-            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
-            LOGDEBUG("Custom zipCode: ${zipCode}")
-            phrase = phrase.toLowerCase().replace("%weathertoday(${zipCode})%", getWeather("today", zipCode))
-            phrase = adjustWeatherPhrase(phrase.toLowerCase())
-        } else {
-            phrase = "Custom Zip Code format error in request for today's weather"
-        }
-    }
-    if (phrase.toLowerCase().contains("%weathertonight(")) {
-        if (phrase.contains(")%")) {
-            def phraseZipStart = (phrase.toLowerCase().indexOf("%weathertonight(") + 16)
-            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
-            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
-            LOGDEBUG("Custom zipCode: ${zipCode}")
-            phrase = phrase.toLowerCase().replace("%weathertonight(${zipCode})%", getWeather("tonight", zipCode))
-            phrase = adjustWeatherPhrase(phrase)
-        } else {
-            phrase = "Custom Zip Code format error in request for tonight's weather"
-        }
-    }
-    if (phrase.toLowerCase().contains("%weathertomorrow(")) {
-        if (phrase.contains(")%")) {
-            def phraseZipStart = (phrase.toLowerCase().indexOf("%weathertomorrow(") + 17)
-            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
-            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
-            LOGDEBUG("Custom zipCode: ${zipCode}")
-            phrase = phrase.toLowerCase().replace("%weathertomorrow(${zipCode})%", getWeather("tomorrow", zipCode))
-            phrase = adjustWeatherPhrase(phrase)
-        } else {
-            phrase = "Custom ZipCode format error in request for tomorrow's weather"
-        }
-    }
-    if (state.speechDeviceType == "capability.speechSynthesis"){
-        //ST TTS Engine pronunces "Dash", so only convert for speechSynthesis devices (LANnouncer)
-        if (phrase.contains(",")) { phrase = phrase.replace(","," - ") }
-        //if (phrase.contains(".")) { phrase = phrase.replace("."," - ") }
-    }
-    if (phrase.toLowerCase().contains("%shmstatus%")) {
-    	def shmstatus = location.currentState("alarmSystemStatus")?.value
-        LOGDEBUG("SHMSTATUS=${shmstatus}")
-		def shmmessage = [off : "Disarmed", away: "Armed, away", home: "Armed, home"][shmstatus] ?: shmstatus
-        LOGDEBUG("SHMMESSAGE=${shmmessage}")
-        phrase = phrase.replace("%shmstatus%", shmmessage)
-    }
-    if (phrase.contains('"')) { phrase = phrase.replace('"',"") }
-    if (phrase.contains("'")) { phrase = phrase.replace("'","") }
-    if (phrase.contains("10S")) { phrase = phrase.replace("10S","tens") }
-    if (phrase.contains("20S")) { phrase = phrase.replace("20S","twenties") }
-    if (phrase.contains("30S")) { phrase = phrase.replace("30S","thirties") }
-    if (phrase.contains("40S")) { phrase = phrase.replace("40S","fourties") }
-    if (phrase.contains("50S")) { phrase = phrase.replace("50S","fifties") }
-    if (phrase.contains("60S")) { phrase = phrase.replace("60S","sixties") }
-    if (phrase.contains("70S")) { phrase = phrase.replace("70S","seventies") }
-    if (phrase.contains("80S")) { phrase = phrase.replace("80S","eighties") }
-    if (phrase.contains("90S")) { phrase = phrase.replace("90S","nineties") }
-    if (phrase.contains("100S")) { phrase = phrase.replace("100S","one hundreds") }
-    if (phrase.contains("%askalexa%")) {
-    	phrase=phrase.replace("%askalexa%","")
-        if (!(phrase == "") && (!(phrase == null))){
-    		LOGTRACE("Sending to AskAlexa: ${phrase}.")
-	        sendLocationEvent(name: "AskAlexaMsgQueue", value: "BigTalker", isStateChange: true, descriptionText: phrase)
-        }else{
-        	LOGERROR("Phrase only contained %askalexa%. Nothing to say/send.")
-        }
-    }
-    if (phrase.contains("%date%")) {
-    	phrase=phrase.replace("%date%",(new Date().format( 'MMMM dd' )))
-    }
-    if (phrase.contains("%day%")) {
-    	phrase=phrase.replace("%day%",(new Date().format('EEEE',location.timeZone)))
-    }
-    if (phrase.contains("%")) { phrase = phrase.replace("%"," percent ") }
-    return phrase
+    try {
+    	def zipCode = location.zipCode
+    	def mp3Url = ""
+    	if (phrase.toLowerCase().contains("%mp3(")) { 
+    		if (phrase.toLowerCase().contains(".mp3)%")) {
+            	def phraseMP3Start = (phrase.toLowerCase().indexOf("%mp3(") + 5)
+            	def phraseMP3End = (phrase.toLowerCase().indexOf(".mp3)%"))
+            	mp3Url = phrase.substring(phraseMP3Start, phraseMP3End)
+            	LOGDEBUG("MP3 URL: ${mp3Url}")
+            	phrase = phrase.replace("%mp3(","")
+            	phrase = phrase.replace(".mp3)%", ".mp3")
+            	phrase = phrase.replace (" ", "%20")
+            	phrase = phrase.replace ("+", "%2B")
+            	phrase = phrase.replace ("-", "%2D")
+        	} else {
+	            phrase = "Invalid M P 3 URL found in M P 3 token"
+    	    }
+	        return phrase
+    	}
+    	if (phrase.toLowerCase().contains(" percent ")) { phrase = phrase.replace(" percent ","%") }
+    	if (phrase.toLowerCase().contains("%groupname%")) {
+    		phrase = phrase.toLowerCase().replace('%groupname%', appname)
+    	}
+    	if (phrase.toLowerCase().contains("%devicename%")) {
+	    	try {
+    	    	phrase = phrase.toLowerCase().replace('%devicename%', evt.displayName)  //User given name of the device triggering the event
+        	}
+        	catch (ex) { 
+        		LOGDEBUG("evt.displayName failed; trying evt.device.displayName")
+        		try {
+                	phrase = phrase.toLowerCase().replace('%devicename%', evt.device.displayName) //User given name of the device triggering the event
+            	}
+            	catch (ex2) {
+	            	LOGDEBUG("evt.device.displayName filed; trying evt.device.name")
+    	            try {
+        	        	phrase = phrase.toLowerCase().replace('%devicename%', evt.device.name) //SmartThings name for the device triggering the event
+            	    }
+                	catch (ex3) {
+                		LOGDEBUG("evt.device.name filed; Giving up")
+                    	phrase = phrase.toLowerCase().replace('%devicename%', "Device Name Unknown")
+                	}
+            	}
+       		}
+    	}
+    	if (phrase.toLowerCase().contains("%devicetype%")) {phrase = phrase.toLowerCase().replace('%devicetype%', evt.name)}  //Device type: motion, switch, etc...
+    	if (phrase.toLowerCase().contains("%devicechange%")) {phrase = phrase.toLowerCase().replace('%devicechange%', evt.value)}  //State change that occurred: on/off, active/inactive, etc...
+    	if (phrase.toLowerCase().contains("%description%")) {phrase = phrase.toLowerCase().replace('%description%', evt.descriptionText)}  //Description of the event which occurred via device-specific text`
+    	if (phrase.toLowerCase().contains("%locationname%")) {phrase = phrase.toLowerCase().replace('%locationname%', location.name)}
+    	if (phrase.toLowerCase().contains("%lastmode%")) {phrase = phrase.toLowerCase().replace('%lastmode%', state.lastMode)}
+    	if (phrase.toLowerCase().contains("%mode%")) {phrase = phrase.toLowerCase().replace('%mode%', location.mode)}
+    	if (phrase.toLowerCase().contains("%time%")) {
+    		phrase = phrase.toLowerCase().replace('%time%', getTimeFromCalendar(false,true))
+        	if ((phrase.toLowerCase().contains("00:")) && (phrase.toLowerCase().contains("am"))) {phrase = phrase.toLowerCase().replace('00:', "12:")}
+        	if ((phrase.toLowerCase().contains("24:")) && (phrase.toLowerCase().contains("am"))) {phrase = phrase.toLowerCase().replace('24:', "12:")}
+        	if ((phrase.toLowerCase().contains("0:")) && (!phrase.toLowerCase().contains("10:")) && (phrase.toLowerCase().contains("am"))) {phrase = phrase.toLowerCase().replace('0:', "12:")}
+    	}
+    	if (phrase.toLowerCase().contains("%weathercurrent%")) {phrase = phrase.toLowerCase().replace('%weathercurrent%', getWeather("current", zipCode)); phrase = adjustWeatherPhrase(phrase)}
+    	if (phrase.toLowerCase().contains("%weathertoday%")) {phrase = phrase.toLowerCase().replace('%weathertoday%', getWeather("today", zipCode)); phrase = adjustWeatherPhrase(phrase)}
+    	if (phrase.toLowerCase().contains("%weathertonight%")) {phrase = phrase.toLowerCase().replace('%weathertonight%', getWeather("tonight", zipCode));phrase = adjustWeatherPhrase(phrase)}
+    	if (phrase.toLowerCase().contains("%weathertomorrow%")) {phrase = phrase.toLowerCase().replace('%weathertomorrow%', getWeather("tomorrow", zipCode));phrase = adjustWeatherPhrase(phrase)}
+    	if (phrase.toLowerCase().contains("%weathercurrent(")) {
+	        if (phrase.toLowerCase().contains(")%")) {
+	            def phraseZipStart = (phrase.toLowerCase().indexOf("%weathercurrent(") + 16)
+	            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
+	            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
+	            LOGDEBUG("Custom zipCode: ${zipCode}")
+	            phrase = phrase.toLowerCase().replace("%weathercurrent(${zipCode})%", getWeather("current", zipCode))
+	            phrase = adjustWeatherPhrase(phrase.toLowerCase())
+	        } else {
+	            phrase = "Custom Zip Code format error in request for current weather"
+	        }
+	    }
+	    if (phrase.toLowerCase().contains("%weathertoday(")) {
+	        if (phrase.contains(")%")) {
+	            def phraseZipStart = (phrase.toLowerCase().indexOf("%weathertoday(") + 14)
+	            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
+	            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
+	            LOGDEBUG("Custom zipCode: ${zipCode}")
+	            phrase = phrase.toLowerCase().replace("%weathertoday(${zipCode})%", getWeather("today", zipCode))
+	            phrase = adjustWeatherPhrase(phrase.toLowerCase())
+	        } else {
+	            phrase = "Custom Zip Code format error in request for today's weather"
+	        }
+	    }
+	    if (phrase.toLowerCase().contains("%weathertonight(")) {
+	        if (phrase.contains(")%")) {
+	            def phraseZipStart = (phrase.toLowerCase().indexOf("%weathertonight(") + 16)
+	            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
+	            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
+	            LOGDEBUG("Custom zipCode: ${zipCode}")
+	            phrase = phrase.toLowerCase().replace("%weathertonight(${zipCode})%", getWeather("tonight", zipCode))
+	            phrase = adjustWeatherPhrase(phrase)
+	        } else {
+	            phrase = "Custom Zip Code format error in request for tonight's weather"
+	        }
+	    }
+	    if (phrase.toLowerCase().contains("%weathertomorrow(")) {
+	        if (phrase.contains(")%")) {
+	            def phraseZipStart = (phrase.toLowerCase().indexOf("%weathertomorrow(") + 17)
+	            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
+	            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
+	            LOGDEBUG("Custom zipCode: ${zipCode}")
+	            phrase = phrase.toLowerCase().replace("%weathertomorrow(${zipCode})%", getWeather("tomorrow", zipCode))
+	            phrase = adjustWeatherPhrase(phrase)
+	        } else {
+	            phrase = "Custom ZipCode format error in request for tomorrow's weather"
+	        }
+	    }
+	    if (state.speechDeviceType == "capability.speechSynthesis"){
+	        //ST TTS Engine pronunces "Dash", so only convert for speechSynthesis devices (LANnouncer)
+	        if (phrase.contains(",")) { phrase = phrase.replace(","," - ") }
+	        //if (phrase.contains(".")) { phrase = phrase.replace("."," - ") }
+	    }
+	    if (phrase.toLowerCase().contains("%shmstatus%")) {
+	    	def shmstatus = location.currentState("alarmSystemStatus")?.value
+	        LOGDEBUG("SHMSTATUS=${shmstatus}")
+			def shmmessage = [off : "Disarmed", away: "Armed, away", home: "Armed, home"][shmstatus] ?: shmstatus
+	        LOGDEBUG("SHMMESSAGE=${shmmessage}")
+	        phrase = phrase.replace("%shmstatus%", shmmessage)
+	    }
+	    if (phrase.contains('"')) { phrase = phrase.replace('"',"") }
+	    if (phrase.contains("'")) { phrase = phrase.replace("'","") }
+	    if (phrase.contains("10S")) { phrase = phrase.replace("10S","tens") }
+	    if (phrase.contains("20S")) { phrase = phrase.replace("20S","twenties") }
+	    if (phrase.contains("30S")) { phrase = phrase.replace("30S","thirties") }
+	    if (phrase.contains("40S")) { phrase = phrase.replace("40S","fourties") }
+	    if (phrase.contains("50S")) { phrase = phrase.replace("50S","fifties") }
+	    if (phrase.contains("60S")) { phrase = phrase.replace("60S","sixties") }
+	    if (phrase.contains("70S")) { phrase = phrase.replace("70S","seventies") }
+	    if (phrase.contains("80S")) { phrase = phrase.replace("80S","eighties") }
+	    if (phrase.contains("90S")) { phrase = phrase.replace("90S","nineties") }
+	    if (phrase.contains("100S")) { phrase = phrase.replace("100S","one hundreds") }
+	    if (phrase.contains("%askalexa%")) {
+	    	phrase=phrase.replace("%askalexa%","")
+	        if (!(phrase == "") && (!(phrase == null))){
+	    		LOGTRACE("Sending to AskAlexa: ${phrase}.")
+		        sendLocationEvent(name: "AskAlexaMsgQueue", value: "BigTalker", isStateChange: true, descriptionText: phrase)
+	        }else{
+	        	LOGERROR("Phrase only contained %askalexa%. Nothing to say/send.")
+	        }
+	    }
+	    if (phrase.contains("%date%")) {
+	    	phrase=phrase.replace("%date%",(new Date().format( 'MMMM dd' )))
+	    }
+	    if (phrase.contains("%day%")) {
+	    	phrase=phrase.replace("%day%",(new Date().format('EEEE',location.timeZone)))
+	    }
+	    if (phrase.contains("%")) { phrase = phrase.replace("%"," percent ") }
+	    return phrase
+	} catch(ex) { 
+		LOGTRACE("There was a problem processing your desired phrase: ${phrase}. ${ex}")
+    	phrase = "Sorry, there was a problem processing your desired BigTalker phrase token."
+    	return phrase
+	}
 }
 
 def addPersonalityToPhrase(phrase, evt){
@@ -3545,5 +3551,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "P2.0.2-Dev1"
+    state.appversion = "P2.0.2-Dev2"
 }
