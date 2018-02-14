@@ -2,7 +2,7 @@ definition(
     name: "BigTalker2-Dev",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
-    description: "Let's talk about mode changes, switches, motions, and so on.",
+    description: "(Beta Version) Let's talk about mode changes, switches, motions, and so on.",
     category: "Fun & Social",
     singleInstance: true,
     iconUrl: "http://lowrance.cc/ST/icons/BigTalker-BetaVersion.png",
@@ -2156,7 +2156,7 @@ def processPhraseVariables(appname, phrase, evt){
     	phrase=phrase.replace("%date%",(new Date().format( 'MMMM dd' )))
     }
     if (phrase.contains("%day%")) {
-    	phrase=phrase.replace("%day%",(new Date().format( 'EEEE' )))
+    	phrase=phrase.replace("%day%",(new Date().format('EEEE',location.timeZone)))
     }
     if (phrase.contains("%")) { phrase = phrase.replace("%"," percent ") }
     return phrase
@@ -2295,7 +2295,7 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
    	def smartAppSpeechDevice = false
     def playAudioFile = false
    	def spoke = false
-    LOGDEBUG ("TALK(app=${appname},customdevice=${customSpeechDevice},volume=${volume},resume=${resume},personality=${personality},myDelay=${myDelay}, voice=${myVoice},evt=${evt},phrase=${phrase})")
+    LOGDEBUG ("TALK(app=${appname},customdevice=${customSpeechDevice},volume=${volume},resume=${resume},personality=${personality},myDelay=${myDelay},voice=${myVoice},evt=${evt},phrase=${phrase})")
    	if ((phrase?.toLowerCase())?.contains("%askalexa%")) {smartAppSpeechDevice = true}
    	if (!(phrase == null) && !(phrase == "")) {
 		phrase = processPhraseVariables(appname, phrase, evt)
@@ -2531,7 +2531,7 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 	}// if (state.speechDeviceType=="capability.musicPlayer")
 	if ((state.speechDeviceType == "capability.speechSynthesis") && (!( phrase==null ) && !(phrase==""))){
 		//capability.speechSynthesis is in use
-		if (!(settings.speechDeviceDefault == null) || !(customSpeechDevice == null)) {
+		if (!(settings?.speechDeviceDefault == null) || !(customSpeechDevice == null)) {
 			LOGTRACE("TALK(${appname}.${evt.name}) |sS| >> ${phrase}")
 			if (!(customSpeechDevice == null)) {
 				currentSpeechDevices = customSpeechDevice
@@ -2570,6 +2570,7 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 			LOGTRACE("TALK(${appname}.${evt.name}) |sA| Sent to another smartApp.")
        	}
    	}
+    phrase = ""
 }//Talk()
 
 def timeAllowed(devicetype,index){
@@ -3544,5 +3545,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "P2.0.1"
+    state.appversion = "P2.0.2-Dev1"
 }
