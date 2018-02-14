@@ -2078,7 +2078,7 @@ def processPhraseVariables(appname, phrase, evt){
 	            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
 	            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
 	            LOGDEBUG("Custom zipCode: ${zipCode}")
-	            phrase = phrase.toLowerCase().replace("%weathercurrent(${zipCode})%", getWeather("current", zipCode))
+	            phrase = phrase.toLowerCase().replace("%weathercurrent(${zipCode.toLowerCase()})%", getWeather("current", zipCode.toLowerCase()))
 	            phrase = adjustWeatherPhrase(phrase.toLowerCase())
 	        } else {
 	            phrase = "Custom Zip Code format error in request for current weather"
@@ -2090,7 +2090,7 @@ def processPhraseVariables(appname, phrase, evt){
 	            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
 	            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
 	            LOGDEBUG("Custom zipCode: ${zipCode}")
-	            phrase = phrase.toLowerCase().replace("%weathertoday(${zipCode})%", getWeather("today", zipCode))
+	            phrase = phrase.toLowerCase().replace("%weathertoday(${zipCode.toLowerCase()})%", getWeather("today", zipCode.toLowerCase()))
 	            phrase = adjustWeatherPhrase(phrase.toLowerCase())
 	        } else {
 	            phrase = "Custom Zip Code format error in request for today's weather"
@@ -2102,7 +2102,7 @@ def processPhraseVariables(appname, phrase, evt){
 	            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
 	            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
 	            LOGDEBUG("Custom zipCode: ${zipCode}")
-	            phrase = phrase.toLowerCase().replace("%weathertonight(${zipCode})%", getWeather("tonight", zipCode))
+	            phrase = phrase.toLowerCase().replace("%weathertonight(${zipCode.toLowerCase()})%", getWeather("tonight", zipCode.toLowerCase()))
 	            phrase = adjustWeatherPhrase(phrase)
 	        } else {
 	            phrase = "Custom Zip Code format error in request for tonight's weather"
@@ -2114,7 +2114,7 @@ def processPhraseVariables(appname, phrase, evt){
 	            def phraseZipEnd = (phrase.toLowerCase().indexOf(")%"))
 	            zipCode = phrase.substring(phraseZipStart, phraseZipEnd)
 	            LOGDEBUG("Custom zipCode: ${zipCode}")
-	            phrase = phrase.toLowerCase().replace("%weathertomorrow(${zipCode})%", getWeather("tomorrow", zipCode))
+	            phrase = phrase.toLowerCase().replace("%weathertomorrow(${zipCode.toLowerCase()})%", getWeather("tomorrow", zipCode.toLowerCase()))
 	            phrase = adjustWeatherPhrase(phrase)
 	        } else {
 	            phrase = "Custom ZipCode format error in request for tomorrow's weather"
@@ -2281,6 +2281,7 @@ def adjustWeatherPhrase(phraseIn){
     phraseOut = phraseOut.replace(" WSW ", " West Southwest ")
     phraseOut = phraseOut.replace(" MPH", " Miles Per Hour")
     phraseOut = phraseOut.replace(" MM)", " Milimeters ")
+    LOGDEBUG ("Adjust Weather: In=${phraseIn} Out=${phraseOut}")
     return phraseOut
 }
 
@@ -3551,5 +3552,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "P2.0.2-Dev3"
+    state.appversion = "P2.0.2-Dev4"
 }
