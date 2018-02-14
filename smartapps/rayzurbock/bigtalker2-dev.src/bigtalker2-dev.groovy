@@ -1821,7 +1821,7 @@ def pageTalkNow(){
                 	myTalkNowResume = (myTalkNowResume == "") ? settings.resumeAudio : true //use global setting if TalkNow is not set
                 	if (settings?.talkNowResume == null) {mytalkNowResume = true}  //default to true if not set.
                 }
-                def customevent = [displayName: 'BigTalker:TalkNow', name: 'TalkNow', value: 'TalkNow']
+                def customevent = [displayName: 'BigTalker:TalkNow', name: 'TalkNow', value: 'TalkNow', descriptionText: "Talk Now"]
                 def myVolume = getDesiredVolume(settings?.talkNowVolume)
                 def myVoice = getMyVoice(settings.talkNowVoice)
                 //def myVoice = (!(talkNowVoice == null || talkNowVoice == "")) ? talkNowVoice : (settings?.speechVoice ? settings.speechVoice : "Sallie(en-us)")
@@ -3551,5 +3551,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "P2.0.2-Dev2"
+    state.appversion = "P2.0.2-Dev3"
 }
