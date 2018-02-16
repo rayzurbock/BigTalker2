@@ -2,7 +2,7 @@ definition(
     name: "BigTalker2-Child-Dev",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
-    description: "(Beta Release) Dependency for BigTalker -- Save but don't install/publish",
+    description: "(Beta Version) Do not install in the mobile app, Save don't publish (needed by BigTalker2)",
     category: "Fun & Social",
     parent: "rayzurbock:BigTalker2-Dev",
     iconUrl: "http://lowrance.cc/ST/icons/BigTalker-BetaVersion.png",
@@ -1746,5 +1746,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.2-Dev1"
+    state.appversion = "C2.0.2-Dev"
 }
