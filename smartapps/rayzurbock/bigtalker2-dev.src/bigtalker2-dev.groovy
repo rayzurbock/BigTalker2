@@ -1,8 +1,8 @@
 definition(
-    name: "BigTalker2-Dev",
+    name: "BigTalker2",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
-    description: "(Beta Version) Let's talk about mode changes, switches, motions, and so on.",
+    description: "Let's talk about mode changes, switches, motions, and so on.",
     category: "Fun & Social",
     singleInstance: true,
     iconUrl: "http://lowrance.cc/ST/icons/BigTalker-BetaVersion.png",
@@ -3552,5 +3552,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "P2.0.2-Dev"
+    state.appversion = "P2.0.3-Dev_release"
 }
