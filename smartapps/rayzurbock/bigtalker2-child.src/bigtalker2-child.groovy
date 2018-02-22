@@ -5,9 +5,9 @@ definition(
     description: "Do not install in the mobile app, Save don't publish (needed by BigTalker2)",
     category: "Fun & Social",
     parent: "rayzurbock:BigTalker2",
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.2.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.2.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.2.png")
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.3.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.3.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.3.png")
 
 preferences {
     page(name: "pageConfigureEvents")
@@ -129,6 +129,7 @@ def pageConfigMotion(){
             input name: "motionModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "motionStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "motionEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.motionStartTime1 == null))
+            input name: "motionDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             if (!(settings.motionTestActive1 == null) && !(settings.motionTestActive1 == state?.motionTestActive1)) {
             	def testevent = [displayName: 'BigTalker Motion', name: 'MotionActiveTest', value: 'Active']
                 def myVoice = parent?.settings?.speechVoice
@@ -177,6 +178,7 @@ def pageConfigSwitch(){
             input name: "switchModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "switchStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "switchEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.switchStartTime1 == null))
+            input name: "switchDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             if (!(settings.switchTestOn1 == null) && !(settings.switchTestOn1 == state?.switchTestOn1)) {
             	def testevent = [displayName: 'BigTalker Switch', name: 'SwitchOnTest', value: 'On']
                 def myVoice = parent?.settings?.speechVoice
@@ -221,6 +223,7 @@ def pageConfigPresence(){
             input name: "presModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "presStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "presEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.presStartTime1 == null))
+            input name: "presDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -251,6 +254,7 @@ def pageConfigLock(){
             input name: "lockModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "lockStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "lockEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.lockStartTime1 == null))
+            input name: "lockDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -281,6 +285,7 @@ def pageConfigContact(){
             input name: "contactModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "contactStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "contactEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.contactStartTime1 == null))
+            input name: "contactDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -313,6 +318,7 @@ def pageConfigMode(){
             }
             input name: "modeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "modeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.modeStartTime1 == null))
+            input name: "modeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -349,6 +355,7 @@ def pageConfigThermostat(){
             input name: "thermostatModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "thermostatStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "thermostatEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.thermostatStartTime1 == null))
+            input name: "thermostatDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -379,6 +386,7 @@ def pageConfigAcceleration(){
             input name: "accelerationModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "accelerationStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "accelerationEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.accelerationStartTime1 == null))
+            input name: "accelerationDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -409,6 +417,7 @@ def pageConfigWater(){
             input name: "waterModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "waterStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "waterEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.waterStartTime1 == null))
+            input name: "waterDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -442,6 +451,7 @@ def pageConfigSmoke(){
             input name: "smokeModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "smokeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "smokeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.smokeStartTime1 == null))
+            input name: "smokeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -472,6 +482,7 @@ def pageConfigButton(){
             input name: "buttonModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "buttonStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "buttonEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.buttonStartTime1 == null))
+            input name: "buttonDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -495,11 +506,12 @@ def pageConfigSHM(){
             if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
             	input name: "SHMVolumeAway", type: "number", title: "Set volume to (overrides default):", required: false
             	input name: "SHMResumePlayAway", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "SHMResumeVoiceAway", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "SHMVoiceAway", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "SHMModesAway", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "SHMStartTimeAway", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "SHMEndTimeAway", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.SHMStartTimeAway == null))
+            input name: "SHMAwayDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Smart Home Monitor - Armed, Home"){
         	def defaultSpeechSHMHome = ""
@@ -511,11 +523,12 @@ def pageConfigSHM(){
             if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
             	input name: "SHMVolumeHome", type: "number", title: "Set volume to (overrides default):", required: false
             	input name: "SHMResumePlayHome", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "SHMResumeVoiceHome", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "SHMVoiceHome", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "SHMModesHome", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "SHMStartTimeHome", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "SHMEndTimeHome", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.SHMStartTimeHome == null))
+            input name: "SHMHomeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Smart Home Monitor - Disarmed"){
         	def defaultSpeechSHMDisarm = ""
@@ -527,11 +540,12 @@ def pageConfigSHM(){
             if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
             	input name: "SHMVolumeDisarm", type: "number", title: "Set volume to (overrides default):", required: false
                 input name: "SHMResumePlayDisarm", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "SHMResumeVoiceDisarm", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "SHMVoiceDisarm", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "SHMModesDisarm", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "SHMStartTimeDisarm", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "SHMEndTimeDisarm", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.SHMStartTimeDisarm == null))
+            input name: "SHMDisarmDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -688,6 +702,27 @@ def initSchedule(){
     LOGDEBUG ("END initSchedule()", true)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// PROCESS RESTRICTIONS
+
+def processRestrictions(devicetype,index){
+	def allowed = true
+	if (!(timeAllowed(devicetype,index))) {
+    	LOGDEBUG("RESTRICTION: Remain silent in current time period", true)
+        allowed = false
+    }
+    if (!(devicetype == "mode")) {
+    	if (!(modeAllowed(devicetype,index))) {
+    		LOGDEBUG("RESTRICTION: Remain silent while in mode ${location.mode}", true)
+        	allowed = false
+    	}
+    }
+    if (!(dayAllowed(devicetype,index))) {
+    	LOGDEBUG("RESTRICTION: Remain silent today", true)
+        allowed = false
+    }
+    return allowed
+}
+
 def timeAllowed(devicetype,index){
     def now = new Date()
     //Check Default Setting
@@ -1012,6 +1047,109 @@ def modeAllowed(devicetype,index) {
     } //End: switch (devicetype)
 }
 
+def dayAllowed(devicetype,index){
+	def allowedDays = []
+	switch(devicetype) {
+    	case "timeSlot":
+        	if (index == 1){
+            	allowedDays = settings?.timeSlotDays1
+                return processDayRestriction(allowedDays)
+        	}
+        	if (index == 2){
+            	allowedDays = settings?.timeSlotDays2
+                return processDayRestriction(allowedDays)
+        	}
+        	if (index == 3){
+            	allowedDays = settings?.timeSlotDays3
+                return processDayRestriction(allowedDays)
+        	}
+        case "motion":
+        	if (index == 1){
+            	allowedDays = settings?.motionDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "switch":
+        	if (index == 1){
+            	allowedDays = settings?.switchDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "presence":
+        	if (index == 1){
+            	allowedDays = settings?.presDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "lock":
+        	if (index == 1){
+            	allowedDays = settings?.lockDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "contact":
+        	if (index == 1){
+            	allowedDays = settings?.contactDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "mode":
+        	if (index == 1){
+            	allowedDays = settings?.modeDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "thermostat":
+        	if (index == 1){
+            	allowedDays = settings?.thermostatDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "acceleration":
+        	if (index == 1){
+            	allowedDays = settings?.accelerationDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "water":
+        	if (index == 1){
+            	allowedDays = settings?.waterDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "smoke":
+        	if (index == 1){
+            	allowedDays = settings?.smokeDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "button":
+        	if (index == 1){
+            	allowedDays = settings?.buttonDays1
+                return processDayRestriction(allowedDays)
+        	}
+        case "SHMEvent":
+        	if (index == 1){
+            	allowedDays = settings?.SHMAwayDays1
+                return processDayRestriction(allowedDays)
+        	}
+            if (index == 2){
+            	allowedDays = settings?.SHMHomeDays1
+                return processDayRestriction(allowedDays)
+        	}
+            if (index == 3){
+            	allowedDays = settings?.SHMDisarmDays1
+                return processDayRestriction(allowedDays)
+        	}
+    }
+}
+
+def processDayRestriction(allowedDays){
+    def todayStr = (new Date().format('EEEE', location.timeZone))
+    //LOGDEBUG("Today=${todayStr}, Allowed:${allowedDays}", false)
+    if (allowedDays == null || allowedDays == ""){
+        return true
+    }
+    if (allowedDays.contains(todayStr)) {
+        return true
+    } else {
+        return false
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// General Functions
+
 def getTimeFromDateString(inputtime, includeAmPm){
     //I couldn't find the way to do this in ST / Groovy, so I made my own function
     //Obtains the time from a supplied specifically formatted date string (ie: from a preference of type "time")
@@ -1076,6 +1214,7 @@ def processScheduledEvent(index, eventtime, alloweddays){
 	def resume = ""; resume = parent?.settings?.resumePlay
     if (resume == "" || resume == null) { resume = false }
     def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+    def timeNow = getTimeFromCalendar(false, true)
     //def personality = false; personality = parent?.settings?.personalityMode
     //if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
@@ -1083,47 +1222,26 @@ def processScheduledEvent(index, eventtime, alloweddays){
     if (index == 1) {myVoice = getMyVoice(settings?.timeSlotVoice1)}
     if (index == 2) {myVoice = getMyVoice(settings?.timeSlotVoice2)}
     if (index == 3) {myVoice = getMyVoice(settings?.timeSlotVoice3)}
-    def todayStr = ""
-    def dayMatch = false
-    todayStr = (new Date().format('EEEE', location.timeZone)).toUpperCase()
-    def timeNow = getTimeFromDateString(eventtime, true)
-    //LOGDEBUG("(onScheduledEvent): ${timeNow}, ${index}, ${todayStr}[${alloweddays.each(){it.toUpperCase()}}], ${myVoice}", true)
     LOGDEBUG("(onScheduledEvent): ${timeNow}, ${index}, ${myVoice}", true)
-    alloweddays.each(){
-        if (todayStr.toUpperCase() == it.toUpperCase()) {
-            LOGDEBUG("Time and day match schedule", true)
-            dayMatch = true
-        }
-    }
-    if (dayMatch) { 
-    	if (!(modeAllowed("timeSlot",index))) { 
-			LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-			return
-    	}
-		if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
-			if (index == 1){if (!settings?.timeSlotResumePlay1 == null) { resume = settings.timeSlotResumePlay1 }}
-			if (index == 2){if (!settings?.timeSlotResumePlay2 == null) { resume = settings.timeSlotResumePlay2 }}
-			if (index == 3){if (!settings?.timeSlotResumePlay3 == null) { resume = settings.timeSlotResumePlay3 }}
-		}
-		if (resume == null) { resume = true } else { resume = false }
-    	if (index == 1 && settings?.timeSlotPersonality1 == "Yes") {personality = true}
-    	if (index == 1 && settings?.timeSlotPersonality1 == "No") {personality = false}
-		if (index == 2 && settings?.timeSlotPersonality2 == "Yes") {personality = true}
-    	if (index == 2 && settings?.timeSlotPersonality2 == "No") {personality = false}
-    	if (index == 3 && settings?.timeSlotPersonality3 == "Yes") {personality = true}
-    	if (index == 3 && settings?.timeSlotPersonality3 == "No") {personality = false}  
-        LOGDEBUG("index=${index},parent_personality=${parent?.settings?.personalityMode}, personality1 = ${settings?.timeSlotPersonality1}, personality=${personality}", true)
-        LOGDEBUG("index=${index},parent_personality=${parent?.settings?.personalityMode}, personality2 = ${settings?.timeSlotPersonality2}, personality=${personality}", true)
-        LOGDEBUG("index=${index},parent_personality=${parent?.settings?.personalityMode}, personality3 = ${settings?.timeSlotPersonality3}, personality=${personality}", true)
-		if (index == 1) { state.TalkPhrase = settings.timeSlotOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1) }
-		if (index == 2) { state.TalkPhrase = settings.timeSlotOnTime2; state.speechDevice = timeSlotSpeechDevice2; myVolume = getDesiredVolume(settings.timeSlotVolume2) }
-		if (index == 3) { state.TalkPhrase = settings.timeSlotOnTime3; state.speechDevice = timeSlotSpeechDevice3; myVolume = getDesiredVolume(settings.timeSlotVolume3) }
-		def customevent = [displayName: 'BigTalker:OnSchedule', name: 'OnSchedule', value: "${todayStr}@${timeNow}"]
-		sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume,resume, personality, myVoice, customevent)
-	} else {
-    	//Day didn't match
-        LOGDEBUG("Time matches, but day does not match schedule; remaining silent", true) 
-    }
+    //Check Restrictions
+    if (!(processRestrictions("timeSlot",index))){ return }
+	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+		if (index == 1){if (!settings?.timeSlotResumePlay1 == null) { resume = settings.timeSlotResumePlay1 }}
+		if (index == 2){if (!settings?.timeSlotResumePlay2 == null) { resume = settings.timeSlotResumePlay2 }}
+		if (index == 3){if (!settings?.timeSlotResumePlay3 == null) { resume = settings.timeSlotResumePlay3 }}
+	}
+	if (resume == null) { resume = true } else { resume = false }
+    if (index == 1 && settings?.timeSlotPersonality1 == "Yes") {personality = true}
+    if (index == 1 && settings?.timeSlotPersonality1 == "No") {personality = false}
+	if (index == 2 && settings?.timeSlotPersonality2 == "Yes") {personality = true}
+    if (index == 2 && settings?.timeSlotPersonality2 == "No") {personality = false}
+    if (index == 3 && settings?.timeSlotPersonality3 == "Yes") {personality = true}
+    if (index == 3 && settings?.timeSlotPersonality3 == "No") {personality = false}  
+	if (index == 1) { state.TalkPhrase = settings.timeSlotOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1) }
+	if (index == 2) { state.TalkPhrase = settings.timeSlotOnTime2; state.speechDevice = timeSlotSpeechDevice2; myVolume = getDesiredVolume(settings.timeSlotVolume2) }
+	if (index == 3) { state.TalkPhrase = settings.timeSlotOnTime3; state.speechDevice = timeSlotSpeechDevice3; myVolume = getDesiredVolume(settings.timeSlotVolume3) }
+	def customevent = [displayName: 'BigTalker:OnSchedule', name: 'OnSchedule', value: "${todayStr}@${timeNow}"]
+	sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume,resume, personality, myVoice, customevent)
 	state.TalkPhrase = null
     state.speechDevice = null
 }
@@ -1139,16 +1257,8 @@ def processMotionEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.switchMotion1)
     LOGDEBUG("(onMotionEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("motion",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("motion",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("motion",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1182,16 +1292,8 @@ def processSwitchEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.switchVoice1)
     LOGDEBUG("(onSwitchEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("switch",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("switch",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("switch",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1225,16 +1327,8 @@ def processPresenceEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.presVoice1)
     LOGDEBUG("(onPresenceEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("presence",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("presence",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("presence",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1270,16 +1364,8 @@ def processLockEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.lockVoice1)
     LOGDEBUG("(onLockEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("lock",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("lock",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("lock",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1314,16 +1400,8 @@ def processContactEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.contactVoice1)
     LOGDEBUG("(onContactEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("contact",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("contact",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("contact",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1357,13 +1435,8 @@ def processModeChangeEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.modeVoice1)
     LOGDEBUG("(onModeEvent): Last Mode: ${state.lastMode}, New Mode: ${location.mode}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("mode",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        state.lastMode = location.mode
-        parent.setLastMode(location.mode)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("mode",index))){ return }
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.modePhraseResumePlay1 == null) { resume = settings.modePhraseResumePlay1 }
@@ -1412,16 +1485,8 @@ def processThermostatEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.thermostatVoice1)
     LOGDEBUG("(onThermostatEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("thermostat",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("thermostat",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("thermostat",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1465,16 +1530,8 @@ def processAccelerationEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.accelerationVoice1)
     LOGDEBUG("(onAccelerationEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("acceleration",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("acceleration",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("acceleration",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1509,16 +1566,8 @@ def processWaterEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.waterVoice1)
     LOGDEBUG("(onWaterEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("water",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("water",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("water",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1553,16 +1602,8 @@ def processSmokeEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.smokeVoice1)
     LOGDEBUG("(onSmokeEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("smoke",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("smoke",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+    //Check Restrictions
+    if (!(processRestrictions("smoke",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1601,16 +1642,8 @@ def processButtonEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.buttonVoice1)
     LOGDEBUG("(onButtonEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("button",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("button",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+	//Check Restrictions
+    if (!(processRestrictions("button",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1642,16 +1675,8 @@ def processSHMEvent(index, evt){
     def myVolume = -1
     def myVoice = ""
     LOGDEBUG("(onSHMEvent): ${evt.name}, ${index}, ${evt.value}, NotSetYet", true)
-    //Are we in an allowed time period?
-    if (!(timeAllowed("SHM",index))) {
-        LOGDEBUG("Remain silent in current time period", true)
-        return
-    }
-    //Are we in a talking mode?
-    if (!(modeAllowed("SHM",index))) { 
-        LOGDEBUG("Remain silent while in mode ${location.mode}", true)
-        return
-    }
+	//Check Restrictions
+    if (!(processRestrictions("SHM",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1746,5 +1771,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.2"
+    state.appversion = "C2.0.3"
 }
