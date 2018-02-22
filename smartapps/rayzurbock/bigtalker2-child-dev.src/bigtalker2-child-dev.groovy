@@ -4,7 +4,7 @@ definition(
     author: "rayzur@rayzurbock.com",
     description: "Do not install in the mobile app, Save don't publish (needed by BigTalker2)",
     category: "Fun & Social",
-    parent: "rayzurbock:BigTalker2-Dev",
+    parent: "rayzurbock:BigTalker2",
     iconUrl: "http://lowrance.cc/ST/icons/BigTalker-BetaVersion.png",
     iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png",
     iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png")
@@ -506,7 +506,7 @@ def pageConfigSHM(){
             if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
             	input name: "SHMVolumeAway", type: "number", title: "Set volume to (overrides default):", required: false
             	input name: "SHMResumePlayAway", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "SHMResumeVoiceAway", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "SHMVoiceAway", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "SHMModesAway", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "SHMStartTimeAway", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
@@ -523,7 +523,7 @@ def pageConfigSHM(){
             if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
             	input name: "SHMVolumeHome", type: "number", title: "Set volume to (overrides default):", required: false
             	input name: "SHMResumePlayHome", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "SHMResumeVoiceHome", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "SHMVoiceHome", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "SHMModesHome", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "SHMStartTimeHome", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
@@ -540,7 +540,7 @@ def pageConfigSHM(){
             if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
             	input name: "SHMVolumeDisarm", type: "number", title: "Set volume to (overrides default):", required: false
                 input name: "SHMResumePlayDisarm", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "SHMResumeVoiceDisarm", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "SHMVoiceDisarm", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "SHMModesDisarm", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "SHMStartTimeDisarm", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
@@ -1771,5 +1771,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.3-B1"
+    state.appversion = "C2.0.3-Dev_release"
 }
