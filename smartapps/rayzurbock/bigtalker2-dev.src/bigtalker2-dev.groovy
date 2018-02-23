@@ -3552,5 +3552,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "P2.0.3-Dev_release"
+    state.appversion = "P2.0.4-Dev_release"
 }
