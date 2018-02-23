@@ -1118,7 +1118,7 @@ def dayAllowed(devicetype,index){
             	allowedDays = settings?.buttonDays1
                 return processDayRestriction(allowedDays)
         	}
-        case "SHMEvent":
+        case "SHM":
         	if (index == 1){
             	allowedDays = settings?.SHMAwayDays1
                 return processDayRestriction(allowedDays)
@@ -1771,5 +1771,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.3-Dev_release"
+    state.appversion = "C2.0.4-Dev_release"
 }
