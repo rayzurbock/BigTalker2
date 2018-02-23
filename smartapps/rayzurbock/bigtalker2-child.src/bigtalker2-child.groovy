@@ -5,9 +5,9 @@ definition(
     description: "Do not install in the mobile app, Save don't publish (needed by BigTalker2)",
     category: "Fun & Social",
     parent: "rayzurbock:BigTalker2",
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.3.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.3.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.3.png")
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.4.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.4.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.4.png")
 
 preferences {
     page(name: "pageConfigureEvents")
@@ -1118,7 +1118,7 @@ def dayAllowed(devicetype,index){
             	allowedDays = settings?.buttonDays1
                 return processDayRestriction(allowedDays)
         	}
-        case "SHMEvent":
+        case "SHM":
         	if (index == 1){
             	allowedDays = settings?.SHMAwayDays1
                 return processDayRestriction(allowedDays)
@@ -1771,5 +1771,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.3"
+    state.appversion = "C2.0.4"
 }
