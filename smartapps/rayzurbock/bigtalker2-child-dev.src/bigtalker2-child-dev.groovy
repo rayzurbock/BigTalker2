@@ -4,7 +4,7 @@ definition(
     author: "rayzur@rayzurbock.com",
     description: "Do not install in the mobile app, Save don't publish (needed by BigTalker2)",
     category: "Fun & Social",
-    parent: "rayzurbock:BigTalker2",
+    parent: "rayzurbock:BigTalker2-Dev",
     iconUrl: "http://lowrance.cc/ST/icons/BigTalker-BetaVersion.png",
     iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png",
     iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png")
@@ -24,6 +24,7 @@ preferences {
     page(name: "pageConfigButton")
     page(name: "pageConfigTime")
     page(name: "pageConfigSHM")
+    page(name: "pageConfigpowerMeter")
     page(name: "pageHelpPhraseTokens")
 }
 
@@ -98,6 +99,11 @@ def pageConfigureEvents(){
                 href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to modify", state:"complete"
             } else {
                 href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to configure"
+            }
+            if (settings.powerMeterDeviceGroup1 || settings.powerMeterDeviceGroup2 || settings.powerMeterDeviceGroup3) {
+                href "pageConfigpowerMeter", title: "Power Meter", description:"Tap to modify", state:"complete"
+            } else {
+                href "pageConfigpowerMeter", title: "Power Meter", description:"Tap to configure"
             }
         }
     }
@@ -601,6 +607,39 @@ def pageConfigTime(){
     }
 }
 
+def pageConfigpowerMeter(){
+    dynamicPage(name: "pageConfigpowerMeter", title: "Configure talk on power consumption", install: false, uninstall: false) {
+        section(){
+            def defaultSpeechPowerMeterRise1 = ""
+            def defaultSpeechPowerMeterFall1 = ""
+            if (!powerMeterDeviceGroup1) {
+                defaultSpeechPowerMeterRise1 = "%devicename% has risen to %value% watts"
+                defaultSpeechPowerMeterFall1 = "%devicename% has fallen to %value% watts"
+            }
+            input name: "powerMeterDeviceGroup1", type: "capability.powerMeter", title: "Power Meter(s)", required: false, multiple: true
+            input name: "powerMeterTalkOnRise1", type: "text", title: "Say this if power rises above threshold:", required: false, defaultValue: defaultSpeechPowerMeterRise1, submitOnChange: true
+            input name: "powerMeterTalkOnFall1", type: "text", title: "Say this if power falls below threshold:", required: false, defaultValue: defaultSpeechPowerMeterFall1, submitOnChange: true
+            input name: "powerMeterTalkOnRiseThold1", type: "number", title: "High energy usage threshold (watts):", required: powerMeterTalkOnRise1, defaultValue: defaultSpeechpowerMeterRise1
+            input name: "powerMeterTalkOnFallThold1", type: "number", title: "Low energy usage threshold (watts):", required: powerMeterTalkOnFall1, defaultValue: defaultSpeechpowerMeterFall1
+            input name: "powerMeterPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "powerMeterSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            	input name: "powerMeterVolume1", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "powerMeterResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
+                input name: "powerMeterVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            }
+            input name: "powerMeterModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "powerMeterStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
+            input name: "powerMeterEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.waterStartTime1 == null))
+            input name: "powerMeterDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+        }
+        section("Help"){
+            href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+    }
+//End pageConfigpowerMeter()
+}
+
 def pageHelpPhraseTokens(){
 	//KEEP IN SYNC WITH PARENT!
     dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
@@ -687,6 +726,8 @@ def initSubscribe(){
     if (buttonDeviceGroup1) { subscribe(buttonDeviceGroup1, "button", onButton1Event) }
     //Subscribe SHM
     if (SHMTalkOnAway || SHMTalkOnHome || SHMTalkOnDisarm) { subscribe(location, "alarmSystemStatus", onSHMEvent) }
+    //Subscribe powerMeter
+    if (powerMeterDeviceGroup1) { subscribe(powerMeterDeviceGroup1, "power", onPowerMeter1Event) }
     //Subscribe Mode
     if (modePhraseGroup1) { subscribe(location, onModeChangeEvent) }
     
@@ -781,6 +822,10 @@ def timeAllowed(devicetype,index){
             }
             if (index == 3 && (!(settings.SHMStartTimeDisarm == null))) {
                 if (timeOfDayIsBetween(settings.SHMStartTimeDisarm, settings.SHMEndTimeDisarm, now, location.timeZone)) { return true } else { return false }
+            }
+        case "powerMeter":
+        	if (index == 1 && (!(settings.powerMeterStartTime1 == null))) {
+            	if (timeOfDayIsBetween(settings.powerMeterStartTime1, settings.powerMeterEndTime1, now, location.timeZone)) { return true } else { return false }
             }
     }
     
@@ -1044,6 +1089,22 @@ def modeAllowed(devicetype,index) {
                 }
             }
         //End: case "timeSlot"
+        case "powerMeter":
+            if (index == 1) {
+                //Energy Meter Group 1
+                if (settings.powerMeterModes1) {
+                    if (settings.powerMeterModes1.contains(location.mode)) {
+                        //Custom mode for this event is in use and we are in one of those modes
+                        return true
+                    } else {
+                        //Custom mode for this event is in use and we are not in one of those modes
+                        return false
+                    }
+                } else {
+                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                }
+            }
+        //End: case "powerMeter"
     } //End: switch (devicetype)
 }
 
@@ -1129,6 +1190,11 @@ def dayAllowed(devicetype,index){
         	}
             if (index == 3){
             	allowedDays = settings?.SHMDisarmDays1
+                return processDayRestriction(allowedDays)
+        	}
+		case "powerMeter":
+        	if (index == 1){
+            	allowedDays = settings?.powerMeterDays1
                 return processDayRestriction(allowedDays)
         	}
     }
@@ -1704,6 +1770,56 @@ def processSHMEvent(index, evt){
     state.speechDevice = null
 }
 //END HANDLE SHM
+
+//BEGIN HANDLE ENERGY METER
+def onPowerMeter1Event(evt){
+    processPowerMeterEvent(1, evt)
+}
+
+def processPowerMeterEvent(index, evt){
+	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
+    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+    def myVolume = -1
+    def myVoice = getMyVoice(settings?.buttonVoice1)
+    def energySpeak = false
+    def powerLevel = ""
+    //powerLevel = Math.round(evt.value.toDouble()).toString()
+    powerLevel = evt.value.toDouble().trunc().toString().replace(".0","")
+    LOGDEBUG("(onPowerMeterEvent): ${evt.name}, ${index}, ${evt.value}, ${powerLevel}, ${myVoice}", true)
+	//Check Restrictions
+    if (!(processRestrictions("powerMeter",index))){ return }
+    state.TalkPhrase = null
+    state.speechDevice = null
+	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+		if (index == 1) {
+			if (!settings?.powerMeterResumePlay1 == null) { resume = settings.powerMeterResumePlay1 }
+		}
+        if (resume == null) { resume = true }
+	} else { resume = false }
+    if (settings?.powerMeterPersonality1 == "Yes") {personality = true}
+    if (settings?.powerMeterPersonality1 == "No") {personality = false}
+    if (evt.value.toDouble() > settings.powerMeterTalkOnRiseThold1.toDouble()) { 
+    	if ((!(state?.powerMeterState == "HIGH")) && energySpeak == false) { state.powerMeterState = "HIGH"; energySpeak = true }
+    }
+    if (evt.value.toDouble() < settings.powerMeterTalkOnFallThold1.toDouble()) { 
+    	if ((!(state?.powerMeterState == "LOW")) && energySpeak == false) { state.powerMeterState = "LOW"; energySpeak = true }
+    }
+    if (index == 1 && state.powerMeterState == "HIGH" && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnRise1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
+    if (index == 1 && state.powerMeterState == "LOW" && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnFall1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
+    LOGDEBUG("state.powerMeterState=${state.powerMeterState}, energySpeak=${energySpeak}, powerLevel=${powerLevel}", false)
+    if (!(state?.TalkPhrase == null)) {
+    	if (state.TalkPhrase.toLowerCase().contains("%value%")) { 
+    		state.TalkPhrase = state.TalkPhrase.toLowerCase().replace("%value%",powerLevel)
+    	}
+    	sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)
+    } else {
+    	LOGDEBUG("Not configured to speak for this event", true)
+    }
+    state.TalkPhrase = null
+    state.speechDevice = null
+}
+//END HANDLE ENERGY METER
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 def getDesiredVolume(invol) {
 	def globalVolume = parent?.settings?.speechVolume
@@ -1771,5 +1887,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.4-Dev_release"
+    state.appversion = "C2.0.5B1"
 }
