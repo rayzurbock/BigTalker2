@@ -24,7 +24,7 @@ preferences {
     page(name: "pageConfigButton")
     page(name: "pageConfigTime")
     page(name: "pageConfigSHM")
-    page(name: "pageConfigpowerMeter")
+    page(name: "pageConfigPowerMeter")
     page(name: "pageHelpPhraseTokens")
 }
 
@@ -101,9 +101,9 @@ def pageConfigureEvents(){
                 href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to configure"
             }
             if (settings.powerMeterDeviceGroup1 || settings.powerMeterDeviceGroup2 || settings.powerMeterDeviceGroup3) {
-                href "pageConfigpowerMeter", title: "Power Meter", description:"Tap to modify", state:"complete"
+                href "pageConfigPowerMeter", title: "Power Meter", description:"Tap to modify", state:"complete"
             } else {
-                href "pageConfigpowerMeter", title: "Power Meter", description:"Tap to configure"
+                href "pageConfigPowerMeter", title: "Power Meter", description:"Tap to configure"
             }
         }
     }
@@ -607,18 +607,22 @@ def pageConfigTime(){
     }
 }
 
-def pageConfigpowerMeter(){
-    dynamicPage(name: "pageConfigpowerMeter", title: "Configure talk on power consumption", install: false, uninstall: false) {
+def pageConfigPowerMeter(){
+    dynamicPage(name: "pageConfigPowerMeter", title: "Configure talk on power consumption", install: false, uninstall: false) {
         section(){
             def defaultSpeechPowerMeterRise1 = ""
+            def defaultSpeechPowerMeterNormal1 = ""
             def defaultSpeechPowerMeterFall1 = ""
+            state.powerMeterState = ""
             if (!powerMeterDeviceGroup1) {
-                defaultSpeechPowerMeterRise1 = "%devicename% has risen to %value% watts"
-                defaultSpeechPowerMeterFall1 = "%devicename% has fallen to %value% watts"
+                defaultSpeechPowerMeterRise1 = "%devicename% power level is high at %value% watts"
+                defaultSpeechPowerMeterNormal1 = "%devicename% power level is within normal range"
+                defaultSpeechPowerMeterFall1 = "%devicename% power level is low %value% watts"
             }
             input name: "powerMeterDeviceGroup1", type: "capability.powerMeter", title: "Power Meter(s)", required: false, multiple: true
             input name: "powerMeterTalkOnRise1", type: "text", title: "Say this if power rises above threshold:", required: false, defaultValue: defaultSpeechPowerMeterRise1, submitOnChange: true
             input name: "powerMeterTalkOnFall1", type: "text", title: "Say this if power falls below threshold:", required: false, defaultValue: defaultSpeechPowerMeterFall1, submitOnChange: true
+            input name: "powerMeterTalkOnNormal1", type: "text", title: "Say this if power returns to normal:", required: false, defaultValue: defaultSpeechPowerMeterNormal1, submitOnChange: false
             input name: "powerMeterTalkOnRiseThold1", type: "number", title: "High energy usage threshold (watts):", required: powerMeterTalkOnRise1, defaultValue: defaultSpeechpowerMeterRise1
             input name: "powerMeterTalkOnFallThold1", type: "number", title: "Low energy usage threshold (watts):", required: powerMeterTalkOnFall1, defaultValue: defaultSpeechpowerMeterFall1
             input name: "powerMeterPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
@@ -1783,6 +1787,23 @@ def processPowerMeterEvent(index, evt){
     def myVoice = getMyVoice(settings?.buttonVoice1)
     def energySpeak = false
     def powerLevel = ""
+    def deviceName = ""
+    try {
+		deviceName = evt.displayName  //User given name of the device triggering the event
+    } catch (ex) { 
+    	LOGDEBUG("processPowerMeterEvent() evt.displayName failed; trying evt.device.displayName", false)
+        try {
+        	deviceName = evt.device.displayName //User given name of the device triggering the event
+		} catch (ex2) {
+			LOGDEBUG("processPowerMeterEvent() evt.device.displayName filed; trying evt.device.name")
+			try {
+				deviceName = evt.device.name //SmartThings name for the device triggering the event
+			} catch (ex3) {
+				LOGDEBUG("processPowerMeterEvent() evt.device.name filed; Giving up")
+				deviceName = "Unknown"
+			}
+		}
+	}
     //powerLevel = Math.round(evt.value.toDouble()).toString()
     powerLevel = evt.value.toDouble().trunc().toString().replace(".0","")
     LOGDEBUG("(onPowerMeterEvent): ${evt.name}, ${index}, ${evt.value}, ${powerLevel}, ${myVoice}", true)
@@ -1798,15 +1819,45 @@ def processPowerMeterEvent(index, evt){
 	} else { resume = false }
     if (settings?.powerMeterPersonality1 == "Yes") {personality = true}
     if (settings?.powerMeterPersonality1 == "No") {personality = false}
+    if (!(state?.powerMeterState.contains("|${deviceName}-"))) {
+    	state.powerMeterState = "${state.powerMeterState}|${deviceName}-UNKNOWN|"
+    }
+    //HIGH
     if (evt.value.toDouble() > settings.powerMeterTalkOnRiseThold1.toDouble()) { 
-    	if ((!(state?.powerMeterState == "HIGH")) && energySpeak == false) { state.powerMeterState = "HIGH"; energySpeak = true }
+    	if ((!(state?.powerMeterState.contains("|${deviceName}-HIGH|"))) && energySpeak == false) { 
+        	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-HIGH|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-NORMAL|","|${deviceName}-HIGH|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-LOW|","|${deviceName}-HIGH|")
+            energySpeak = true 
+        }
     }
-    if (evt.value.toDouble() < settings.powerMeterTalkOnFallThold1.toDouble()) { 
-    	if ((!(state?.powerMeterState == "LOW")) && energySpeak == false) { state.powerMeterState = "LOW"; energySpeak = true }
+    //NORMAL
+    if (((evt.value.toDouble() > settings.powerMeterTalkOnFallThold1.toDouble()) || evt.value.toDouble() == 0) && (evt.value.toDouble() < settings.powerMeterTalkOnRiseThold1.toDouble())) { 
+    	if ((!(state?.powerMeterState.contains("|${deviceName}-NORMAL|"))) && energySpeak == false) { 
+        	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-NORMAL|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-LOW|","|${deviceName}-NORMAL|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-HIGH|","|${deviceName}-NORMAL|")
+            energySpeak = true 
+        }
+        if (settings.powerMeterTalkOnFallThold1 == 0) { 
+        	// If Low = 0, Then override LOW alert, we've returned to Normal (can't go lower).
+        	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-NORMAL|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-HIGH|","|${deviceName}-NORMAL|")
+        }
     }
-    if (index == 1 && state.powerMeterState == "HIGH" && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnRise1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
-    if (index == 1 && state.powerMeterState == "LOW" && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnFall1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
-    LOGDEBUG("state.powerMeterState=${state.powerMeterState}, energySpeak=${energySpeak}, powerLevel=${powerLevel}", false)
+    //LOW
+    if ((evt.value.toDouble() < settings.powerMeterTalkOnFallThold1.toDouble()) && settings.powerMeterTalkOnFallThold1 > 0) { 
+    	if ((!(state?.powerMeterState.contains("|${deviceName}-LOW|"))) && energySpeak == false) { 
+        	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-LOW|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-NORMAL|","|${deviceName}-LOW|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-HIGH|","|${deviceName}-LOW|")
+            energySpeak = true 
+        }
+    }
+    if (index == 1 && state.powerMeterState.contains("|${deviceName}-HIGH|") && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnRise1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
+    if (index == 1 && state.powerMeterState.contains("|${deviceName}-NORMAL|") && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnNormal1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
+    if (index == 1 && state.powerMeterState.contains("|${deviceName}-LOW|") && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnFall1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
+    LOGDEBUG("energySpeak=${energySpeak}, powerLevel=${powerLevel}, state.powerMeterState=${state.powerMeterState}", false)
     if (!(state?.TalkPhrase == null)) {
     	if (state.TalkPhrase.toLowerCase().contains("%value%")) { 
     		state.TalkPhrase = state.TalkPhrase.toLowerCase().replace("%value%",powerLevel)
@@ -1887,5 +1938,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.5B1"
+    state.appversion = "C2.0.5B2-DEV"
 }
