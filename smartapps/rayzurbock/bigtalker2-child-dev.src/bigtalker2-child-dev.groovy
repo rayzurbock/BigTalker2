@@ -136,6 +136,9 @@ def pageConfigMotion(){
             input name: "motionStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "motionEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.motionStartTime1 == null))
             input name: "motionDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            //input name: "motionCount1", type: "number", title: "Do this only x times (next prompt)...", required: false, submitOnChange: true
+            //input name: "motionCountUnit1", type:"enum", title: "... per ", required: settings.motionCount1, options: ["Minute", "Hour", "Day"]
+            input name: "motionDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
             if (!(settings.motionTestActive1 == null) && !(settings.motionTestActive1 == state?.motionTestActive1)) {
             	def testevent = [displayName: 'BigTalker Motion', name: 'MotionActiveTest', value: 'Active']
                 def myVoice = parent?.settings?.speechVoice
@@ -185,6 +188,7 @@ def pageConfigSwitch(){
             input name: "switchStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "switchEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.switchStartTime1 == null))
             input name: "switchDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "switchDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
             if (!(settings.switchTestOn1 == null) && !(settings.switchTestOn1 == state?.switchTestOn1)) {
             	def testevent = [displayName: 'BigTalker Switch', name: 'SwitchOnTest', value: 'On']
                 def myVoice = parent?.settings?.speechVoice
@@ -230,6 +234,7 @@ def pageConfigPresence(){
             input name: "presStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "presEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.presStartTime1 == null))
             input name: "presDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "presDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -261,6 +266,7 @@ def pageConfigLock(){
             input name: "lockStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "lockEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.lockStartTime1 == null))
             input name: "lockDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "lockDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -292,6 +298,7 @@ def pageConfigContact(){
             input name: "contactStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "contactEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.contactStartTime1 == null))
             input name: "contactDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "contactDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -325,6 +332,7 @@ def pageConfigMode(){
             input name: "modeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "modeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.modeStartTime1 == null))
             input name: "modeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "modeDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -362,6 +370,7 @@ def pageConfigThermostat(){
             input name: "thermostatStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "thermostatEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.thermostatStartTime1 == null))
             input name: "thermostatDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "thermostatDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -393,6 +402,7 @@ def pageConfigAcceleration(){
             input name: "accelerationStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "accelerationEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.accelerationStartTime1 == null))
             input name: "accelerationDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "accelerationDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -424,6 +434,7 @@ def pageConfigWater(){
             input name: "waterStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "waterEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.waterStartTime1 == null))
             input name: "waterDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "waterDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -458,6 +469,7 @@ def pageConfigSmoke(){
             input name: "smokeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "smokeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.smokeStartTime1 == null))
             input name: "smokeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "smokeDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -489,6 +501,7 @@ def pageConfigButton(){
             input name: "buttonStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "buttonEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.buttonStartTime1 == null))
             input name: "buttonDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "buttonDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -509,6 +522,7 @@ def pageConfigSHM(){
             }
             input name: "SHMTalkOnAway", type: "text", title: "Say this when Armed, Away:", required: false, defaultValue: defaultSpeechSHMAway
             input name: "SHMSpeechDeviceAway", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            input name: "SHMDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
             if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
             	input name: "SHMVolumeAway", type: "number", title: "Set volume to (overrides default):", required: false
             	input name: "SHMResumePlayAway", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
@@ -574,6 +588,7 @@ def pageConfigTime(){
                 input name: "timeSlotVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "timeSlotModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "timeSlotDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
 		section("Schedule 2"){
             input name: "timeSlotDays2", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
@@ -587,6 +602,7 @@ def pageConfigTime(){
                 input name: "timeSlotVoice2", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "timeSlotModes2", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "timeSlotDisableSwitch2", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
 		section("Schedule 3"){
             input name: "timeSlotDays3", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
@@ -600,6 +616,7 @@ def pageConfigTime(){
                 input name: "timeSlotVoice3", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
             input name: "timeSlotModes3", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "timeSlotDisableSwitch3", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -636,6 +653,7 @@ def pageConfigPowerMeter(){
             input name: "powerMeterStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "powerMeterEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.waterStartTime1 == null))
             input name: "powerMeterDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "powerMeterDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -751,6 +769,10 @@ def initSchedule(){
 
 def processRestrictions(devicetype,index){
 	def allowed = true
+    if (!(processDisableSwitch(devicetype,index))){
+    	LOGDEBUG("RESTRICTION: Disable switch is set to disable", true)
+        allowed = false
+    }
 	if (!(timeAllowed(devicetype,index))) {
     	LOGDEBUG("RESTRICTION: Remain silent in current time period", true)
         allowed = false
@@ -765,6 +787,8 @@ def processRestrictions(devicetype,index){
     	LOGDEBUG("RESTRICTION: Remain silent today", true)
         allowed = false
     }
+    //if (!(processCountRestriction(devicetype,index))){
+    //}
     return allowed
 }
 
@@ -1214,6 +1238,90 @@ def processDayRestriction(allowedDays){
         return true
     } else {
         return false
+    }
+}
+
+def processCountRestriction(devicetype, index) {
+// IN DEVELOPMENT 3/9/2018
+		def maxCount = 0
+        def countUnit = "None"
+        switch(devicetype) {
+        case "motion":
+        	if (index == 1){
+            	maxCount = settings?.motionCount1
+                countUnit = settings?.motionCountUnit1
+                //
+                //switch(countUnit){
+                //	case "Minute":
+                //    	lastActive = getLastActivity()
+                //    case "Hour": 
+                //    case "Day": {}
+                //}
+                //return processDayRestriction(allowedDays)
+                //
+                return true // Return allow by default during initial development
+        	}
+    }
+}
+
+def processDisableSwitch(devicetype, index) {
+	switch(devicetype){
+    	case "timeSlot":
+        	if (index == 1){
+            	if (settings?.timeSlotDisableSwitch1.currentSwitch == "on" || settings?.timeSlotDisableSwitch1 == null) { return true } else { return false }	
+            }
+            if (index == 2){
+            	if (settings?.timeSlotDisableSwitch2.currentSwitch == "on" || settings?.timeSlotDisableSwitch2 == null) { return true } else { return false }	
+            }
+            if (index == 3){
+            	if (settings?.timeSlotDisableSwitch3.currentSwitch == "on" || settings?.timeSlotDisableSwitch3 == null) { return true } else { return false }	
+            }
+    	case "motion":
+        	if (index == 1){
+            	if (settings?.motionDisableSwitch1.currentSwitch == "on" || settings?.motionDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "switch":
+        	if (index == 1){
+            	if (settings?.switchDisableSwitch1.currentSwitch == "on" || settings?.switchDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "presence":
+        	if (index == 1){
+            	if (settings?.presenceDisableSwitch1.currentSwitch == "on" || settings?.presenceDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "contact":
+        	if (index == 1){
+            	if (settings?.contactDisableSwitch1.currentSwitch == "on" || settings?.contactDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "mode":
+        	if (index == 1){
+            	if (settings?.modeDisableSwitch1.currentSwitch == "on" || settings?.modeDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "acceleration":
+        	if (index == 1){
+            	if (settings?.accelerationDisableSwitch1.currentSwitch == "on" || settings?.accelerationDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "thermostat":
+        	if (index == 1){
+            	if (settings?.thermostatDisableSwitch1.currentSwitch == "on" || settings?.thermostatDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "water":
+        	if (index == 1){
+            	if (settings?.waterDisableSwitch1.currentSwitch == "on" || settings?.waterDisableSwitch1 == null) { return true } else { return false }
+            }
+      case "smoke":
+        	if (index == 1){
+            	if (settings?.smokeDisableSwitch1.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "button":
+        	if (index == 1){
+            	if (settings?.buttonDisableSwitch1.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "SHM":
+           	if (settings?.SHMDisableSwitch1.currentSwitch == "on" || settings?.SHMDisableSwitch1 == null) { return true } else { return false }
+       case "powerMeter":
+        	if (index == 1){
+            	if (settings?.powerMeterDisableSwitch1.currentSwitch == "on" || settings?.powerMeterDisableSwitch1 == null) { return true } else { return false }
+            }
     }
 }
 
@@ -1938,5 +2046,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.5B3"
+    state.appversion = "C2.0.5B4"
 }
