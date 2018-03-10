@@ -617,7 +617,7 @@ def pageConfigPowerMeter(){
             if (!powerMeterDeviceGroup1) {
                 defaultSpeechPowerMeterRise1 = "%devicename% power level is high at %value% watts"
                 defaultSpeechPowerMeterNormal1 = "%devicename% power level is within normal range"
-                defaultSpeechPowerMeterFall1 = "%devicename% power level is low %value% watts"
+                defaultSpeechPowerMeterFall1 = "%devicename% power level is low at %value% watts"
             }
             input name: "powerMeterDeviceGroup1", type: "capability.powerMeter", title: "Power Meter(s)", required: false, multiple: true
             input name: "powerMeterTalkOnRise1", type: "text", title: "Say this if power rises above threshold:", required: false, defaultValue: defaultSpeechPowerMeterRise1, submitOnChange: true
@@ -1832,7 +1832,7 @@ def processPowerMeterEvent(index, evt){
         }
     }
     //NORMAL
-    if (((evt.value.toDouble() > settings.powerMeterTalkOnFallThold1.toDouble()) || evt.value.toDouble() == 0) && (evt.value.toDouble() < settings.powerMeterTalkOnRiseThold1.toDouble())) { 
+    if (((evt.value.toDouble() > settings.powerMeterTalkOnFallThold1.toDouble()) || settings.powerMeterTalkOnFallThold1.toDouble() == 0) && (evt.value.toDouble() < settings.powerMeterTalkOnRiseThold1.toDouble())) { 
     	if ((!(state?.powerMeterState.contains("|${deviceName}-NORMAL|"))) && energySpeak == false) { 
         	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-NORMAL|")
             state.powerMeterState = state.powerMeterState.replace("|${deviceName}-LOW|","|${deviceName}-NORMAL|")
@@ -1938,5 +1938,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.5B2-DEV"
+    state.appversion = "C2.0.5B3"
 }
