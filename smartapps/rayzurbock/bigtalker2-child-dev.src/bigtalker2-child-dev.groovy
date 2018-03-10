@@ -1930,7 +1930,7 @@ def processPowerMeterEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.buttonVoice1)
     def energySpeak = false
-    def powerLevel = ""
+    def powerLevel = 0
     def deviceName = ""
     try {
 		deviceName = evt.displayName  //User given name of the device triggering the event
@@ -1949,7 +1949,11 @@ def processPowerMeterEvent(index, evt){
 		}
 	}
     //powerLevel = Math.round(evt.value.toDouble()).toString()
-    powerLevel = evt.value.toDouble().trunc().toString().replace(".0","")
+    try {
+    	powerLevel = evt?.value?.toDouble()?.trunc()?.toString()?.replace(".0","")
+    } catch (err) {
+    	powerLevel = evt?.value
+    }
     LOGDEBUG("(onPowerMeterEvent): ${evt.name}, ${index}, ${evt.value}, ${powerLevel}, ${myVoice}", true)
 	//Check Restrictions
     if (!(processRestrictions("powerMeter",index))){ return }
@@ -2082,5 +2086,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.5B4"
+    state.appversion = "C2.0.5B5"
 }
