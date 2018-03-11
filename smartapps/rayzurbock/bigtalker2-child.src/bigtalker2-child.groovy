@@ -5,9 +5,9 @@ definition(
     description: "Do not install in the mobile app, Save don't publish (needed by BigTalker2)",
     category: "Fun & Social",
     parent: "rayzurbock:BigTalker2",
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.4.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.4.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.4.png")
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.5.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.5.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.5.png")
 
 preferences {
     page(name: "pageConfigureEvents")
@@ -24,6 +24,7 @@ preferences {
     page(name: "pageConfigButton")
     page(name: "pageConfigTime")
     page(name: "pageConfigSHM")
+    page(name: "pageConfigPowerMeter")
     page(name: "pageHelpPhraseTokens")
 }
 
@@ -99,6 +100,11 @@ def pageConfigureEvents(){
             } else {
                 href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to configure"
             }
+            if (settings.powerMeterDeviceGroup1 || settings.powerMeterDeviceGroup2 || settings.powerMeterDeviceGroup3) {
+                href "pageConfigPowerMeter", title: "Power Meter", description:"Tap to modify", state:"complete"
+            } else {
+                href "pageConfigPowerMeter", title: "Power Meter", description:"Tap to configure"
+            }
         }
     }
 }
@@ -126,10 +132,15 @@ def pageConfigMotion(){
             	input name: "motionResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true, submitOnChange: true
                 input name: "motionVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "motionModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "motionStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "motionEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.motionStartTime1 == null))
             input name: "motionDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            //input name: "motionCount1", type: "number", title: "Do this only x times (next prompt)...", required: false, submitOnChange: true
+            //input name: "motionCountUnit1", type:"enum", title: "... per ", required: settings.motionCount1, options: ["Minute", "Hour", "Day"]
+            input name: "motionDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
             if (!(settings.motionTestActive1 == null) && !(settings.motionTestActive1 == state?.motionTestActive1)) {
             	def testevent = [displayName: 'BigTalker Motion', name: 'MotionActiveTest', value: 'Active']
                 def myVoice = parent?.settings?.speechVoice
@@ -175,10 +186,13 @@ def pageConfigSwitch(){
             	input name: "switchResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true, submitOnChange: true
                 input name: "switchVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "switchModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "switchStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "switchEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.switchStartTime1 == null))
             input name: "switchDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "switchDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
             if (!(settings.switchTestOn1 == null) && !(settings.switchTestOn1 == state?.switchTestOn1)) {
             	def testevent = [displayName: 'BigTalker Switch', name: 'SwitchOnTest', value: 'On']
                 def myVoice = parent?.settings?.speechVoice
@@ -220,10 +234,13 @@ def pageConfigPresence(){
             	input name: "presResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "presVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "presModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "presStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "presEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.presStartTime1 == null))
             input name: "presDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "presDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -251,10 +268,13 @@ def pageConfigLock(){
             	input name: "lockResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "lockVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "lockModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "lockStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "lockEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.lockStartTime1 == null))
             input name: "lockDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "lockDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -282,10 +302,13 @@ def pageConfigContact(){
                 input name: "contactResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "contactVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "contactModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "contactStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "contactEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.contactStartTime1 == null))
             input name: "contactDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "contactDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -316,9 +339,12 @@ def pageConfigMode(){
                 input name: "modePhraseResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "modePhraseVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "modeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "modeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.modeStartTime1 == null))
             input name: "modeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "modeDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -352,10 +378,13 @@ def pageConfigThermostat(){
             	input name: "thermostatResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "thermostatVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "thermostatModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "thermostatStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "thermostatEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.thermostatStartTime1 == null))
             input name: "thermostatDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "thermostatDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -383,10 +412,13 @@ def pageConfigAcceleration(){
             	input name: "accelerationResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "accelerationVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "accelerationModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "accelerationStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "accelerationEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.accelerationStartTime1 == null))
             input name: "accelerationDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "accelerationDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -414,10 +446,13 @@ def pageConfigWater(){
                 input name: "waterResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "waterVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "waterModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "waterStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "waterEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.waterStartTime1 == null))
             input name: "waterDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "waterDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -448,10 +483,13 @@ def pageConfigSmoke(){
                 input name: "smokeResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "smokeVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "smokeModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "smokeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "smokeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.smokeStartTime1 == null))
             input name: "smokeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "smokeDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -479,10 +517,13 @@ def pageConfigButton(){
                 input name: "buttonResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "buttonVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions"){
             input name: "buttonModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "buttonStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "buttonEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.buttonStartTime1 == null))
             input name: "buttonDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "buttonDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -503,11 +544,14 @@ def pageConfigSHM(){
             }
             input name: "SHMTalkOnAway", type: "text", title: "Say this when Armed, Away:", required: false, defaultValue: defaultSpeechSHMAway
             input name: "SHMSpeechDeviceAway", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            input name: "SHMDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
             if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
             	input name: "SHMVolumeAway", type: "number", title: "Set volume to (overrides default):", required: false
             	input name: "SHMResumePlayAway", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "SHMVoiceAway", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions (Armed, Away)"){
             input name: "SHMModesAway", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "SHMStartTimeAway", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "SHMEndTimeAway", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.SHMStartTimeAway == null))
@@ -525,6 +569,8 @@ def pageConfigSHM(){
             	input name: "SHMResumePlayHome", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "SHMVoiceHome", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions (Armed, Home)"){
             input name: "SHMModesHome", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "SHMStartTimeHome", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "SHMEndTimeHome", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.SHMStartTimeHome == null))
@@ -542,6 +588,8 @@ def pageConfigSHM(){
                 input name: "SHMResumePlayDisarm", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "SHMVoiceDisarm", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions (Disarmed)"){
             input name: "SHMModesDisarm", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "SHMStartTimeDisarm", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "SHMEndTimeDisarm", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.SHMStartTimeDisarm == null))
@@ -567,7 +615,10 @@ def pageConfigTime(){
                 input name: "timeSlotResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "timeSlotVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions (Schedule 1)"){
             input name: "timeSlotModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "timeSlotDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
 		section("Schedule 2"){
             input name: "timeSlotDays2", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
@@ -580,7 +631,10 @@ def pageConfigTime(){
                 input name: "timeSlotResumePlay2", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "timeSlotVoice2", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions (Schedule 2)"){
             input name: "timeSlotModes2", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "timeSlotDisableSwitch2", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
 		section("Schedule 3"){
             input name: "timeSlotDays3", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
@@ -593,12 +647,55 @@ def pageConfigTime(){
                 input name: "timeSlotResumePlay3", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
                 input name: "timeSlotVoice3", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
             }
+        }
+        section("Restrictions (Schedule 3)"){
             input name: "timeSlotModes3", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "timeSlotDisableSwitch3", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
     }
+}
+
+def pageConfigPowerMeter(){
+    dynamicPage(name: "pageConfigPowerMeter", title: "Configure talk on power consumption", install: false, uninstall: false) {
+        section(){
+            def defaultSpeechPowerMeterRise1 = ""
+            def defaultSpeechPowerMeterNormal1 = ""
+            def defaultSpeechPowerMeterFall1 = ""
+            state.powerMeterState = ""
+            if (!powerMeterDeviceGroup1) {
+                defaultSpeechPowerMeterRise1 = "%devicename% power level is high at %value% watts"
+                defaultSpeechPowerMeterNormal1 = "%devicename% power level is within normal range"
+                defaultSpeechPowerMeterFall1 = "%devicename% power level is low at %value% watts"
+            }
+            input name: "powerMeterDeviceGroup1", type: "capability.powerMeter", title: "Power Meter(s)", required: false, multiple: true
+            input name: "powerMeterTalkOnRise1", type: "text", title: "Say this if power rises above threshold:", required: false, defaultValue: defaultSpeechPowerMeterRise1, submitOnChange: true
+            input name: "powerMeterTalkOnFall1", type: "text", title: "Say this if power falls below threshold:", required: false, defaultValue: defaultSpeechPowerMeterFall1, submitOnChange: true
+            input name: "powerMeterTalkOnNormal1", type: "text", title: "Say this if power returns to normal:", required: false, defaultValue: defaultSpeechPowerMeterNormal1, submitOnChange: false
+            input name: "powerMeterTalkOnRiseThold1", type: "number", title: "High energy usage threshold (watts):", required: powerMeterTalkOnRise1, defaultValue: defaultSpeechpowerMeterRise1
+            input name: "powerMeterTalkOnFallThold1", type: "number", title: "Low energy usage threshold (watts):", required: powerMeterTalkOnFall1, defaultValue: defaultSpeechpowerMeterFall1
+            input name: "powerMeterPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "powerMeterSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            	input name: "powerMeterVolume1", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "powerMeterResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
+                input name: "powerMeterVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            }
+        }
+        section("Restrictions"){
+            input name: "powerMeterModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "powerMeterStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
+            input name: "powerMeterEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.waterStartTime1 == null))
+            input name: "powerMeterDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "powerMeterDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+        }
+        section("Help"){
+            href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+    }
+//End pageConfigpowerMeter()
 }
 
 def pageHelpPhraseTokens(){
@@ -687,6 +784,8 @@ def initSubscribe(){
     if (buttonDeviceGroup1) { subscribe(buttonDeviceGroup1, "button", onButton1Event) }
     //Subscribe SHM
     if (SHMTalkOnAway || SHMTalkOnHome || SHMTalkOnDisarm) { subscribe(location, "alarmSystemStatus", onSHMEvent) }
+    //Subscribe powerMeter
+    if (powerMeterDeviceGroup1) { subscribe(powerMeterDeviceGroup1, "power", onPowerMeter1Event) }
     //Subscribe Mode
     if (modePhraseGroup1) { subscribe(location, onModeChangeEvent) }
     
@@ -706,6 +805,10 @@ def initSchedule(){
 
 def processRestrictions(devicetype,index){
 	def allowed = true
+    if (!(processDisableSwitch(devicetype,index))){
+    	LOGDEBUG("RESTRICTION: Disable switch is set to disable", true)
+        allowed = false
+    }
 	if (!(timeAllowed(devicetype,index))) {
     	LOGDEBUG("RESTRICTION: Remain silent in current time period", true)
         allowed = false
@@ -720,6 +823,8 @@ def processRestrictions(devicetype,index){
     	LOGDEBUG("RESTRICTION: Remain silent today", true)
         allowed = false
     }
+    //if (!(processCountRestriction(devicetype,index))){
+    //}
     return allowed
 }
 
@@ -781,6 +886,10 @@ def timeAllowed(devicetype,index){
             }
             if (index == 3 && (!(settings.SHMStartTimeDisarm == null))) {
                 if (timeOfDayIsBetween(settings.SHMStartTimeDisarm, settings.SHMEndTimeDisarm, now, location.timeZone)) { return true } else { return false }
+            }
+        case "powerMeter":
+        	if (index == 1 && (!(settings.powerMeterStartTime1 == null))) {
+            	if (timeOfDayIsBetween(settings.powerMeterStartTime1, settings.powerMeterEndTime1, now, location.timeZone)) { return true } else { return false }
             }
     }
     
@@ -1044,6 +1153,22 @@ def modeAllowed(devicetype,index) {
                 }
             }
         //End: case "timeSlot"
+        case "powerMeter":
+            if (index == 1) {
+                //Energy Meter Group 1
+                if (settings.powerMeterModes1) {
+                    if (settings.powerMeterModes1.contains(location.mode)) {
+                        //Custom mode for this event is in use and we are in one of those modes
+                        return true
+                    } else {
+                        //Custom mode for this event is in use and we are not in one of those modes
+                        return false
+                    }
+                } else {
+                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                }
+            }
+        //End: case "powerMeter"
     } //End: switch (devicetype)
 }
 
@@ -1131,6 +1256,11 @@ def dayAllowed(devicetype,index){
             	allowedDays = settings?.SHMDisarmDays1
                 return processDayRestriction(allowedDays)
         	}
+		case "powerMeter":
+        	if (index == 1){
+            	allowedDays = settings?.powerMeterDays1
+                return processDayRestriction(allowedDays)
+        	}
     }
 }
 
@@ -1144,6 +1274,90 @@ def processDayRestriction(allowedDays){
         return true
     } else {
         return false
+    }
+}
+
+def processCountRestriction(devicetype, index) {
+// IN DEVELOPMENT 3/9/2018
+		def maxCount = 0
+        def countUnit = "None"
+        switch(devicetype) {
+        case "motion":
+        	if (index == 1){
+            	maxCount = settings?.motionCount1
+                countUnit = settings?.motionCountUnit1
+                //
+                //switch(countUnit){
+                //	case "Minute":
+                //    	lastActive = getLastActivity()
+                //    case "Hour": 
+                //    case "Day": {}
+                //}
+                //return processDayRestriction(allowedDays)
+                //
+                return true // Return allow by default during initial development
+        	}
+    }
+}
+
+def processDisableSwitch(devicetype, index) {
+	switch(devicetype){
+    	case "timeSlot":
+        	if (index == 1){
+            	if (settings?.timeSlotDisableSwitch1?.currentSwitch == "on" || settings?.timeSlotDisableSwitch1 == null) { return true } else { return false }	
+            }
+            if (index == 2){
+            	if (settings?.timeSlotDisableSwitch2?.currentSwitch == "on" || settings?.timeSlotDisableSwitch2 == null) { return true } else { return false }	
+            }
+            if (index == 3){
+            	if (settings?.timeSlotDisableSwitch3?.currentSwitch == "on" || settings?.timeSlotDisableSwitch3 == null) { return true } else { return false }	
+            }
+    	case "motion":
+        	if (index == 1){
+            	if (settings?.motionDisableSwitch1?.currentSwitch == "on" || settings?.motionDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "switch":
+        	if (index == 1){
+            	if (settings?.switchDisableSwitch1?.currentSwitch == "on" || settings?.switchDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "presence":
+        	if (index == 1){
+            	if (settings?.presenceDisableSwitch1?.currentSwitch == "on" || settings?.presenceDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "contact":
+        	if (index == 1){
+            	if (settings?.contactDisableSwitch1?.currentSwitch == "on" || settings?.contactDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "mode":
+        	if (index == 1){
+            	if (settings?.modeDisableSwitch1?.currentSwitch == "on" || settings?.modeDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "acceleration":
+        	if (index == 1){
+            	if (settings?.accelerationDisableSwitch1?.currentSwitch == "on" || settings?.accelerationDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "thermostat":
+        	if (index == 1){
+            	if (settings?.thermostatDisableSwitch1?.currentSwitch == "on" || settings?.thermostatDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "water":
+        	if (index == 1){
+            	if (settings?.waterDisableSwitch1?.currentSwitch == "on" || settings?.waterDisableSwitch1 == null) { return true } else { return false }
+            }
+      case "smoke":
+        	if (index == 1){
+            	if (settings?.smokeDisableSwitch1?.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "button":
+        	if (index == 1){
+            	if (settings?.buttonDisableSwitch1?.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "SHM":
+           	if (settings?.SHMDisableSwitch1?.currentSwitch == "on" || settings?.SHMDisableSwitch1 == null) { return true } else { return false }
+       case "powerMeter":
+        	if (index == 1){
+            	if (settings?.powerMeterDisableSwitch1?.currentSwitch == "on" || settings?.powerMeterDisableSwitch1 == null) { return true } else { return false }
+            }
     }
 }
 
@@ -1704,6 +1918,107 @@ def processSHMEvent(index, evt){
     state.speechDevice = null
 }
 //END HANDLE SHM
+
+//BEGIN HANDLE ENERGY METER
+def onPowerMeter1Event(evt){
+    processPowerMeterEvent(1, evt)
+}
+
+def processPowerMeterEvent(index, evt){
+	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
+    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+    def myVolume = -1
+    def myVoice = getMyVoice(settings?.buttonVoice1)
+    def energySpeak = false
+    def powerLevel = 0
+    def deviceName = ""
+    try {
+		deviceName = evt.displayName  //User given name of the device triggering the event
+    } catch (ex) { 
+    	LOGDEBUG("processPowerMeterEvent() evt.displayName failed; trying evt.device.displayName", false)
+        try {
+        	deviceName = evt.device.displayName //User given name of the device triggering the event
+		} catch (ex2) {
+			LOGDEBUG("processPowerMeterEvent() evt.device.displayName filed; trying evt.device.name")
+			try {
+				deviceName = evt.device.name //SmartThings name for the device triggering the event
+			} catch (ex3) {
+				LOGDEBUG("processPowerMeterEvent() evt.device.name filed; Giving up")
+				deviceName = "Unknown"
+			}
+		}
+	}
+    //powerLevel = Math.round(evt.value.toDouble()).toString()
+    try {
+    	powerLevel = evt?.value?.toDouble()?.trunc()?.toString()?.replace(".0","")
+    } catch (err) {
+    	powerLevel = evt?.value
+    }
+    LOGDEBUG("(onPowerMeterEvent): ${evt.name}, ${index}, ${evt.value}, ${powerLevel}, ${myVoice}", true)
+	//Check Restrictions
+    if (!(processRestrictions("powerMeter",index))){ return }
+    state.TalkPhrase = null
+    state.speechDevice = null
+	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+		if (index == 1) {
+			if (!settings?.powerMeterResumePlay1 == null) { resume = settings.powerMeterResumePlay1 }
+		}
+        if (resume == null) { resume = true }
+	} else { resume = false }
+    if (settings?.powerMeterPersonality1 == "Yes") {personality = true}
+    if (settings?.powerMeterPersonality1 == "No") {personality = false}
+    if (!(state?.powerMeterState.contains("|${deviceName}-"))) {
+    	state.powerMeterState = "${state.powerMeterState}|${deviceName}-UNKNOWN|"
+    }
+    //HIGH
+    if (powerLevel?.toDouble() > settings?.powerMeterTalkOnRiseThold1?.toDouble()) { 
+    	if ((!(state?.powerMeterState?.contains("|${deviceName}-HIGH|"))) && energySpeak == false) { 
+        	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-HIGH|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-NORMAL|","|${deviceName}-HIGH|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-LOW|","|${deviceName}-HIGH|")
+            energySpeak = true 
+        }
+    }
+    //NORMAL
+    if (((powerLevel?.toDouble() > settings?.powerMeterTalkOnFallThold1?.toDouble()) || settings?.powerMeterTalkOnFallThold1?.toDouble() == 0) && (powerLevel?.toDouble() < settings?.powerMeterTalkOnRiseThold1?.toDouble())) { 
+    	if ((!(state?.powerMeterState?.contains("|${deviceName}-NORMAL|"))) && energySpeak == false) { 
+        	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-NORMAL|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-LOW|","|${deviceName}-NORMAL|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-HIGH|","|${deviceName}-NORMAL|")
+            energySpeak = true 
+        }
+        if (settings?.powerMeterTalkOnFallThold1?.toDouble() == 0) { 
+        	// If Low = 0, Then override LOW alert, we've returned to Normal (can't go lower).
+        	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-NORMAL|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-HIGH|","|${deviceName}-NORMAL|")
+        }
+    }
+    //LOW
+    if ((powerLevel?.toDouble() < settings?.powerMeterTalkOnFallThold1?.toDouble()) && settings?.powerMeterTalkOnFallThold1?.toDouble() > 0) { 
+    	if ((!(state?.powerMeterState?.contains("|${deviceName}-LOW|"))) && energySpeak == false) { 
+        	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-LOW|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-NORMAL|","|${deviceName}-LOW|")
+            state.powerMeterState = state.powerMeterState.replace("|${deviceName}-HIGH|","|${deviceName}-LOW|")
+            energySpeak = true 
+        }
+    }
+    if (index == 1 && state.powerMeterState.contains("|${deviceName}-HIGH|") && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnRise1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
+    if (index == 1 && state.powerMeterState.contains("|${deviceName}-NORMAL|") && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnNormal1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
+    if (index == 1 && state.powerMeterState.contains("|${deviceName}-LOW|") && energySpeak) {state.TalkPhrase = settings.powerMeterTalkOnFall1; state.speechDevice = powerMeterSpeechDevice1; myVolume = getDesiredVolume(settings.powerMeterVolume1)}
+    LOGDEBUG("energySpeak=${energySpeak}, powerLevel=${powerLevel}, state.powerMeterState=${state.powerMeterState}", false)
+    if (!(state?.TalkPhrase == null)) {
+    	if (state.TalkPhrase.toLowerCase().contains("%value%")) { 
+    		state.TalkPhrase = state.TalkPhrase.toLowerCase().replace("%value%",powerLevel)
+    	}
+    	sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)
+    } else {
+    	LOGDEBUG("Not configured to speak for this event", true)
+    }
+    state.TalkPhrase = null
+    state.speechDevice = null
+}
+//END HANDLE ENERGY METER
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 def getDesiredVolume(invol) {
 	def globalVolume = parent?.settings?.speechVolume
@@ -1771,5 +2086,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.4"
+    state.appversion = "C2.0.5"
 }
