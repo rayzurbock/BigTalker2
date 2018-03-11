@@ -1,5 +1,5 @@
 definition(
-    name: "BigTalker2",
+    name: "BigTalker2-Dev",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
     description: "Let's talk about mode changes, switches, motions, and so on.",
@@ -2134,18 +2134,18 @@ def processPhraseVariables(appname, phrase, evt){
 	    }
 	    if (phrase.contains('"')) { phrase = phrase.replace('"',"") }
 	    if (phrase.contains("'")) { phrase = phrase.replace("'","") }
-	    if (phrase.contains("10S")) { phrase = phrase.replace("10S","tens") }
-	    if (phrase.contains("20S")) { phrase = phrase.replace("20S","twenties") }
-	    if (phrase.contains("30S")) { phrase = phrase.replace("30S","thirties") }
-	    if (phrase.contains("40S")) { phrase = phrase.replace("40S","fourties") }
-	    if (phrase.contains("50S")) { phrase = phrase.replace("50S","fifties") }
-	    if (phrase.contains("60S")) { phrase = phrase.replace("60S","sixties") }
-	    if (phrase.contains("70S")) { phrase = phrase.replace("70S","seventies") }
-	    if (phrase.contains("80S")) { phrase = phrase.replace("80S","eighties") }
-	    if (phrase.contains("90S")) { phrase = phrase.replace("90S","nineties") }
-	    if (phrase.contains("100S")) { phrase = phrase.replace("100S","one hundreds") }
-	    if (phrase.contains("%askalexa%")) {
-	    	phrase=phrase.replace("%askalexa%","")
+	    if (phrase.toLowerCase().contains("10s")) { phrase = phrase.toLowerCase().replace("10s","tens") }
+	    if (phrase.toLowerCase().contains("20s")) { phrase = phrase.toLowerCase().replace("20s","twenties") }
+	    if (phrase.toLowerCase().contains("30s")) { phrase = phrase.toLowerCase().replace("30s","thirties") }
+	    if (phrase.toLowerCase().contains("40s")) { phrase = phrase.toLowerCase().replace("40s","fourties") }
+	    if (phrase.toLowerCase().contains("50s")) { phrase = phrase.toLowerCase().replace("50s","fifties") }
+	    if (phrase.toLowerCase().contains("60s")) { phrase = phrase.toLowerCase().replace("60s","sixties") }
+	    if (phrase.toLowerCase().contains("70s")) { phrase = phrase.toLowerCase().replace("70s","seventies") }
+	    if (phrase.toLowerCase().contains("80s")) { phrase = phrase.toLowerCase().replace("80s","eighties") }
+	    if (phrase.toLowerCase().contains("90s")) { phrase = phrase.toLowerCase().replace("90s","nineties") }
+	    if (phrase.toLowerCase().contains("100s")) { phrase = phrase.toLowerCase().replace("100s","one hundreds") }
+	    if (phrase.toLowerCase().contains("%askalexa%")) {
+	    	phrase=phrase.toLowerCase().replace("%askalexa%","")
 	        if (!(phrase == "") && (!(phrase == null))){
 	    		LOGTRACE("Sending to AskAlexa: ${phrase}.")
 		        sendLocationEvent(name: "AskAlexaMsgQueue", value: "BigTalker", isStateChange: true, descriptionText: phrase)
@@ -2153,11 +2153,11 @@ def processPhraseVariables(appname, phrase, evt){
 	        	LOGERROR("Phrase only contained %askalexa%. Nothing to say/send.")
 	        }
 	    }
-	    if (phrase.contains("%date%")) {
-	    	phrase=phrase.replace("%date%",(new Date().format( 'MMMM dd' )))
+	    if (phrase.toLowerCase().contains("%date%")) {
+	    	phrase=phrase.toLowerCase().replace("%date%",(new Date().format( 'MMMM dd' )))
 	    }
-	    if (phrase.contains("%day%")) {
-	    	phrase=phrase.replace("%day%",(new Date().format('EEEE',location.timeZone)))
+	    if (phrase.toLowerCase().contains("%day%")) {
+	    	phrase=phrase.toLowerCase().replace("%day%",(new Date().format('EEEE',location.timeZone)))
 	    }
 	    if (phrase.contains("%")) { phrase = phrase.replace("%"," percent ") }
 	    return phrase
@@ -2287,7 +2287,8 @@ def adjustWeatherPhrase(phraseIn){
 
 def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice, evt){
 	def myDelay = 100
-    def myVoice = "Salli"
+    def myVoice = settings?.speechVoice
+    if (myVoice == "" || myVoice == null) { myVoice = "Salli" } 
     if (!(voice == "" || voice == null)) { 
         myVoice = voice
     	myVoice = myVoice.replace("(en-us)","")
@@ -3552,5 +3553,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "P2.0.4-Dev_release"
+    state.appversion = "P2.0.5-Dev_Release"
 }
