@@ -1304,59 +1304,59 @@ def processDisableSwitch(devicetype, index) {
 	switch(devicetype){
     	case "timeSlot":
         	if (index == 1){
-            	if (settings?.timeSlotDisableSwitch1.currentSwitch == "on" || settings?.timeSlotDisableSwitch1 == null) { return true } else { return false }	
+            	if (settings?.timeSlotDisableSwitch1?.currentSwitch == "on" || settings?.timeSlotDisableSwitch1 == null) { return true } else { return false }	
             }
             if (index == 2){
-            	if (settings?.timeSlotDisableSwitch2.currentSwitch == "on" || settings?.timeSlotDisableSwitch2 == null) { return true } else { return false }	
+            	if (settings?.timeSlotDisableSwitch2?.currentSwitch == "on" || settings?.timeSlotDisableSwitch2 == null) { return true } else { return false }	
             }
             if (index == 3){
-            	if (settings?.timeSlotDisableSwitch3.currentSwitch == "on" || settings?.timeSlotDisableSwitch3 == null) { return true } else { return false }	
+            	if (settings?.timeSlotDisableSwitch3?.currentSwitch == "on" || settings?.timeSlotDisableSwitch3 == null) { return true } else { return false }	
             }
     	case "motion":
         	if (index == 1){
-            	if (settings?.motionDisableSwitch1.currentSwitch == "on" || settings?.motionDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.motionDisableSwitch1?.currentSwitch == "on" || settings?.motionDisableSwitch1 == null) { return true } else { return false }
             }
        case "switch":
         	if (index == 1){
-            	if (settings?.switchDisableSwitch1.currentSwitch == "on" || settings?.switchDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.switchDisableSwitch1?.currentSwitch == "on" || settings?.switchDisableSwitch1 == null) { return true } else { return false }
             }
        case "presence":
         	if (index == 1){
-            	if (settings?.presenceDisableSwitch1.currentSwitch == "on" || settings?.presenceDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.presenceDisableSwitch1?.currentSwitch == "on" || settings?.presenceDisableSwitch1 == null) { return true } else { return false }
             }
        case "contact":
         	if (index == 1){
-            	if (settings?.contactDisableSwitch1.currentSwitch == "on" || settings?.contactDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.contactDisableSwitch1?.currentSwitch == "on" || settings?.contactDisableSwitch1 == null) { return true } else { return false }
             }
        case "mode":
         	if (index == 1){
-            	if (settings?.modeDisableSwitch1.currentSwitch == "on" || settings?.modeDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.modeDisableSwitch1?.currentSwitch == "on" || settings?.modeDisableSwitch1 == null) { return true } else { return false }
             }
        case "acceleration":
         	if (index == 1){
-            	if (settings?.accelerationDisableSwitch1.currentSwitch == "on" || settings?.accelerationDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.accelerationDisableSwitch1?.currentSwitch == "on" || settings?.accelerationDisableSwitch1 == null) { return true } else { return false }
             }
        case "thermostat":
         	if (index == 1){
-            	if (settings?.thermostatDisableSwitch1.currentSwitch == "on" || settings?.thermostatDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.thermostatDisableSwitch1?.currentSwitch == "on" || settings?.thermostatDisableSwitch1 == null) { return true } else { return false }
             }
        case "water":
         	if (index == 1){
-            	if (settings?.waterDisableSwitch1.currentSwitch == "on" || settings?.waterDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.waterDisableSwitch1?.currentSwitch == "on" || settings?.waterDisableSwitch1 == null) { return true } else { return false }
             }
       case "smoke":
         	if (index == 1){
-            	if (settings?.smokeDisableSwitch1.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.smokeDisableSwitch1?.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
             }
        case "button":
         	if (index == 1){
-            	if (settings?.buttonDisableSwitch1.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.buttonDisableSwitch1?.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
             }
        case "SHM":
-           	if (settings?.SHMDisableSwitch1.currentSwitch == "on" || settings?.SHMDisableSwitch1 == null) { return true } else { return false }
+           	if (settings?.SHMDisableSwitch1?.currentSwitch == "on" || settings?.SHMDisableSwitch1 == null) { return true } else { return false }
        case "powerMeter":
         	if (index == 1){
-            	if (settings?.powerMeterDisableSwitch1.currentSwitch == "on" || settings?.powerMeterDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.powerMeterDisableSwitch1?.currentSwitch == "on" || settings?.powerMeterDisableSwitch1 == null) { return true } else { return false }
             }
     }
 }
@@ -1971,8 +1971,8 @@ def processPowerMeterEvent(index, evt){
     	state.powerMeterState = "${state.powerMeterState}|${deviceName}-UNKNOWN|"
     }
     //HIGH
-    if (evt.value.toDouble() > settings.powerMeterTalkOnRiseThold1.toDouble()) { 
-    	if ((!(state?.powerMeterState.contains("|${deviceName}-HIGH|"))) && energySpeak == false) { 
+    if (powerLevel?.toDouble() > settings?.powerMeterTalkOnRiseThold1?.toDouble()) { 
+    	if ((!(state?.powerMeterState?.contains("|${deviceName}-HIGH|"))) && energySpeak == false) { 
         	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-HIGH|")
             state.powerMeterState = state.powerMeterState.replace("|${deviceName}-NORMAL|","|${deviceName}-HIGH|")
             state.powerMeterState = state.powerMeterState.replace("|${deviceName}-LOW|","|${deviceName}-HIGH|")
@@ -1980,22 +1980,22 @@ def processPowerMeterEvent(index, evt){
         }
     }
     //NORMAL
-    if (((evt.value.toDouble() > settings.powerMeterTalkOnFallThold1.toDouble()) || settings.powerMeterTalkOnFallThold1.toDouble() == 0) && (evt.value.toDouble() < settings.powerMeterTalkOnRiseThold1.toDouble())) { 
-    	if ((!(state?.powerMeterState.contains("|${deviceName}-NORMAL|"))) && energySpeak == false) { 
+    if (((powerLevel?.toDouble() > settings?.powerMeterTalkOnFallThold1?.toDouble()) || settings?.powerMeterTalkOnFallThold1?.toDouble() == 0) && (powerLevel?.toDouble() < settings?.powerMeterTalkOnRiseThold1?.toDouble())) { 
+    	if ((!(state?.powerMeterState?.contains("|${deviceName}-NORMAL|"))) && energySpeak == false) { 
         	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-NORMAL|")
             state.powerMeterState = state.powerMeterState.replace("|${deviceName}-LOW|","|${deviceName}-NORMAL|")
             state.powerMeterState = state.powerMeterState.replace("|${deviceName}-HIGH|","|${deviceName}-NORMAL|")
             energySpeak = true 
         }
-        if (settings.powerMeterTalkOnFallThold1 == 0) { 
+        if (settings?.powerMeterTalkOnFallThold1?.toDouble() == 0) { 
         	// If Low = 0, Then override LOW alert, we've returned to Normal (can't go lower).
         	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-NORMAL|")
             state.powerMeterState = state.powerMeterState.replace("|${deviceName}-HIGH|","|${deviceName}-NORMAL|")
         }
     }
     //LOW
-    if ((evt.value.toDouble() < settings.powerMeterTalkOnFallThold1.toDouble()) && settings.powerMeterTalkOnFallThold1 > 0) { 
-    	if ((!(state?.powerMeterState.contains("|${deviceName}-LOW|"))) && energySpeak == false) { 
+    if ((powerLevel?.toDouble() < settings?.powerMeterTalkOnFallThold1?.toDouble()) && settings?.powerMeterTalkOnFallThold1?.toDouble() > 0) { 
+    	if ((!(state?.powerMeterState?.contains("|${deviceName}-LOW|"))) && energySpeak == false) { 
         	state.powerMeterState = state.powerMeterState.replace("|${deviceName}-UNKNOWN|","|${deviceName}-LOW|")
             state.powerMeterState = state.powerMeterState.replace("|${deviceName}-NORMAL|","|${deviceName}-LOW|")
             state.powerMeterState = state.powerMeterState.replace("|${deviceName}-HIGH|","|${deviceName}-LOW|")
@@ -2086,5 +2086,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.5B5"
+    state.appversion = "C2.0.5B6-Dev"
 }
