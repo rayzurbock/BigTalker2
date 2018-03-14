@@ -1394,6 +1394,10 @@ def processDisableSwitch(devicetype, index) {
         	if (index == 1){
             	if (settings?.presenceDisableSwitch1?.currentSwitch == "on" || settings?.presenceDisableSwitch1 == null) { return true } else { return false }
             }
+       case "lock":
+        	if (index == 1){
+            	if (settings?.lockDisableSwitch1?.currentSwitch == "on" || settings?.lockDisableSwitch1 == null) { return true } else { return false }
+            }
        case "contact":
         	if (index == 1){
             	if (settings?.contactDisableSwitch1?.currentSwitch == "on" || settings?.contactDisableSwitch1 == null) { return true } else { return false }
@@ -2198,5 +2202,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.6-DEV-1"
+    state.appversion = "C2.0.6-DEV-2"
 }
