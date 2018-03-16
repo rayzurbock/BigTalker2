@@ -5,9 +5,9 @@ definition(
     description: "Do not install in the mobile app, Save don't publish (needed by BigTalker2)",
     category: "Fun & Social",
     parent: "rayzurbock:BigTalker2",
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.5.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.5.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.5.png")
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.6.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.6.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.6.png")
 
 preferences {
     page(name: "pageConfigureEvents")
@@ -25,6 +25,7 @@ preferences {
     page(name: "pageConfigTime")
     page(name: "pageConfigSHM")
     page(name: "pageConfigPowerMeter")
+    page(name: "pageConfigRoutine")
     page(name: "pageHelpPhraseTokens")
 }
 
@@ -104,6 +105,11 @@ def pageConfigureEvents(){
                 href "pageConfigPowerMeter", title: "Power Meter", description:"Tap to modify", state:"complete"
             } else {
                 href "pageConfigPowerMeter", title: "Power Meter", description:"Tap to configure"
+            }
+            if (settings.routineDeviceGroup1 || settings.routineDeviceGroup2 || settings.routineDeviceGroup3) {
+                href "pageConfigRoutine", title: "Routine", description:"Tap to modify", state:"complete"
+            } else {
+                href "pageConfigRoutine", title: "Routine", description:"Tap to configure"
             }
         }
     }
@@ -698,6 +704,43 @@ def pageConfigPowerMeter(){
 //End pageConfigpowerMeter()
 }
 
+def pageConfigRoutine(){
+    dynamicPage(name: "pageConfigRoutine", title: "Configure talk when routine runs", install: false, uninstall: false) {
+        section(){
+            def defaultSpeechRoutine1 = ""
+            if (!routineDeviceGroup1) {
+                defaultSpeechRoutine1 = "%routine% routine has been run"
+            }
+            def routines = location.helloHome?.getPhrases()*.label
+            if (routines) {
+            	// sort them alphabetically
+            	routines.sort()
+            }
+            input name: "routineDeviceGroup1", type: "enum", title: "Routine", required: true, multiple: true, options: routines
+            input name: "routineTalkOnRun1", type: "text", title: "Say this routine runs:", required: false, defaultValue: defaultSpeechRoutine1
+            input name: "routinePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "routineSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            	input name: "routineVolume1", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "routineResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
+                input name: "routineVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            }
+        }
+        section("Restrictions"){
+            input name: "routineModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "routineStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
+            input name: "routineEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.buttonStartTime1 == null))
+            input name: "routineDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "routineDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+        }
+        section("Help"){
+            href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+    }
+//End pageConfigRoutine()
+}
+
+
 def pageHelpPhraseTokens(){
 	//KEEP IN SYNC WITH PARENT!
     dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
@@ -784,8 +827,10 @@ def initSubscribe(){
     if (buttonDeviceGroup1) { subscribe(buttonDeviceGroup1, "button", onButton1Event) }
     //Subscribe SHM
     if (SHMTalkOnAway || SHMTalkOnHome || SHMTalkOnDisarm) { subscribe(location, "alarmSystemStatus", onSHMEvent) }
-    //Subscribe powerMeter
+    //Subscribe PowerMeter
     if (powerMeterDeviceGroup1) { subscribe(powerMeterDeviceGroup1, "power", onPowerMeter1Event) }
+    //Subscribe Routine
+    if (routineDeviceGroup1) { subscribe(location, "routineExecuted", onRoutineEvent) }
     //Subscribe Mode
     if (modePhraseGroup1) { subscribe(location, onModeChangeEvent) }
     
@@ -890,6 +935,10 @@ def timeAllowed(devicetype,index){
         case "powerMeter":
         	if (index == 1 && (!(settings.powerMeterStartTime1 == null))) {
             	if (timeOfDayIsBetween(settings.powerMeterStartTime1, settings.powerMeterEndTime1, now, location.timeZone)) { return true } else { return false }
+            }
+        case "routine":
+        	if (index == 1 && (!(settings.routineStartTime1 == null))) {
+            	if (timeOfDayIsBetween(settings.routineStartTime1, settings.routineEndTime1, now, location.timeZone)) { return true } else { return false }
             }
     }
     
@@ -1169,6 +1218,22 @@ def modeAllowed(devicetype,index) {
                 }
             }
         //End: case "powerMeter"
+        case "routine":
+            if (index == 1) {
+                //Routine Group 1
+                if (settings.routineModes1) {
+                    if (settings.routineModes1.contains(location.mode)) {
+                        //Custom mode for this event is in use and we are in one of those modes
+                        return true
+                    } else {
+                        //Custom mode for this event is in use and we are not in one of those modes
+                        return false
+                    }
+                } else {
+                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                }
+            }
+        //End: case "routine"
     } //End: switch (devicetype)
 }
 
@@ -1261,6 +1326,11 @@ def dayAllowed(devicetype,index){
             	allowedDays = settings?.powerMeterDays1
                 return processDayRestriction(allowedDays)
         	}
+        case "routine":
+        	if (index == 1){
+            	allowedDays = settings?.routineDays1
+                return processDayRestriction(allowedDays)
+        	}
     }
 }
 
@@ -1324,6 +1394,10 @@ def processDisableSwitch(devicetype, index) {
         	if (index == 1){
             	if (settings?.presenceDisableSwitch1?.currentSwitch == "on" || settings?.presenceDisableSwitch1 == null) { return true } else { return false }
             }
+       case "lock":
+        	if (index == 1){
+            	if (settings?.lockDisableSwitch1?.currentSwitch == "on" || settings?.lockDisableSwitch1 == null) { return true } else { return false }
+            }
        case "contact":
         	if (index == 1){
             	if (settings?.contactDisableSwitch1?.currentSwitch == "on" || settings?.contactDisableSwitch1 == null) { return true } else { return false }
@@ -1350,13 +1424,17 @@ def processDisableSwitch(devicetype, index) {
             }
        case "button":
         	if (index == 1){
-            	if (settings?.buttonDisableSwitch1?.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
+            	if (settings?.buttonDisableSwitch1?.currentSwitch == "on" || settings?.buttonDisableSwitch1 == null) { return true } else { return false }
             }
        case "SHM":
            	if (settings?.SHMDisableSwitch1?.currentSwitch == "on" || settings?.SHMDisableSwitch1 == null) { return true } else { return false }
        case "powerMeter":
         	if (index == 1){
             	if (settings?.powerMeterDisableSwitch1?.currentSwitch == "on" || settings?.powerMeterDisableSwitch1 == null) { return true } else { return false }
+            }
+       case "routine":
+        	if (index == 1){
+            	if (settings?.routineDisableSwitch1?.currentSwitch == "on" || settings?.routineDisableSwitch1 == null) { return true } else { return false }
             }
     }
 }
@@ -2019,6 +2097,43 @@ def processPowerMeterEvent(index, evt){
 }
 //END HANDLE ENERGY METER
 
+//BEGIN HANDLE ROUTINE
+def onRoutineEvent(evt){
+	if (settings?.routineDeviceGroup1?.contains(evt.displayName)){
+    	//Only process configured routines
+    	processRoutineEvent(1, evt)
+    }
+}
+
+def processRoutineEvent(index, evt){
+	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
+    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+    def myVolume = -1
+    def myVoice = getMyVoice(settings?.routineVoice1)
+    LOGDEBUG("(onRoutineEvent): ${evt.displayName}, ${index}, '${evt.displayName}' executed, ${myVoice}", true)
+	//Check Restrictions
+    if (!(processRestrictions("routine",index))){ return }
+    state.TalkPhrase = null
+    state.speechDevice = null
+	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+		if (index == 1) {
+			if (!settings?.routineResumePlay1 == null) { resume = settings.routineResumePlay1 }
+		}
+        if (resume == null) { resume = true }
+	} else { resume = false }
+    if (settings?.routinePersonality1 == "Yes") {personality = true}
+    if (settings?.routinePersonality1 == "No") {personality = false}
+    if (index == 1) { state.TalkPhrase = settings.routineTalkOnRun1; state.speechDevice = routineSpeechDevice1; myVolume = getDesiredVolume(settings.routineVolume1)}
+    if (state.TalkPhrase.toLowerCase().contains("%routine%")) { 
+    	state.TalkPhrase = state.TalkPhrase.toLowerCase().replace("%routine%",evt.displayName)
+    }
+    if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
+    state.TalkPhrase = null
+    state.speechDevice = null
+}
+//END HANDLE ROUTINE
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 def getDesiredVolume(invol) {
 	def globalVolume = parent?.settings?.speechVolume
@@ -2046,8 +2161,9 @@ def getDesiredVolume(invol) {
 
 def getMyVoice(deviceVoice){
     def myVoice = "Not Used"
+    if (!(deviceVoice == null )) { myVoice = deviceVoice }
     if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
-    	log.debug "getMyVoice: deviceVoice=${deviceVoice}"
+    	log.debug "getMyVoice: deviceVoice=${myVoice}"
         log.debug "getMyVoice: settings.parent.speechVoice=${parent?.settings?.speechVoice}"
 		myVoice = (!(deviceVoice == null || deviceVoice == "")) ? deviceVoice : (parent?.settings?.speechVoice ? parent?.settings?.speechVoice : "Salli(en-us)")
     }
@@ -2086,5 +2202,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.5"
+    state.appversion = "C2.0.6"
 }
