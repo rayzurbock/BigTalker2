@@ -5,9 +5,9 @@ definition(
     description: "Let's talk about mode changes, switches, motions, and so on.",
     category: "Fun & Social",
     singleInstance: true,
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.5.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.5.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.5.png")
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.6.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.6.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.6.png")
 
 preferences {
     page(name: "pageStart")
@@ -2288,13 +2288,13 @@ def adjustWeatherPhrase(phraseIn){
 def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice, evt){
 	def myDelay = 100
     def myVoice = settings?.speechVoice
-    if (myVoice == "" || myVoice == null) { myVoice = "Salli" } 
+    if (myVoice == "" || myVoice == null) { myVoice = "Salli(en-us)" } 
     if (!(voice == "" || voice == null)) { 
         myVoice = voice
-    	myVoice = myVoice.replace("(en-us)","")
-    	myVoice = myVoice.replace("(en-gb)","")
-    	myVoice = myVoice.replace("(es-us)","")
     }
+   	myVoice = myVoice.replace("(en-us)","")
+   	myVoice = myVoice.replace("(en-gb)","")
+   	myVoice = myVoice.replace("(es-us)","")
     if (state.speechDeviceType == "capability.musicPlayer") { 
     	myDelay = TalkQueue(appname, phrase, customSpeechDevice, volume, resume, personality, voice, evt) 
         state.lastTalkTime = now()
@@ -3553,5 +3553,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "P2.0.5"
+    state.appversion = "P2.0.6"
 }
