@@ -24,6 +24,8 @@ def pageStart(){
     state.parentAppName = "BigTalker2"
     state.namespace = "rayzurbock"
 	setAppVersion()
+    state.hubType = getHubType()
+    LOGDEBUG("Hub Type: ${state.hubType}")
     state.supportedVoices = ["Ivy(en-us)","Joanna(en-us)","Joey(en-us)","Justin(en-us)","Kendra(en-us)","Kimberly(en-us)","Salli(en-us)","Amy(en-gb)","Brian(en-gb)","Emma(en-gb)","Miguel(es-us)","Penelope(es-us)"]
     if (checkConfig()) { 
         // Do nothing here, but run checkConfig() 
@@ -62,7 +64,8 @@ def pageStart(){
         section("About"){
             def AboutApp = ""
             AboutApp += 'Big Talker is a SmartApp that can make your house talk depending on various triggered events.\n\n'
-            AboutApp += 'Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the "Generic MediaRenderer" SmartApp/Device and/or AskAlexa SmartApp\n\n'
+            if (state.hubType == "Hubitat") {AboutApp += 'Pair with a Hubitat compatible audio device such as Sonos, Ubi, LANnouncer, and/or VLC Thing (running on your computer or Raspberry Pi)\n\n'}
+            if (state.hubType == "SmartThings") {AboutApp += 'Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the "Generic MediaRenderer" SmartApp/Device and/or AskAlexa SmartApp\n\n'}
             AboutApp += 'You can contribute to the development of this SmartApp by making a PayPal donation to rayzur@rayzurbock.com or visit http://rayzurbock.com/store\n\n'
             if (!(state.appversion == null)){ 
                 AboutApp += "Big Talker ${state.appversion}\nhttp://www.github.com/rayzurbock\n" 
@@ -83,7 +86,8 @@ def pageStatus(){
         enabledDevices = "Speech Device Mode:\n"
         enabledDevices += "   "
         if (state.speechDeviceType == "capability.musicPlayer") {
-            enabledDevices += "musicPlayer (Sonos, VLCThing, Generic DLNA)"
+            if (state.hubType == "SmartThings") { enabledDevices += "musicPlayer (Sonos, VLCThing, Generic DLNA)" }
+            if (state.hubType == "Hubitat") { enabledDevices += "musicPlayer (Sonos, VLCThing)" }
         }
         if (state.speechDeviceType == "capability.speechSynthesis") {
             enabledDevices += "speechSynthesis (Ubi, LANnouncer)"
@@ -116,7 +120,7 @@ def pageStatus(){
         }
         enabledDevices += "\n\n"
         enabledDevices += "Hub ZipCode* for Weather: ${location.zipCode}\n"
-        enabledDevices += "*SmartThings uses GPS to ZipCode conversion; May not be exact"
+        if (state.hubType == "SmartThings") { enabledDevices += "*SmartThings uses GPS to ZipCode conversion; May not be exact" }
         
         section ("Defaults:"){
         	//NEEDS DEVELOPMENT
@@ -1887,7 +1891,8 @@ def pageConfigureSpeechDeviceType(){
         //section ("Speech Device Type Support"){
         section (){
             paragraph "${app.label} can support either 'Music Player' or 'Speech Synthesis' devices."
-            paragraph "'Music Player' typically supports devices such as Sonos, VLCThing, Generic Media Renderer.\n\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nIf only using with AskAlexa this setting can be ignored.\n\nThis setting cannot be changed without reinstalling ${app.label}."
+            if (state.hubType == "SmartThings") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing, Generic Media Renderer.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nIf only using with AskAlexa this setting can be ignored.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
+            if (state.hubType == "Hubitat") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
             input "speechDeviceType", "bool", title: "ON=Music Player\nOFF=Speech Synthesis", required: true, defaultValue: true, submitOnChange: true
             paragraph "Click Next (top right) to continue configuration...\n"
             if (speechDeviceType == true) {state.speechDeviceType = "capability.musicPlayer"}
@@ -2000,12 +2005,12 @@ def initialize() {
         msg = "ERROR: App not properly configured!  Can't start.\n"
         msg += "ERRORs:\n${state.configErrorList}"
         LOGTRACE(msg)
-        sendNotificationEvent(msg)
+        if (state.hubType == "SmartThings") {sendNotificationEvent(msg)}
         state.polledDevices = ""
         return //App not properly configured, exit, don't subscribe
     }
     LOGTRACE("Initialized (Parent Version: ${state.appVersion})")
-    sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")
+    if (state.hubType == "SmartThings") {sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")}
     state.lastMode = location.mode
     state.lastTalkNow = settings.speechTalkNow
 //End initialize()
@@ -2190,7 +2195,7 @@ def addPersonalityToPhrase(phrase, evt){
             response[7] = "{POST}the same old thing everyday."
             response[8] = "{POST}It is about time it was awfully dark!"
             response[9] = "{POST}Glad you are here, I was lonely"
-            response[10] = "{POST}It it time for us to play?"
+            response[10] = "{POST}Is it time for us to play?"
             response[11] = "{PRE}Oh, Hi"
             response[12] = "{PRE}Oh, Hi there"
         } else {
@@ -2311,7 +2316,7 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 	}
 	if (phrase == null || phrase == "") {
    		LOGERROR(processPhraseVariables(appname, "BigTalker - Check configuration. Phrase is empty for %devicename%", evt))
-    	sendNotification(processPhraseVariables(appname, "BigTalker - Check configuration. Phrase is empty for %devicename%", evt))
+    	if (state.hubType == "SmartThings") {sendNotification(processPhraseVariables(appname, "BigTalker - Check configuration. Phrase is empty for %devicename%", evt))}
 	}
 	if (resume == null) { resume = true }
 	if ((state.speechDeviceType == "capability.musicPlayer") && (!( phrase==null ) && !(phrase==""))){
@@ -2332,9 +2337,9 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 					state.sound = textToSpeech(phrase instanceof List ? phrase[0] : phrase, myVoice)
 					state.ableToTalk = true
 					} catch(ex) {
-						LOGERROR("TALK(${appname}.${evt.name})|mP| ST Platform issue (textToSpeech)? I tried textToSpeech() twice, SmartThings wouldn't convert/process.  I give up, Sorry..")
-						sendNotificationEvent("ST Platform issue? textToSpeech() failed.")
-						sendNotification("BigTalker couldn't announce: ${phrase}")
+						LOGERROR("TALK(${appname}.${evt.name})|mP| ST Platform issue (textToSpeech)? I tried textToSpeech() twice, ${state.hubType} wouldn't convert/process.  I give up, Sorry..")
+						if (state.hubType == "SmartThings") {sendNotificationEvent("ST Platform issue? textToSpeech() failed.")}
+						if (state.hubType == "SmartThings") {sendNotification("BigTalker couldn't announce: ${phrase}")}
 					} //try again before final error(ableToTalk)
 				} //try (ableToTalk)
             } else {
@@ -3434,6 +3439,7 @@ def poll(){
             	if (!(settings?.timeslotSpeechDevice3 == null)) {dopoll(settings.timeslotSpeechDevice3)}
         	} catch(e) {
 	            LOGERROR("One of your speech devices is not responding.  Poll failed.")
+                LOGDEBUG("BT_poll() Error: ${e}")
     	    }
         	state.lastPoll = getTimeFromCalendar(true,true)
         	//LOGDEBUG("poll: state.polledDevices == ${state?.polledDevices}")
@@ -3477,7 +3483,8 @@ def dopoll(pollSpeechDevice){
                 LOGDEBUG("ERROR(informational): it.refresh: ${ex}")
                 state.refresh = false
             }
-            if (!state.refresh) {
+            //LOGDEBUG("dopoll(${devicename}) after refresh() ")
+            if (!(state.refresh)) {
                 try {
                     //LOGTRACE("poll()")
                     it.poll()
@@ -3486,10 +3493,13 @@ def dopoll(pollSpeechDevice){
                 }
                 catch (ex) {
                     LOGDEBUG ("ERROR(informational): it.poll: ${ex}")
+                    state.poll = false
                     state.refresh = false
                 }
             }
-    	    LOGDEBUG("dopoll(${it.displayName})cS=${it?.latestValue('status')},cT=${it?.latestState("trackData")?.jsonValue?.status},cV=${it?.latestState("level")?.integerValue ? it?.latestState("level")?.integerValue : 0}")
+            //LOGDEBUG("dopoll(${devicename}) after poll()")
+            //LOGDEBUG("dopoll(${devicename}) refresh=${state.refresh} poll=${state.poll}")
+    	    //LOGDEBUG("dopoll(${it.displayName})cS=${it?.latestValue('status')},cT=${it?.latestState("trackData")?.jsonValue?.status},cV=${it?.latestState("level")?.integerValue ? it?.latestState("level")?.integerValue : 0}")
             if (it?.latestValue('status') == "no_device_present") { LOGTRACE("During polling, the handler for ${devicename} indicated the device was not found.") } //VLCThing
         }
         LOGDEBUG("dopoll - polled devices: ${state?.polledDevices}")
@@ -3552,6 +3562,28 @@ def LOGERROR(txt){
     }
 }
 
+def getHubType(){
+    if (location.hubs[0].id.toString().length() > 5) { return "SmartThings" } else { return "Hubitat" }
+}
+
+def returnVar(var) {
+    def dataType = "String"
+    def returnValue
+    if (!(settings."${var}" == null)) { returnValue = settings."${var}" }
+    if (!(state."${var}" == null)) { returnValue = state."${var}" }
+	if (!(atomicState."${var}" == null)) { returnValue = atomicState."${var}" }
+    def dateTest = returnValue =~ /\d\d\d\d-\d\d-\d\dT\d\d:/
+    if (dateTest) { dataType = "Date" }
+    if (returnValue == "true") { dataType = "Boolean" }
+    if (returnValue == "false") { dataType = "Boolean" }
+    if (returnValue == true) { dataType = "Boolean" }
+    if (returnValue == false) { dataType = "Boolean" }
+    if (dataType == "Date") {returnValue = Date.parse("yyyy-MM-dd'T'HH:mm:ss.SSSZ", returnValue)}
+    //LOGDEBUG ("returnVar(${var}), DataType:${dataType}, Value: ${returnValue}")
+    if (returnValue == null || returnValue == "") {}
+    return returnValue
+}
+
 def setAppVersion(){
-    state.appversion = "P2.0.6"
+    state.appversion = "P2.0.7_a1"
 }
