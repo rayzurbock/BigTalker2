@@ -30,10 +30,11 @@ preferences {
 }
 
 def pageConfigureEvents(){
+    state.hubType = parent.returnVar("hubType")
     dynamicPage(name: "pageConfigureEvents", title: "Configure Events", install: (!(app?.getInstallationState == true)), uninstall: (app?.getInstallationState == true)) {
         section("Group Settings:"){
             label(name: "labelRequired", title: "Event Group Name:", defaultValue: "Change this", required: true, multiple: false)
-            input(name: "groupEnabled", type: "boolean", title: "Enable Group", required: true, defaultValue: true)
+            input(name: "groupEnabled", type: "bool", title: "Enable Group", required: true, defaultValue: true)
         }
         section("Talk on events:") {
             if (settings.timeSlotTime1 || settings.timeSlotTime2 || settings.timeSlotTime3) {
@@ -96,20 +97,24 @@ def pageConfigureEvents(){
             } else {
                 href "pageConfigButton", title: "Button", description:"Tap to configure"
             }
-            if (settings.SHMTalkOnHome || settings.SHMTalkOnAway || settings.SHMTalkOnDisarm) {
-                href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to modify", state:"complete"
-            } else {
-                href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to configure"
+            if (hubType == "SmartThings"){
+            	if (settings.SHMTalkOnHome || settings.SHMTalkOnAway || settings.SHMTalkOnDisarm) {
+                	href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to modify", state:"complete"
+            	} else {
+                	href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to configure"
+            	}
             }
-            if (settings.powerMeterDeviceGroup1 || settings.powerMeterDeviceGroup2 || settings.powerMeterDeviceGroup3) {
+			if (settings.powerMeterDeviceGroup1 || settings.powerMeterDeviceGroup2 || settings.powerMeterDeviceGroup3) {
                 href "pageConfigPowerMeter", title: "Power Meter", description:"Tap to modify", state:"complete"
             } else {
                 href "pageConfigPowerMeter", title: "Power Meter", description:"Tap to configure"
             }
-            if (settings.routineDeviceGroup1 || settings.routineDeviceGroup2 || settings.routineDeviceGroup3) {
-                href "pageConfigRoutine", title: "Routine", description:"Tap to modify", state:"complete"
-            } else {
-                href "pageConfigRoutine", title: "Routine", description:"Tap to configure"
+            if (hubType == "SmartThings"){
+            	if (settings.routineDeviceGroup1 || settings.routineDeviceGroup2 || settings.routineDeviceGroup3) {
+                	href "pageConfigRoutine", title: "Routine", description:"Tap to modify", state:"complete"
+            	} else {
+                	href "pageConfigRoutine", title: "Routine", description:"Tap to configure"
+            	}
             }
         }
     }
@@ -132,11 +137,11 @@ def pageConfigMotion(){
             input name: "motionTalkInactive1", type: "text", title: "Say this on motion inactive:", required: false, defaultValue: defaultSpeechInactive1, submitOnChange: true
             input name: "motionTestInactive1", type: "bool", title: "Toggle to test motion inactive phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "motionPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"], submitOnChange: true
-            input name: "motionSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "motionSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "motionVolume1", type: "number", title: "Set volume to (overrides default):", required: false, submitOnChange: true
-            	input name: "motionResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true, submitOnChange: true
-                input name: "motionVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            	input name: "motionResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true, submitOnChange: true
+                input name: "motionVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -149,14 +154,14 @@ def pageConfigMotion(){
             input name: "motionDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
             if (!(settings.motionTestActive1 == null) && !(settings.motionTestActive1 == state?.motionTestActive1)) {
             	def testevent = [displayName: 'BigTalker Motion', name: 'MotionActiveTest', value: 'Active']
-                def myVoice = parent?.settings?.speechVoice
+                def myVoice = parent.returnVar("speechVoice")
                 if (settings?.motionVoice1) { myVoice = motionVoice1 }
             	sendTalk(app.label, settings.motionTalkActive1, motionSpeechDevice1, motionVolume1, motionResumePlay1, motionPersonality1, myVoice, testevent)
                 state.motionTestActive1 = settings.motionTestActive1
             }
             if (!(settings.motionTestInactive1 == null) && !(settings.motionTestInactive1 == state?.motionTestInactive1)) {
             	def testevent = [displayName: 'BigTalker Motion', name: 'MotionInactiveTest', value: 'Inactive']
-                def myVoice = parent?.settings?.speechVoice
+                def myVoice = parent.returnVar("speechVoice")
                 if (settings?.motionVoice1) { myVoice = motionVoice1 }
             	sendTalk(app.label, settings.motionTalkInactive1, motionSpeechDevice1, motionVolume1, motionResumePlay1, motionPersonality1, myVoice, testevent)
                 state.motionTestInactive1 = settings.motionTestInactive1
@@ -186,11 +191,11 @@ def pageConfigSwitch(){
             input name: "switchTalkOff1", type: "text", title: "Say this when switch is turned OFF:", required: false, defaultValue: defaultSpeechOff1, submitOnChange: true
             input name: "switchTestOff1", type: "bool", title: "Toggle to test switch OFF phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "switchPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"], submitOnChange: true
-            input name: "switchSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "switchSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "switchVolume1", type: "number", title: "Set volume to (overrides default):", required: false, submitOnChange: true
-            	input name: "switchResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true, submitOnChange: true
-                input name: "switchVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            	input name: "switchResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true, submitOnChange: true
+                input name: "switchVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -201,14 +206,14 @@ def pageConfigSwitch(){
             input name: "switchDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
             if (!(settings.switchTestOn1 == null) && !(settings.switchTestOn1 == state?.switchTestOn1)) {
             	def testevent = [displayName: 'BigTalker Switch', name: 'SwitchOnTest', value: 'On']
-                def myVoice = parent?.settings?.speechVoice
+                def myVoice = parent.returnVar("speechVoice")
                 if (settings?.switchVoice1) { myVoice = switchVoice1 }
             	sendTalk(app.label, settings.switchTalkOn1, switchSpeechDevice1, switchVolume1, switchResumePlay1, switchPersonality1, myVoice, testevent)
                 state.switchTestOn1 = settings.switchTestOn1
             }
             if (!(settings.switchTestOff1 == null) && !(settings.switchTestOff1 == state?.switchTestOff1)) {
             	def testevent = [displayName: 'BigTalker Switch', name: 'SwitchOffTest', value: 'Off']
-                def myVoice = parent?.settings?.speechVoice
+                def myVoice = parent.returnVar("speechVoice")
                 if (settings?.switchVoice1) { myVoice = switchVoice1 }
             	sendTalk(app.label, settings.switchTalkOff1, switchSpeechDevice1, switchVolume1, switchResumePlay1, switchPersonality1, myVoice, testevent)
                 state.switchTestOff1 = settings.switchTestOff1
@@ -234,11 +239,11 @@ def pageConfigPresence(){
             input name: "presTalkOnArrive1", type: "text", title: "Say this when someone arrives:", required: false, defaultValue: defaultSpeechArrive1
             input name: "presTalkOnLeave1", type: "text", title: "Say this when someone leaves:", required: false, defaultValue: defaultSpeechLeave1
             input name: "presPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "presSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "presSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "presVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-            	input name: "presResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "presVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            	input name: "presResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "presVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -268,11 +273,11 @@ def pageConfigLock(){
             input name: "lockTalkOnUnlock1", type: "text", title: "Say this when unlocked:", required: false, defaultValue: defaultSpeechUnlock1
             input name: "lockTalkOnLock1", type: "text", title: "Say this when locked:", required: false, defaultValue: defaultSpeechLock1
             input name: "lockPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "lockSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "lockSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "lockVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-            	input name: "lockResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "lockVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            	input name: "lockResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "lockVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -302,11 +307,11 @@ def pageConfigContact(){
             input name: "contactTalkOnOpen1", type: "text", title: "Say this when opened:", required: false, defaultValue: defaultSpeechOpen1
             input name: "contactTalkOnClose1", type: "text", title: "Say this when closed:", required: false, defaultValue: defaultSpeechClose1
             input name: "contactPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "contactSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "contactSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "contactVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "contactResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "contactVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "contactResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "contactVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -339,11 +344,11 @@ def pageConfigMode(){
             input name: "modeExcludePhraseGroup1", type: "mode", title: "But not when changed from (optional): ", required: false, multiple: true
             input name: "TalkOnModeChange1", type: "text", title: "Say this when home mode is changed", required: false, defaultValue: defaultSpeechMode1
             input name: "modePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "modePhraseSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "modePhraseSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "modePhraseVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "modePhraseResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "modePhraseVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "modePhraseResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "modePhraseVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -378,11 +383,11 @@ def pageConfigThermostat(){
             input name: "thermostatTalkOnCooling1", type: "text", title: "Say this on change to cooling:", required: false, defaultValue: defaultSpeechCooling1
             input name: "thermostatTalkOnFan1", type: "text", title: "Say this on change to fan only:", required: false, defaultValue: defaultSpeechFan1
             input name: "thermostatPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "thermostatSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "thermostatSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "thermostatVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-            	input name: "thermostatResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "thermostatVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            	input name: "thermostatResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "thermostatVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -412,11 +417,11 @@ def pageConfigAcceleration(){
             input name: "accelerationTalkOnActive1", type: "text", title: "Say this when activated:", required: false, defaultValue: defaultSpeechActive1
             input name: "accelerationTalkOnInactive1", type: "text", title: "Say this when inactivated:", required: false, defaultValue: defaultSpeechInactive1
             input name: "accelerationPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "accelerationSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "accelerationSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "accelerationVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-            	input name: "accelerationResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "accelerationVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            	input name: "accelerationResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "accelerationVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -446,11 +451,11 @@ def pageConfigWater(){
             input name: "waterTalkOnWet1", type: "text", title: "Say this when wet:", required: false, defaultValue: defaultSpeechWet1
             input name: "waterTalkOnDry1", type: "text", title: "Say this when dry:", required: false, defaultValue: defaultSpeechDry1
             input name: "waterPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "waterSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "waterSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "waterVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "waterResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "waterVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "waterResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "waterVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -483,11 +488,11 @@ def pageConfigSmoke(){
             input name: "smokeTalkOnClear1", type: "text", title: "Say this when cleared:", required: false, defaultValue: defaultSpeechClear1
             input name: "smokeTalkOnTest1", type: "text", title: "Say this when tested:", required: false, defaultValue: defaultSpeechTest1
             input name: "smokePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "smokeSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "smokeSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "smokeVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "smokeResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "smokeVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "smokeResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "smokeVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -517,11 +522,11 @@ def pageConfigButton(){
             input name: "buttonTalkOnPress1", type: "text", title: "Say this when pressed:", required: false, defaultValue: defaultSpeechButton1
             input name: "buttonTalkOnHold1", type: "text", title: "Say this when held:", required: false, defaultValue: defaultSpeechButtonHold1
             input name: "buttonPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "buttonSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "buttonSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "buttonVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "buttonResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "buttonVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "buttonResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "buttonVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -549,12 +554,12 @@ def pageConfigSHM(){
                 defaultSpeechSHMAway = "Smart Home Monitor is now Armed in Away mode"
             }
             input name: "SHMTalkOnAway", type: "text", title: "Say this when Armed, Away:", required: false, defaultValue: defaultSpeechSHMAway
-            input name: "SHMSpeechDeviceAway", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            input name: "SHMSpeechDeviceAway", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             input name: "SHMDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "SHMVolumeAway", type: "number", title: "Set volume to (overrides default):", required: false
-            	input name: "SHMResumePlayAway", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "SHMVoiceAway", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            	input name: "SHMResumePlayAway", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "SHMVoiceAway", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions (Armed, Away)"){
@@ -569,11 +574,11 @@ def pageConfigSHM(){
                 defaultSpeechSHMHome = "Smart Home Monitor is now Armed in Home mode"
             }
             input name: "SHMTalkOnHome", type: "text", title: "Say this when Armed, Home:", required: false, defaultValue: defaultSpeechSHMHome
-            input name: "SHMSpeechDeviceHome", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "SHMSpeechDeviceHome", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "SHMVolumeHome", type: "number", title: "Set volume to (overrides default):", required: false
-            	input name: "SHMResumePlayHome", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "SHMVoiceHome", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+            	input name: "SHMResumePlayHome", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "SHMVoiceHome", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions (Armed, Home)"){
@@ -588,11 +593,11 @@ def pageConfigSHM(){
                 defaultSpeechSHMDisarm = "Smart Home Monitor is now Disarmed"
             }
             input name: "SHMTalkOnDisarm", type: "text", title: "Say this when Disarmed:", required: false, defaultValue: defaultSpeechSHMDisarm
-            input name: "SHMSpeechDeviceDisarm", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "SHMSpeechDeviceDisarm", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "SHMVolumeDisarm", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "SHMResumePlayDisarm", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "SHMVoiceDisarm", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "SHMResumePlayDisarm", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "SHMVoiceDisarm", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions (Disarmed)"){
@@ -615,11 +620,11 @@ def pageConfigTime(){
             input name: "timeSlotTime1", type: "time", title: "Time of day", required: false
             input name: "timeSlotOnTime1", type: "text", title: "Say on schedule:", required: false
             input name: "timeSlotPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "timeSlotSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "timeSlotSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "timeSlotVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "timeSlotResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "timeSlotVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "timeSlotResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "timeSlotVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions (Schedule 1)"){
@@ -631,11 +636,11 @@ def pageConfigTime(){
             input name: "timeSlotTime2", type: "time", title: "Time of day", required: false
             input name: "timeSlotOnTime2", type: "text", title: "Say on schedule:", required: false
             input name: "timeSlotPersonality2", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "timeSlotSpeechDevice2", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "timeSlotSpeechDevice2", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "timeSlotVolume2", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "timeSlotResumePlay2", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "timeSlotVoice2", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "timeSlotResumePlay2", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "timeSlotVoice2", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions (Schedule 2)"){
@@ -647,11 +652,11 @@ def pageConfigTime(){
             input name: "timeSlotTime3", type: "time", title: "Time of day", required: false
             input name: "timeSlotOnTime3", type: "text", title: "Say on schedule:", required: false
             input name: "timeSlotPersonality3", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "timeSlotSpeechDevice3", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "timeSlotSpeechDevice3", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "timeSlotVolume3", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "timeSlotResumePlay3", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "timeSlotVoice3", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "timeSlotResumePlay3", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "timeSlotVoice3", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions (Schedule 3)"){
@@ -683,11 +688,11 @@ def pageConfigPowerMeter(){
             input name: "powerMeterTalkOnRiseThold1", type: "number", title: "High energy usage threshold (watts):", required: powerMeterTalkOnRise1, defaultValue: defaultSpeechpowerMeterRise1
             input name: "powerMeterTalkOnFallThold1", type: "number", title: "Low energy usage threshold (watts):", required: powerMeterTalkOnFall1, defaultValue: defaultSpeechpowerMeterFall1
             input name: "powerMeterPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "powerMeterSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "powerMeterSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "powerMeterVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "powerMeterResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "powerMeterVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "powerMeterResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "powerMeterVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -719,11 +724,11 @@ def pageConfigRoutine(){
             input name: "routineDeviceGroup1", type: "enum", title: "Routine", required: true, multiple: true, options: routines
             input name: "routineTalkOnRun1", type: "text", title: "Say this routine runs:", required: false, defaultValue: defaultSpeechRoutine1
             input name: "routinePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "routineSpeechDevice1", type: parent?.state?.speechDeviceType, title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
-            if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+            input name: "routineSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "routineVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "routineResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent?.settings?.resumePlay == false) ? false : true
-                input name: "routineVoice1", type: "enum", title: "Voice (overrides default):", options: parent?.state?.supportedVoices, required: false, submitOnChange: true
+                input name: "routineResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "routineVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
@@ -777,25 +782,29 @@ def pageHelpPhraseTokens(){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 def initialize() {
-    if (state.groupEnabled == "true" || state.groupEnabled == null) {
-    	app.updateLabel("${app.label.replace("(disabled)","")}")
+    if (state.groupEnabled == true || state.groupEnabled == "true" || state.groupEnabled == null) {
+    	app.updateLabel("${app.label.replace(" (disabled)","")}")
         initSchedule()
         initSubscribe()
-        sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")
+        if (state.hubType == "SmartThings") {sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")}
         state.lastMode = location.mode
         parent.setLastMode(location.mode)
     }
-    LOGTRACE("Initialized (Parent Version: ${parent?.state?.appversion}; Child Version: ${state.appversion}; Group Enabled: ${settings.groupEnabled})")
+    LOGTRACE("Initialized (Parent Version: ${parent.returnVar("appversion")}; Child Version: ${state.appversion}; Group Enabled: ${settings.groupEnabled})")
 //End initialize()
 }
 def updated() {
     state.groupEnabled = settings.groupEnabled
 	setAppVersion()
-	LOGTRACE("Updating settings (Parent Version: ${parent?.state?.appversion}; Child Version: ${state.appversion}; Group Enabled: ${state.groupEnabled})")
+	LOGTRACE("Updating settings (Parent Version: ${parent.returnVar("appversion")}; Child Version: ${state.appversion}; Group Enabled: ${state.groupEnabled})")
     state.installed = true
     unschedule()
     unsubscribe()
-    if (state.groupEnabled == "true" || state.groupEnabled == null) { initialize() } else { app.updateLabel("${app.label} (disabled)") }
+    if (state.groupEnabled == true || state.groupEnabled == "true" || state.groupEnabled == null) { 
+        initialize() 
+    } else {
+        if (!(app.label.contains(" (disabled)"))) { app.updateLabel("${app.label.replace("${app.label}","${app.label} (disabled)")}") }
+	}
 }
 def installed() {
 	setAppVersion()
@@ -943,10 +952,10 @@ def timeAllowed(devicetype,index){
     }
     
     //No overrides have returned True, process Default
-    if (parent?.settings?.defaultStartTime == null) { 
+    if (parent.returnVar("defaultStartTime") == null) { 
     	return true 
     } else {
-        if (timeOfDayIsBetween(parent?.settings?.defaultStartTime, parent?.settings?.defaultEndTime, now, location.timeZone)) { return true } else { return false }
+        if (timeOfDayIsBetween(parent.returnVar("defaultStartTime"), parent.returnVar("defaultEndTime"), now, location.timeZone)) { return true } else { return false }
     }
 }
 
@@ -966,7 +975,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "motion"
@@ -982,7 +991,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "switch"
@@ -998,7 +1007,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "presence"
@@ -1014,7 +1023,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "lock"
@@ -1030,7 +1039,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "contact"
@@ -1046,7 +1055,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "thermostat"
@@ -1062,7 +1071,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "acceleration"
@@ -1078,7 +1087,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "water"
@@ -1094,7 +1103,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "smoke"
@@ -1110,7 +1119,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "button"
@@ -1126,7 +1135,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
             if (index == 2) {
@@ -1140,7 +1149,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
             if (index == 3) {
@@ -1154,7 +1163,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "SHM"
@@ -1170,7 +1179,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
             if (index == 2) {
@@ -1184,7 +1193,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
             if (index == 3) {
@@ -1198,7 +1207,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "timeSlot"
@@ -1214,7 +1223,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "powerMeter"
@@ -1230,7 +1239,7 @@ def modeAllowed(devicetype,index) {
                         return false
                     }
                 } else {
-                    return (parent?.settings?.speechModesDefault.contains(location.mode)) //True if we are in an allowed Default mode, False if not
+                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
                 }
             }
         //End: case "routine"
@@ -1503,11 +1512,11 @@ def onSchedule3Event(){
 }
 
 def processScheduledEvent(index, eventtime, alloweddays){
-	def resume = ""; resume = parent?.settings?.resumePlay
+	def resume = ""; resume = parent.returnVar("resumePlay")
     if (resume == "" || resume == null) { resume = false }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def timeNow = getTimeFromCalendar(false, true)
-    //def personality = false; personality = parent?.settings?.personalityMode
+    //def personality = false; personality = parent.returnVar("personalityMode
     //if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = ""
@@ -1517,7 +1526,7 @@ def processScheduledEvent(index, eventtime, alloweddays){
     LOGDEBUG("(onScheduledEvent): ${timeNow}, ${index}, ${myVoice}", true)
     //Check Restrictions
     if (!(processRestrictions("timeSlot",index))){ return }
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1){if (!settings?.timeSlotResumePlay1 == null) { resume = settings.timeSlotResumePlay1 }}
 		if (index == 2){if (!settings?.timeSlotResumePlay2 == null) { resume = settings.timeSlotResumePlay2 }}
 		if (index == 3){if (!settings?.timeSlotResumePlay3 == null) { resume = settings.timeSlotResumePlay3 }}
@@ -1544,8 +1553,8 @@ def onMotion1Event(evt){
 }
 
 def processMotionEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.switchMotion1)
     LOGDEBUG("(onMotionEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1553,7 +1562,7 @@ def processMotionEvent(index, evt){
     if (!(processRestrictions("motion",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.motionResumePlay1 == null) { resume = settings.motionResumePlay1 }
 		}
@@ -1579,8 +1588,8 @@ def onSwitch1Event(evt){
 }
 
 def processSwitchEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.switchVoice1)
     LOGDEBUG("(onSwitchEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1588,7 +1597,7 @@ def processSwitchEvent(index, evt){
     if (!(processRestrictions("switch",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!(settings?.switchResumePlay1 == null)) { resume = settings.switchResumePlay1 }
 		}
@@ -1614,8 +1623,8 @@ def onPresence1Event(evt){
 }
 
 def processPresenceEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.presVoice1)
     LOGDEBUG("(onPresenceEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1623,7 +1632,7 @@ def processPresenceEvent(index, evt){
     if (!(processRestrictions("presence",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.presResumePlay1 == null) { resume = settings.presResumePlay1 }
 		}
@@ -1651,8 +1660,8 @@ def onLock1Event(evt){
 }
 
 def processLockEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.lockVoice1)
     LOGDEBUG("(onLockEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1660,7 +1669,7 @@ def processLockEvent(index, evt){
     if (!(processRestrictions("lock",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.lockResumePlay1 == null) { resume = settings.lockResumePlay1 }
 		}
@@ -1687,8 +1696,8 @@ def onContact1Event(evt){
 }
 
 def processContactEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.contactVoice1)
     LOGDEBUG("(onContactEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1696,7 +1705,7 @@ def processContactEvent(index, evt){
     if (!(processRestrictions("contact",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.contactResumePlay1 == null) { resume = settings.contactResumePlay1 }
 		}
@@ -1722,14 +1731,14 @@ def onModeChangeEvent(evt){
     processModeChangeEvent(1, evt)
 }
 def processModeChangeEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.modeVoice1)
     LOGDEBUG("(onModeEvent): Last Mode: ${state.lastMode}, New Mode: ${location.mode}, ${myVoice}", true)
     //Check Restrictions
     if (!(processRestrictions("mode",index))){ return }
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.modePhraseResumePlay1 == null) { resume = settings.modePhraseResumePlay1 }
 		}
@@ -1772,8 +1781,8 @@ def onThermostat1Event(evt){
 }
 
 def processThermostatEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.thermostatVoice1)
     LOGDEBUG("(onThermostatEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1781,7 +1790,7 @@ def processThermostatEvent(index, evt){
     if (!(processRestrictions("thermostat",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.thermostatResumePlay1 == null) { resume = settings.thermostatResumePlay1 }
 		}
@@ -1817,8 +1826,8 @@ def onAcceleration1Event(evt){
 }
 
 def processAccelerationEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.accelerationVoice1)
     LOGDEBUG("(onAccelerationEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1826,7 +1835,7 @@ def processAccelerationEvent(index, evt){
     if (!(processRestrictions("acceleration",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.accelerationResumePlay1 == null) { resume = settings.accelerationResumePlay1 }
 		}
@@ -1853,8 +1862,8 @@ def onWater1Event(evt){
 }
 
 def processWaterEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.waterVoice1)
     LOGDEBUG("(onWaterEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1862,7 +1871,7 @@ def processWaterEvent(index, evt){
     if (!(processRestrictions("water",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.waterResumePlay1 == null) { resume = settings.waterResumePlay1 }
 		}
@@ -1889,8 +1898,8 @@ def onSmoke1Event(evt){
 }
 
 def processSmokeEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.smokeVoice1)
     LOGDEBUG("(onSmokeEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1898,7 +1907,7 @@ def processSmokeEvent(index, evt){
     if (!(processRestrictions("smoke",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.smokeResumePlay1 == null) { resume = settings.smokeResumePlay1 }
 		}
@@ -1929,8 +1938,8 @@ def onButton1Event(evt){
 }
 
 def processButtonEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.buttonVoice1)
     LOGDEBUG("(onButtonEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
@@ -1938,7 +1947,7 @@ def processButtonEvent(index, evt){
     if (!(processRestrictions("button",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.buttonResumePlay1 == null) { resume = settings.buttonResumePlay1 }
 		}
@@ -1962,8 +1971,8 @@ def onSHMEvent(evt){
 }
 
 def processSHMEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = ""
     LOGDEBUG("(onSHMEvent): ${evt.name}, ${index}, ${evt.value}, NotSetYet", true)
@@ -1971,7 +1980,7 @@ def processSHMEvent(index, evt){
     if (!(processRestrictions("SHM",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.SHMResumePlayAway == null) { resume = settings.SHMResumePlayAway }
             if (settings?.SHMVoiceAway) { myVoice = getMyVoice(settings?.SHMVoiceAway) }
@@ -2003,8 +2012,8 @@ def onPowerMeter1Event(evt){
 }
 
 def processPowerMeterEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.buttonVoice1)
     def energySpeak = false
@@ -2037,7 +2046,7 @@ def processPowerMeterEvent(index, evt){
     if (!(processRestrictions("powerMeter",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.powerMeterResumePlay1 == null) { resume = settings.powerMeterResumePlay1 }
 		}
@@ -2106,8 +2115,8 @@ def onRoutineEvent(evt){
 }
 
 def processRoutineEvent(index, evt){
-	def resume = ""; resume = parent?.settings?.resumePlay; if (resume == "") { resume = true }
-    def personality = ""; personality = parent?.settings?.personalityMode; if (personality == "" || personality == null) { personality = false }
+	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
     def myVoice = getMyVoice(settings?.routineVoice1)
     LOGDEBUG("(onRoutineEvent): ${evt.displayName}, ${index}, '${evt.displayName}' executed, ${myVoice}", true)
@@ -2115,7 +2124,7 @@ def processRoutineEvent(index, evt){
     if (!(processRestrictions("routine",index))){ return }
     state.TalkPhrase = null
     state.speechDevice = null
-	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
 		if (index == 1) {
 			if (!settings?.routineResumePlay1 == null) { resume = settings.routineResumePlay1 }
 		}
@@ -2136,8 +2145,8 @@ def processRoutineEvent(index, evt){
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 def getDesiredVolume(invol) {
-	def globalVolume = parent?.settings?.speechVolume
-    def globalMinimumVolume = parent?.settings?.speechMinimumVolume
+	def globalVolume = parent.returnVar("speechVolume")
+    def globalMinimumVolume = parent.returnVar("speechMinimumVolume")
     def myVolume = invol
     def finalVolume = -1
     if (myVolume > 0) { 
@@ -2153,7 +2162,7 @@ def getDesiredVolume(invol) {
             }
         }
 	}
-    if (parent?.state?.speechDeviceType == "capability.musicPlayer") { 
+    if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") { 
     	LOGDEBUG("finalVolume: ${finalVolume}", true)
     }
     return finalVolume
@@ -2162,10 +2171,10 @@ def getDesiredVolume(invol) {
 def getMyVoice(deviceVoice){
     def myVoice = "Not Used"
     if (!(deviceVoice == null )) { myVoice = deviceVoice }
-    if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
+    if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
     	log.debug "getMyVoice: deviceVoice=${myVoice}"
-        log.debug "getMyVoice: settings.parent.speechVoice=${parent?.settings?.speechVoice}"
-		myVoice = (!(deviceVoice == null || deviceVoice == "")) ? deviceVoice : (parent?.settings?.speechVoice ? parent?.settings?.speechVoice : "Salli(en-us)")
+        log.debug "getMyVoice: settings.parent.speechVoice=${parent.returnVar("speechVoice")}"
+		myVoice = (!(deviceVoice == null || deviceVoice == "")) ? deviceVoice : (parent.returnVar("speechVoice") ? parent.returnVar("speechVoice") : "Salli(en-us)")
     }
     return myVoice
 }
@@ -2177,9 +2186,9 @@ def sendTalk(appname, phrase, customSpeechDevice, volume, resume, personality, v
 
 def LOGDEBUG(txt, send){
 	if (send == true || send == null || send == "") { def sendToParent = true } else { def sendToParent = false }
-	if (parent?.settings?.debugmode && sendToParent) { parent.LOGDEBUG("[CHILD:${app.label}] ${txt}", true) }
+	if (parent.returnVar("debugmode") && sendToParent) { parent.LOGDEBUG("[CHILD:${app.label}] ${txt}", true) }
     try {
-    	if (parent?.settings?.debugmode || sendToParent == false) { log.debug("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${txt}")}
+    	if (parent.returnVar("debugmode") || sendToParent == false) { log.debug("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${txt}")}
     } catch(ex) {
     	log.error("LOGDEBUG unable to output requested data!", true)
     }
@@ -2202,5 +2211,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.6"
+    state.appversion = "C2.0.7_a1"
 }
