@@ -3587,7 +3587,7 @@ def returnVar(var) {
 def playTrackAndRestore(device, uri, duration, volume, myDelay) {
     LOGDEBUG("playTrackAndRestore(${device.displayName},${uri},${duration},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
-    	device.playTrackAndRestore("uri":uri, "duration":duration, "volume":volume, [delay: myDelay])
+    	device.playTrackAndRestore("uri":uri, "duration":duration, volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
         device.playTrackAndRestore("uri" :uri, "duration" :duration, volume)
@@ -3597,10 +3597,10 @@ def playTrackAndRestore(device, uri, duration, volume, myDelay) {
 def playTrackAndRestore(device, uri, volume, myDelay) {
     LOGDEBUG("playTrackAndRestore(${device.displayName},${uri},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
-   		device.playTrackAndRestore("uri":uri, "volume":volume, [delay: myDelay])
+   		device.playTrackAndRestore("uri":uri, volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-   		device.playTrackAndRestore("uri":uri, "volume":volume)
+   		device.playTrackAndRestore("uri":uri, volume)
     }
 }
 
@@ -3610,21 +3610,21 @@ def playTrackAndResume(device, uri, duration, volume, myDelay) {
     	device.playTrackAndResume("uri":uri, "duration":duration, "volume":volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-        device.playTrackAndResume("uri":uri, "duration":duration, "volume":volume)
+        device.playTrackAndResume("uri":uri, "duration":duration, volume)
     }
 }
 
 def playTrackAndResume(device, uri, volume, myDelay) {
     LOGDEBUG("playTrackAndResume(${device.displayName},${uri},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
-  		device.playTrackAndRestore("uri":uri, "volume":volume, [delay: myDelay])
+  		device.playTrackAndRestore("uri":uri, volume, [delay: myDelay])
    	}
     if (state.hubType == "Hubitat") {
-   		device.playTrackAndRestore("uri":uri, "volume":volume)
+   		device.playTrackAndRestore("uri":uri, volume)
     }
 }
 
 
 def setAppVersion(){
-    state.appversion = "P2.0.7_a5"
+    state.appversion = "P2.0.7_a6"
 }
