@@ -5,3 +5,6 @@ When Hubitat is paired with a compatible audio device (such as a Sonos, Ubi, LAN
 
 Please review the documentation at http://thingsthataresmart.wiki/index.php?title=BigTalker
 
+For VLCThing + BigTalker in Hubitat, you may need the following modified driver:
+https://raw.githubusercontent.com/rayzurbock/hubitat/master/devices/VLCThing_BLMOD
+
