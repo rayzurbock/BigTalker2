@@ -3587,64 +3587,44 @@ def returnVar(var) {
 def playTrackAndRestore(device, uri, duration, volume, myDelay) {
     LOGDEBUG("playTrackAndRestore(${device.displayName},${uri},${duration},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
-    	device.playTrackAndRestore(uri, volume, [delay: myDelay])
+    	device.playTrackAndRestore("uri":uri, "duration":duration, "volume":volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-        device.playTrackAndRestore(uri, volume)
+        device.playTrackAndRestore("uri" :uri, "duration" :duration, volume)
     }
 }
 
 def playTrackAndRestore(device, uri, volume, myDelay) {
     LOGDEBUG("playTrackAndRestore(${device.displayName},${uri},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
-        try {
-    		device.playTrackAndRestore(uri, volume, [delay: myDelay])
-    	} catch (e) {
-        	LOGDEBUG("playTrackAndRestore() duration may not be supported, trying without")
-        	device.playTrackAndRestore(uri, [delay: myDelay])
-    	}
+   		device.playTrackAndRestore("uri":uri, "volume":volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-    	try {
-    		device.playTrackAndRestore(uri, volume)
-    	} catch (e) {
-        	LOGDEBUG("playTrackAndRestore() duration may not be supported, trying without")
-        	device.playTrackAndRestore(uri)
-    	}
+   		device.playTrackAndRestore("uri":uri, "volume":volume)
     }
 }
 
 def playTrackAndResume(device, uri, duration, volume, myDelay) {
     LOGDEBUG("playTrackAndResume(${device.displayName},${uri},${duration},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
-    	device.playTrackAndResume(uri, volume, [delay: myDelay])
+    	device.playTrackAndResume("uri":uri, "duration":duration, "volume":volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-        device.playTrackAndResume(uri, volume)
+        device.playTrackAndResume("uri":uri, "duration":duration, "volume":volume)
     }
 }
 
 def playTrackAndResume(device, uri, volume, myDelay) {
     LOGDEBUG("playTrackAndResume(${device.displayName},${uri},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
-        try {
-    		device.playTrackAndRestore(uri, volume, [delay: myDelay])
-    	} catch (e) {
-        	LOGDEBUG("playTrackAndResume() duration may not be supported, trying without")
-        	device.playTrackAndResume(uri, [delay: myDelay])
-    	}
-    }
+  		device.playTrackAndRestore("uri":uri, "volume":volume, [delay: myDelay])
+   	}
     if (state.hubType == "Hubitat") {
-    	try {
-    		device.playTrackAndRestore(uri, volume)
-    	} catch (e) {
-        	LOGDEBUG("playTrackAndResume() duration may not be supported, trying without")
-        	device.playTrackAndResume(uri)
-    	}
+   		device.playTrackAndRestore("uri":uri, "volume":volume)
     }
 }
 
 
 def setAppVersion(){
-    state.appversion = "P2.0.7_a4"
+    state.appversion = "P2.0.7_a5"
 }
