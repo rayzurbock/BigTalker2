@@ -194,6 +194,7 @@ def pageConfigSwitch(){
             }
         }
         section("Restrictions"){
+            input name: "switchOpenThreshold", type: "number", title: "If it's open for more than this many minutes (default 0)", required: false, defaultValue: 0
             input name: "switchModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "switchStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "switchEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.switchStartTime1 == null))
@@ -310,6 +311,7 @@ def pageConfigContact(){
             }
         }
         section("Restrictions"){
+            input name: "contactOpenThreshold", type: "number", title: "If it's open for more than this many minutes (default 0)", required: false, defaultValue: 0
             input name: "contactModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "contactStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "contactEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.contactStartTime1 == null))
@@ -871,6 +873,23 @@ def processRestrictions(devicetype,index){
     //if (!(processCountRestriction(devicetype,index))){
     //}
     return allowed
+}
+
+
+def shouldDelay(eventTime, thresholdMinutes) {
+    if (thresholdMinutes == null || thresholdMinutes == 0){ 
+        LOGDEBUG("No threshold defined", true)
+        return false 
+    }
+    def elapsed = now() - eventTime
+    def threshold = ((thresholdMinutes != null && thresholdMinutes != "") ? thresholdMinutes * 60000 : 60000) - 1000
+    if (elapsed >= threshold) {
+        LOGDEBUG("Contact has stayed open long enough since last check ($elapsed ms)", true)
+        return false
+    } else {
+        LOGDEBUG("Contact has not stayed open long enough since last check ($elapsed ms):  doing nothing", true)
+    }
+    return true
 }
 
 def timeAllowed(devicetype,index){
@@ -1574,7 +1593,15 @@ def processMotionEvent(index, evt){
 }
 //END HANDLE MOTIONS
 //BEGIN HANDLE SWITCHES
+def runSwitch1Event(){
+    def evt = [name: state.Switch1EventName, value: state.Switch1EventValue]
+    processSwitchEvent(1, evt)
+}
+
 def onSwitch1Event(evt){
+    state.Switch1EventName = evt.name
+    state.Switch1EventValue = evt.value
+    state.Switch1EventTime = now()
     processSwitchEvent(1, evt)
 }
 
@@ -1586,6 +1613,10 @@ def processSwitchEvent(index, evt){
     LOGDEBUG("(onSwitchEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
     //Check Restrictions
     if (!(processRestrictions("switch",index))){ return }
+    if (evt.value == "on" && shouldDelay(state.Switch1EventTime, switchOpenThreshold)) {
+        runIn(60, runSwitch1Event, [overwrite: false])
+    	return
+    }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
@@ -1682,7 +1713,15 @@ def processLockEvent(index, evt){
 //END HANDLE LOCK
 
 //BEGIN HANDLE CONTACT
+def runContact1Event(){
+    def evt = [name: state.Contact1EventName, value: state.Contact1EventValue]
+    processContactEvent(1, evt)
+}
+
 def onContact1Event(evt){
+    state.Contact1EventName = evt.name
+    state.Contact1EventValue = evt.value
+    state.Contact1EventTime = now()
     processContactEvent(1, evt)
 }
 
@@ -1694,6 +1733,10 @@ def processContactEvent(index, evt){
     LOGDEBUG("(onContactEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
     //Check Restrictions
     if (!(processRestrictions("contact",index))){ return }
+    if (evt.value == "open" && shouldDelay(state.Contact1EventTime, contactOpenThreshold)) {
+        runIn(60, runContact1Event, [overwrite: false])
+        return
+    }
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent?.state?.speechDeviceType == "capability.musicPlayer") {
