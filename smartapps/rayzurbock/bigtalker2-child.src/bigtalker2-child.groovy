@@ -877,11 +877,11 @@ def processRestrictions(devicetype,index){
 
 
 def shouldDelay(eventTime, thresholdMinutes) {
-  	if (thresholdMinutes == null || thresholdMinutes == 0){ 
-		LOGDEBUG("No threshold defined", true)
-  		return false 
-  	}
-	def elapsed = now() - eventTime
+    if (thresholdMinutes == null || thresholdMinutes == 0){ 
+        LOGDEBUG("No threshold defined", true)
+        return false 
+    }
+    def elapsed = now() - eventTime
     def threshold = ((thresholdMinutes != null && thresholdMinutes != "") ? thresholdMinutes * 60000 : 60000) - 1000
     if (elapsed >= threshold) {
         LOGDEBUG("Contact has stayed open long enough since last check ($elapsed ms)", true)
@@ -1594,14 +1594,14 @@ def processMotionEvent(index, evt){
 //END HANDLE MOTIONS
 //BEGIN HANDLE SWITCHES
 def runSwitch1Event(){
-	def evt = [name: state.Switch1EventName, value: state.Switch1EventValue]
-	processSwitchEvent(1, evt)
+    def evt = [name: state.Switch1EventName, value: state.Switch1EventValue]
+    processSwitchEvent(1, evt)
 }
 
 def onSwitch1Event(evt){
     state.Switch1EventName = evt.name
     state.Switch1EventValue = evt.value
-	state.Switch1EventTime = now()
+    state.Switch1EventTime = now()
     processSwitchEvent(1, evt)
 }
 
@@ -1614,7 +1614,7 @@ def processSwitchEvent(index, evt){
     //Check Restrictions
     if (!(processRestrictions("switch",index))){ return }
     if (evt.value == "on" && shouldDelay(state.Switch1EventTime, switchOpenThreshold)) {
-		runIn(60, runSwitch1Event, [overwrite: false])
+        runIn(60, runSwitch1Event, [overwrite: false])
     	return
     }
     state.TalkPhrase = null
@@ -1714,14 +1714,14 @@ def processLockEvent(index, evt){
 
 //BEGIN HANDLE CONTACT
 def runContact1Event(){
-	def evt = [name: state.Contact1EventName, value: state.Contact1EventValue]
-	processContactEvent(1, evt)
+    def evt = [name: state.Contact1EventName, value: state.Contact1EventValue]
+    processContactEvent(1, evt)
 }
 
 def onContact1Event(evt){
     state.Contact1EventName = evt.name
     state.Contact1EventValue = evt.value
-	state.Contact1EventTime = now()
+    state.Contact1EventTime = now()
     processContactEvent(1, evt)
 }
 
@@ -1734,8 +1734,8 @@ def processContactEvent(index, evt){
     //Check Restrictions
     if (!(processRestrictions("contact",index))){ return }
     if (evt.value == "open" && shouldDelay(state.Contact1EventTime, contactOpenThreshold)) {
-		runIn(60, runContact1Event, [overwrite: false])
-	    return
+        runIn(60, runContact1Event, [overwrite: false])
+        return
     }
     state.TalkPhrase = null
     state.speechDevice = null
