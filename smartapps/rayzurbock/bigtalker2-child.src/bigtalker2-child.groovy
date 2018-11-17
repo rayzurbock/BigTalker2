@@ -132,9 +132,9 @@ def pageConfigMotion(){
                 defaultSpeechInactive1 = "%devicename% is now %devicechange%"
             }
             input name: "motionDeviceGroup1", type: "capability.motionSensor", title: "Motion Sensor(s)", required: false, multiple: true
-            input name: "motionTalkActive1", type: "text", title: "Say this on motion active:", required: false, defaultValue: defaultSpeechActive1, submitOnChange: true
+            input name: "motionTalkOnActive1", type: "text", title: "Say this on motion active:", required: false, defaultValue: defaultSpeechActive1, submitOnChange: true
             input name: "motionTestActive1", type: "bool", title: "Toggle to test motion active phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "motionTalkInactive1", type: "text", title: "Say this on motion inactive:", required: false, defaultValue: defaultSpeechInactive1, submitOnChange: true
+            input name: "motionTalkOnInactive1", type: "text", title: "Say this on motion inactive:", required: false, defaultValue: defaultSpeechInactive1, submitOnChange: true
             input name: "motionTestInactive1", type: "bool", title: "Toggle to test motion inactive phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "motionPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"], submitOnChange: true
             input name: "motionSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
@@ -186,9 +186,9 @@ def pageConfigSwitch(){
                 defaultSpeechOff1 = "%devicename% is now %devicechange%"
             }
             input name: "switchDeviceGroup1", type: "capability.switch", title: "Switch(es)", required: false, multiple: true
-            input name: "switchTalkOn1", type: "text", title: "Say this when switch is turned ON:", required: false, defaultValue: defaultSpeechOn1, submitOnChange: true
+            input name: "switchTalkOnOn1", type: "text", title: "Say this when switch is turned ON:", required: false, defaultValue: defaultSpeechOn1, submitOnChange: true
             input name: "switchTestOn1", type: "bool", title: "Toggle to test switch ON phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "switchTalkOff1", type: "text", title: "Say this when switch is turned OFF:", required: false, defaultValue: defaultSpeechOff1, submitOnChange: true
+            input name: "switchTalkOnOff1", type: "text", title: "Say this when switch is turned OFF:", required: false, defaultValue: defaultSpeechOff1, submitOnChange: true
             input name: "switchTestOff1", type: "bool", title: "Toggle to test switch OFF phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "switchPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"], submitOnChange: true
             input name: "switchSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
@@ -199,6 +199,7 @@ def pageConfigSwitch(){
             }
         }
         section("Restrictions"){
+            //IN DEVELOPMENT  input name: "switchOnThreshold", type: "number", title: "If it's on for more than this many minutes (default 0)", required: false, defaultValue: 0
             input name: "switchModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "switchStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "switchEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.switchStartTime1 == null))
@@ -236,20 +237,20 @@ def pageConfigPresence(){
                 defaultSpeechLeave1 = "%devicename% has left"
             }
             input name: "presDeviceGroup1", type: "capability.presenceSensor", title: "Presence Sensor(s)", required: false, multiple: true
-            input name: "presTalkOnArrive1", type: "text", title: "Say this when someone arrives:", required: false, defaultValue: defaultSpeechArrive1
-            input name: "presTalkOnLeave1", type: "text", title: "Say this when someone leaves:", required: false, defaultValue: defaultSpeechLeave1
+            input name: "presenceTalkOnArrive1", type: "text", title: "Say this when someone arrives:", required: false, defaultValue: defaultSpeechArrive1
+            input name: "presenceTalkOnLeave1", type: "text", title: "Say this when someone leaves:", required: false, defaultValue: defaultSpeechLeave1
             input name: "presPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "presSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            input name: "presenceSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-            	input name: "presVolume1", type: "number", title: "Set volume to (overrides default):", required: false
+            	input name: "presenceVolume1", type: "number", title: "Set volume to (overrides default):", required: false
             	input name: "presResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
-                input name: "presVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+                input name: "presenceVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
             input name: "presModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
-            input name: "presStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "presEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.presStartTime1 == null))
+            input name: "presenceStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
+            input name: "presEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.presenceStartTime1 == null))
             input name: "presDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "presDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
@@ -298,14 +299,14 @@ def pageConfigContact(){
     dynamicPage(name: "pageConfigContact", title: "Configure talk on contact sensor", install: false, uninstall: false) {
         section(){
             def defaultSpeechOpen1 = ""
-            def defaultSpeechClose1 = ""
+            def defaultSpeechClosed1 = ""
             if (!contactDeviceGroup1) {
                 defaultSpeechOpen1 = "%devicename% is now %devicechange%"
-                defaultSpeechClose1 = "%devicename% is now %devicechange%"
+                defaultSpeechClosed1 = "%devicename% is now %devicechange%"
             }
             input name: "contactDeviceGroup1", type: "capability.contactSensor", title: "Contact sensor(s)", required: false, multiple: true
             input name: "contactTalkOnOpen1", type: "text", title: "Say this when opened:", required: false, defaultValue: defaultSpeechOpen1
-            input name: "contactTalkOnClose1", type: "text", title: "Say this when closed:", required: false, defaultValue: defaultSpeechClose1
+            input name: "contactTalkOnClosed1", type: "text", title: "Say this when closed:", required: false, defaultValue: defaultSpeechClosed1
             input name: "contactPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "contactSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -315,6 +316,7 @@ def pageConfigContact(){
             }
         }
         section("Restrictions"){
+            //IN DEVELOPMENT input name: "contactOpenThreshold", type: "number", title: "If it's open for more than this many minutes (default 0)", required: false, defaultValue: 0
             input name: "contactModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "contactStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "contactEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.contactStartTime1 == null))
@@ -510,17 +512,17 @@ def pageConfigSmoke(){
 }
 
 def pageConfigButton(){
-    dynamicPage(name: "pageConfigButton", title: "Configure talk on button press", install: false, uninstall: false) {
+    dynamicPage(name: "pageConfigButton", title: "Configure talk on button presenceS", install: false, uninstall: false) {
         section(){
             def defaultSpeechButton1 = ""
             def defaultSpeechButtonHold1 = ""
             if (!buttonDeviceGroup1) {
-                defaultSpeechButton1 = "%devicename% button pressed"
+                defaultSpeechButton1 = "%devicename% button presenceSed"
                 defaultSpeechButtonHold1 = "%devicename% button held"
             }
             input name: "buttonDeviceGroup1", type: "capability.button", title: "Button(s)", required: false, multiple: true
-            input name: "buttonTalkOnPress1", type: "text", title: "Say this when pressed:", required: false, defaultValue: defaultSpeechButton1
-            input name: "buttonTalkOnHold1", type: "text", title: "Say this when held:", required: false, defaultValue: defaultSpeechButtonHold1
+            input name: "buttonTalkOnPressed1", type: "text", title: "Say this when pressed:", required: false, defaultValue: defaultSpeechButton1
+            input name: "buttonTalkOnHeld1", type: "text", title: "Say this when held:", required: false, defaultValue: defaultSpeechButtonHold1
             input name: "buttonPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "buttonSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -618,7 +620,7 @@ def pageConfigTime(){
         section("Schedule 1"){
             input name: "timeSlotDays1", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "timeSlotTime1", type: "time", title: "Time of day", required: false
-            input name: "timeSlotOnTime1", type: "text", title: "Say on schedule:", required: false
+            input name: "timeSlotTalkOnTime1", type: "text", title: "Say on schedule:", required: false
             input name: "timeSlotPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "timeSlotSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -634,7 +636,7 @@ def pageConfigTime(){
 		section("Schedule 2"){
             input name: "timeSlotDays2", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "timeSlotTime2", type: "time", title: "Time of day", required: false
-            input name: "timeSlotOnTime2", type: "text", title: "Say on schedule:", required: false
+            input name: "timeSlotTalkOnTime2", type: "text", title: "Say on schedule:", required: false
             input name: "timeSlotPersonality2", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "timeSlotSpeechDevice2", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -650,7 +652,7 @@ def pageConfigTime(){
 		section("Schedule 3"){
             input name: "timeSlotDays3", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "timeSlotTime3", type: "time", title: "Time of day", required: false
-            input name: "timeSlotOnTime3", type: "text", title: "Say on schedule:", required: false
+            input name: "timeSlotTalkOnTime3", type: "text", title: "Say on schedule:", required: false
             input name: "timeSlotPersonality3", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "timeSlotSpeechDevice3", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -722,7 +724,7 @@ def pageConfigRoutine(){
             	routines.sort()
             }
             input name: "routineDeviceGroup1", type: "enum", title: "Routine", required: true, multiple: true, options: routines
-            input name: "routineTalkOnRun1", type: "text", title: "Say this routine runs:", required: false, defaultValue: defaultSpeechRoutine1
+            input name: "routineTalkOnRun1", type: "text", title: "Say when this routine runs:", required: false, defaultValue: defaultSpeechRoutine1
             input name: "routinePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "routineSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -751,7 +753,7 @@ def pageHelpPhraseTokens(){
     dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
        section("The following tokens can be used in your event phrases and will be replaced as listed:"){
        	   def AvailTokens = ""
-           AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n"
+           if (state.hubType == "SmartThings"){ AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n" }
            AvailTokens += "%groupname% = Name that you gave for the event group\n\n"
            AvailTokens += "%date% = Current date; January 01 2018\n\n"
            AvailTokens += "%day% = Current day; Monday\n\n"
@@ -765,21 +767,24 @@ def pageHelpPhraseTokens(){
            AvailTokens += "%mp3(url)% = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3 \n"
            AvailTokens += "No other tokens or phrases can be used with %mp3(url)%\n\n"
            AvailTokens += "%time% = Current hub time; HH:mm am/pm\n\n"
-           AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n"
-           AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n"
-           AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n"
-           AvailTokens += "%weathertoday(00000)% = Today's weather forecast* based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n"
-           AvailTokens += "%weathertonight(00000)% = Tonight's weather* forecast based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n"
-           AvailTokens += "%weathertomorrow(00000)% = Tomorrow's weather forecast* based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "\n*Weather forecasts provided by Weather Underground"
+		   if (state.hubType == "SmartThings"){ AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday(00000)% = Today's weather forecast* based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight(00000)% = Tonight's weather* forecast based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow(00000)% = Tomorrow's weather forecast* based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "\n*Weather forecasts provided by Weather Underground" }
            paragraph(AvailTokens)
        }
    }
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 def initialize() {
     if (state.groupEnabled == true || state.groupEnabled == "true" || state.groupEnabled == null) {
@@ -854,13 +859,21 @@ def initSchedule(){
     if (timeSlotTime3) { schedule(timeSlotTime3, onSchedule3Event) }
     LOGDEBUG ("END initSchedule()", true)
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// PROCESS RESTRICTIONS
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 def processRestrictions(devicetype,index){
 	def allowed = true
     if (!(processDisableSwitch(devicetype,index))){
     	LOGDEBUG("RESTRICTION: Disable switch is set to disable", true)
+        allowed = false
+    }
+	if (!(dayAllowed(devicetype,index))) {
+    	LOGDEBUG("RESTRICTION: Remain silent today", true)
         allowed = false
     }
 	if (!(timeAllowed(devicetype,index))) {
@@ -873,84 +886,22 @@ def processRestrictions(devicetype,index){
         	allowed = false
     	}
     }
-    if (!(dayAllowed(devicetype,index))) {
-    	LOGDEBUG("RESTRICTION: Remain silent today", true)
-        allowed = false
-    }
     //if (!(processCountRestriction(devicetype,index))){
     //}
     return allowed
+}
+
+def stringToDate(strToConvert){
+	return Date.parse("yyyy-MM-dd'T'HH:mm:ss.SSSZ", strToConvert)
 }
 
 def timeAllowed(devicetype,index){
     def now = new Date()
     //Check Default Setting
     //devicetype = mode, motion, switch, presence, lock, contact, thermostat, acceleration, water, smoke, button
-    switch (devicetype) {
-        case "mode":
-            if (index == 1 && (!(settings.modeStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.modeStartTime1, settings.modeEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-        case "motion":
-            if (index == 1 && (!(settings.motionStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.motionStartTime1, settings.motionEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "switch":
-            if (index == 1 && (!(settings.switchStartTime1 == null))) {
-                    if (timeOfDayIsBetween(settings.switchStartTime1, settings.switchEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "presence":
-            if (index == 1 && (!(settings.presenceStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.presenceStartTime1, settings.presenceEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "lock":
-            if (index == 1 && (!(settings.lockStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.lockStartTime1, settings.lockEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "contact":
-            if (index == 1 && (!(settings.contactStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.contactStartTime1, settings.contactEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "thermostat":
-            if (index == 1 && (!(settings.thermostatStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.thermostatStartTime1, settings.thermostatEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "acceleration":
-            if (index == 1 && (!(settings.accelerationStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.accelerationStartTime1, settings.accelerationEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "water":
-            if (index == 1 && (!(settings.waterStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.waterStartTime1, settings.waterEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "smoke":
-            if (index == 1 && (!(settings.smokeStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.smokeStartTime1, settings.smokeEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "button":
-            if (index == 1 && (!(settings.buttonStartTime1 == null))) {
-                if (timeOfDayIsBetween(settings.buttonStartTime1, settings.buttonEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-       case "SHM":
-            if (index == 1 && (!(settings.SHMStartTimeAway == null))) {
-                if (timeOfDayIsBetween(settings.SHMStartTimeAway, settings.SHMEndTimeAway, now, location.timeZone)) { return true } else { return false }
-            }
-            if (index == 2 && (!(settings.SHMStartTimeHome == null))) {
-                if (timeOfDayIsBetween(settings.SHMStartTimeHome, settings.SHMEndTimeHome, now, location.timeZone)) { return true } else { return false }
-            }
-            if (index == 3 && (!(settings.SHMStartTimeDisarm == null))) {
-                if (timeOfDayIsBetween(settings.SHMStartTimeDisarm, settings.SHMEndTimeDisarm, now, location.timeZone)) { return true } else { return false }
-            }
-        case "powerMeter":
-        	if (index == 1 && (!(settings.powerMeterStartTime1 == null))) {
-            	if (timeOfDayIsBetween(settings.powerMeterStartTime1, settings.powerMeterEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-        case "routine":
-        	if (index == 1 && (!(settings.routineStartTime1 == null))) {
-            	if (timeOfDayIsBetween(settings.routineStartTime1, settings.routineEndTime1, now, location.timeZone)) { return true } else { return false }
-            }
-    }
-    
+	if (!(settings."${devicetype}StartTime${index}" == null)){
+		if (timeOfDayIsBetween(stringToDate(settings."${devicetype}StartTime${index}"), stringToDate(settings."${devicetype}EndTime${index}"), now, location.timeZone)) { return true } else { return false }
+	}
     //No overrides have returned True, process Default
     if (parent.returnVar("defaultStartTime") == null) { 
     	return true 
@@ -962,390 +913,28 @@ def timeAllowed(devicetype,index){
 def modeAllowed(devicetype,index) {
     //Determine if we are allowed to speak in our current mode based on the calling device or default setting
     //devicetype = motion, switch, presence, lock, contact, thermostat, acceleration, water, smoke, button
-    switch (devicetype) {
-        case "motion":
-            if (index == 1) {
-                //Motion Group 1
-                if (settings.motionModes1) {
-                    if (settings.motionModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "motion"
-        case "switch":
-            if (index == 1) {
-                //Switch Group 1
-                if (settings.switchModes1) {
-                    if (settings.switchModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "switch"
-        case "presence":
-            if (index == 1) {
-                //Presence Group 1
-                if (settings.presenceModes1) {
-                    if (settings.presenceModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "presence"
-        case "lock":
-            if (index == 1) {
-                //Lock Group 1
-                if (settings.lockModes1) {
-                    if (settings.lockModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "lock"
-        case "contact":
-            if (index == 1) {
-                //Contact Group 1
-                if (settings.contactModes1) {
-                    if (settings.contactModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "contact"
-        case "thermostat":
-            if (index == 1) {
-                //Thermostat Group 1
-                if (settings.thermostatModes1) {
-                    if (settings.thermostatModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "thermostat"
-        case "acceleration":
-            if (index == 1) {
-                //Acceleration Group 1
-                if (settings.accelerationModes1) {
-                    if (settings.accelerationModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "acceleration"
-        case "water":
-            if (index == 1) {
-                //Water Group 1
-                if (settings.waterModes1) {
-                    if (settings.waterModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "water"
-        case "smoke":
-            if (index == 1) {
-                //Smoke Group 1
-                if (settings.smokeModes1) {
-                    if (settings.smokeModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "smoke"
-        case "button":
-            if (index == 1) {
-                //Button Group 1
-                if (settings.buttonModes1) {
-                    if (settings.buttonModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "button"
-        case "SHM":
-            if (index == 1) {
-                //SHM Armed Away
-                if (settings.SHMModesAway) {
-                    if (settings.SHMModesAway.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-            if (index == 2) {
-                //SHM Armed Home
-                if (settings.SHMModesHome) {
-                    if (settings.SHMModesHome.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-            if (index == 3) {
-                //SHM Disarmed
-                if (settings.SHMModesDisarm) {
-                    if (settings.SHMModesDisarm.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "SHM"
-        case "timeSlot":
-            if (index == 1) {
-                //TimeSlot Group 1
-                if (settings.timeSlotModes1) {
-                    if (settings.timeSlotModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-            if (index == 2) {
-                //TimeSlot Group 2
-                if (settings.timeSlotModes2) {
-                    if (settings.timeSlotModes2.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-            if (index == 3) {
-                //TimeSlot Group 3
-                if (settings.timeSlotModes3) {
-                    if (settings.timeSlotModes3.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "timeSlot"
-        case "powerMeter":
-            if (index == 1) {
-                //Energy Meter Group 1
-                if (settings.powerMeterModes1) {
-                    if (settings.powerMeterModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "powerMeter"
-        case "routine":
-            if (index == 1) {
-                //Routine Group 1
-                if (settings.routineModes1) {
-                    if (settings.routineModes1.contains(location.mode)) {
-                        //Custom mode for this event is in use and we are in one of those modes
-                        return true
-                    } else {
-                        //Custom mode for this event is in use and we are not in one of those modes
-                        return false
-                    }
-                } else {
-                    return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
-                }
-            }
-        //End: case "routine"
-    } //End: switch (devicetype)
+	if (settings."${devicetype}Modes${index}") {
+		if (settings."${devicetype}Modes${index}".contains(location.mode)){
+			//Custom mode for this event is in use and we are in one of those modes
+			return true
+		} else {
+			//Custome mode for this event is in use and we are not in one of those modes
+			return false
+		}
+	} else {
+		return (parent.returnVar("speechModesDefault").contains(location.mode)) //True if we are in an allowed Default mode, False if not
+	}
 }
 
 def dayAllowed(devicetype,index){
 	def allowedDays = []
-	switch(devicetype) {
-    	case "timeSlot":
-        	if (index == 1){
-            	allowedDays = settings?.timeSlotDays1
-                return processDayRestriction(allowedDays)
-        	}
-        	if (index == 2){
-            	allowedDays = settings?.timeSlotDays2
-                return processDayRestriction(allowedDays)
-        	}
-        	if (index == 3){
-            	allowedDays = settings?.timeSlotDays3
-                return processDayRestriction(allowedDays)
-        	}
-        case "motion":
-        	if (index == 1){
-            	allowedDays = settings?.motionDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "switch":
-        	if (index == 1){
-            	allowedDays = settings?.switchDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "presence":
-        	if (index == 1){
-            	allowedDays = settings?.presDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "lock":
-        	if (index == 1){
-            	allowedDays = settings?.lockDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "contact":
-        	if (index == 1){
-            	allowedDays = settings?.contactDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "mode":
-        	if (index == 1){
-            	allowedDays = settings?.modeDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "thermostat":
-        	if (index == 1){
-            	allowedDays = settings?.thermostatDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "acceleration":
-        	if (index == 1){
-            	allowedDays = settings?.accelerationDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "water":
-        	if (index == 1){
-            	allowedDays = settings?.waterDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "smoke":
-        	if (index == 1){
-            	allowedDays = settings?.smokeDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "button":
-        	if (index == 1){
-            	allowedDays = settings?.buttonDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "SHM":
-        	if (index == 1){
-            	allowedDays = settings?.SHMAwayDays1
-                return processDayRestriction(allowedDays)
-        	}
-            if (index == 2){
-            	allowedDays = settings?.SHMHomeDays1
-                return processDayRestriction(allowedDays)
-        	}
-            if (index == 3){
-            	allowedDays = settings?.SHMDisarmDays1
-                return processDayRestriction(allowedDays)
-        	}
-		case "powerMeter":
-        	if (index == 1){
-            	allowedDays = settings?.powerMeterDays1
-                return processDayRestriction(allowedDays)
-        	}
-        case "routine":
-        	if (index == 1){
-            	allowedDays = settings?.routineDays1
-                return processDayRestriction(allowedDays)
-        	}
-    }
+	allowedDays = settings?."${devicetype}Days${index}"
+	return processDayRestriction(allowedDays)
 }
 
 def processDayRestriction(allowedDays){
     def todayStr = (new Date().format('EEEE', location.timeZone))
-    //LOGDEBUG("Today=${todayStr}, Allowed:${allowedDays}", false)
+    LOGDEBUG("Today=${todayStr}, Allowed:${allowedDays}", false)
     if (allowedDays == null || allowedDays == ""){
         return true
     }
@@ -1372,7 +961,8 @@ def processCountRestriction(devicetype, index) {
                 //    case "Hour": 
                 //    case "Day": {}
                 //}
-                //return processDayRestriction(allowedDays)
+                //return 
+				processDayRestriction(allowedDays)
                 //
                 return true // Return allow by default during initial development
         	}
@@ -1380,76 +970,37 @@ def processCountRestriction(devicetype, index) {
 }
 
 def processDisableSwitch(devicetype, index) {
-	switch(devicetype){
-    	case "timeSlot":
-        	if (index == 1){
-            	if (settings?.timeSlotDisableSwitch1?.currentSwitch == "on" || settings?.timeSlotDisableSwitch1 == null) { return true } else { return false }	
-            }
-            if (index == 2){
-            	if (settings?.timeSlotDisableSwitch2?.currentSwitch == "on" || settings?.timeSlotDisableSwitch2 == null) { return true } else { return false }	
-            }
-            if (index == 3){
-            	if (settings?.timeSlotDisableSwitch3?.currentSwitch == "on" || settings?.timeSlotDisableSwitch3 == null) { return true } else { return false }	
-            }
-    	case "motion":
-        	if (index == 1){
-            	if (settings?.motionDisableSwitch1?.currentSwitch == "on" || settings?.motionDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "switch":
-        	if (index == 1){
-            	if (settings?.switchDisableSwitch1?.currentSwitch == "on" || settings?.switchDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "presence":
-        	if (index == 1){
-            	if (settings?.presenceDisableSwitch1?.currentSwitch == "on" || settings?.presenceDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "lock":
-        	if (index == 1){
-            	if (settings?.lockDisableSwitch1?.currentSwitch == "on" || settings?.lockDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "contact":
-        	if (index == 1){
-            	if (settings?.contactDisableSwitch1?.currentSwitch == "on" || settings?.contactDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "mode":
-        	if (index == 1){
-            	if (settings?.modeDisableSwitch1?.currentSwitch == "on" || settings?.modeDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "acceleration":
-        	if (index == 1){
-            	if (settings?.accelerationDisableSwitch1?.currentSwitch == "on" || settings?.accelerationDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "thermostat":
-        	if (index == 1){
-            	if (settings?.thermostatDisableSwitch1?.currentSwitch == "on" || settings?.thermostatDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "water":
-        	if (index == 1){
-            	if (settings?.waterDisableSwitch1?.currentSwitch == "on" || settings?.waterDisableSwitch1 == null) { return true } else { return false }
-            }
-      case "smoke":
-        	if (index == 1){
-            	if (settings?.smokeDisableSwitch1?.currentSwitch == "on" || settings?.smokeDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "button":
-        	if (index == 1){
-            	if (settings?.buttonDisableSwitch1?.currentSwitch == "on" || settings?.buttonDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "SHM":
-           	if (settings?.SHMDisableSwitch1?.currentSwitch == "on" || settings?.SHMDisableSwitch1 == null) { return true } else { return false }
-       case "powerMeter":
-        	if (index == 1){
-            	if (settings?.powerMeterDisableSwitch1?.currentSwitch == "on" || settings?.powerMeterDisableSwitch1 == null) { return true } else { return false }
-            }
-       case "routine":
-        	if (index == 1){
-            	if (settings?.routineDisableSwitch1?.currentSwitch == "on" || settings?.routineDisableSwitch1 == null) { return true } else { return false }
-            }
-    }
+	LOGDEBUG("processDisableSwitch: ${devicetype}DisableSwitch${index}", false)
+	try{
+		if (settings?."${devicetype}DisableSwitch${index}".currentSwitch == "on" || settings?."${devicetype}DisableSwitch${index}" == null) {return true} else {return false}
+	} catch(err) {
+		return true
+	}
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+def shouldDelay(devicetype, eventTime, thresholdMinutes) {
+	// IN DEVELOPMENT
+  	if (thresholdMinutes == null || thresholdMinutes == 0){ 
+		LOGDEBUG("No threshold defined", true)
+  		return false 
+  	}
+	def elapsed = now() - eventTime
+    def threshold = ((thresholdMinutes != null && thresholdMinutes != "") ? thresholdMinutes * 60000 : 60000) - 1000
+	LOGDEBUG("Threshold:${threshold},Elapsed:${elapsed}", false)
+    if (elapsed >= threshold) {
+        LOGDEBUG("${devicetype} has stayed open long enough since last check ($elapsed ms)", true)
+        return false
+    } else {
+        LOGDEBUG("${devicetype} has not stayed open long enough since last check ($elapsed ms):  doing nothing", true)
+    }
+    return true
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// General Functions
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 def getTimeFromDateString(inputtime, includeAmPm){
     //I couldn't find the way to do this in ST / Groovy, so I made my own function
@@ -1497,104 +1048,250 @@ private def myRunIn(delay_s, func) {
         //LOGDEBUG("'${func}' scheduled to run at ${date}", true)
     }
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // HANDLE EVENTS
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//BEGIN HANDLE TIME SCHEDULE
-def onSchedule1Event(){
-    processScheduledEvent(1, timeSlotTime1, timeSlotDays1)
-}
-def onSchedule2Event(){
-    processScheduledEvent(2, timeSlotTime2, timeSlotDays2)
-}
-def onSchedule3Event(){
-    processScheduledEvent(3, timeSlotTime3, timeSlotDays3)
-}
-
-def processScheduledEvent(index, eventtime, alloweddays){
-	def resume = ""; resume = parent.returnVar("resumePlay")
-    if (resume == "" || resume == null) { resume = false }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def timeNow = getTimeFromCalendar(false, true)
-    //def personality = false; personality = parent.returnVar("personalityMode
-    //if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = ""
-    if (index == 1) {myVoice = getMyVoice(settings?.timeSlotVoice1)}
-    if (index == 2) {myVoice = getMyVoice(settings?.timeSlotVoice2)}
-    if (index == 3) {myVoice = getMyVoice(settings?.timeSlotVoice3)}
-    LOGDEBUG("(onScheduledEvent): ${timeNow}, ${index}, ${myVoice}", true)
-    //Check Restrictions
-    if (!(processRestrictions("timeSlot",index))){ return }
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1){if (!settings?.timeSlotResumePlay1 == null) { resume = settings.timeSlotResumePlay1 }}
-		if (index == 2){if (!settings?.timeSlotResumePlay2 == null) { resume = settings.timeSlotResumePlay2 }}
-		if (index == 3){if (!settings?.timeSlotResumePlay3 == null) { resume = settings.timeSlotResumePlay3 }}
-	}
-	if (resume == null) { resume = true } else { resume = false }
-    if (index == 1 && settings?.timeSlotPersonality1 == "Yes") {personality = true}
-    if (index == 1 && settings?.timeSlotPersonality1 == "No") {personality = false}
-	if (index == 2 && settings?.timeSlotPersonality2 == "Yes") {personality = true}
-    if (index == 2 && settings?.timeSlotPersonality2 == "No") {personality = false}
-    if (index == 3 && settings?.timeSlotPersonality3 == "Yes") {personality = true}
-    if (index == 3 && settings?.timeSlotPersonality3 == "No") {personality = false}  
-	if (index == 1) { state.TalkPhrase = settings.timeSlotOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1) }
-	if (index == 2) { state.TalkPhrase = settings.timeSlotOnTime2; state.speechDevice = timeSlotSpeechDevice2; myVolume = getDesiredVolume(settings.timeSlotVolume2) }
-	if (index == 3) { state.TalkPhrase = settings.timeSlotOnTime3; state.speechDevice = timeSlotSpeechDevice3; myVolume = getDesiredVolume(settings.timeSlotVolume3) }
-	def customevent = [displayName: 'BigTalker:OnSchedule', name: 'OnSchedule', value: "${todayStr}@${timeNow}"]
-	sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume,resume, personality, myVoice, customevent)
-	state.TalkPhrase = null
-    state.speechDevice = null
-}
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //BEGIN HANDLE MOTIONS
 def onMotion1Event(evt){
-    processMotionEvent(1, evt)
-}
-
-def processMotionEvent(index, evt){
-	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = getMyVoice(settings?.switchMotion1)
-    LOGDEBUG("(onMotionEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Check Restrictions
-    if (!(processRestrictions("motion",index))){ return }
-    state.TalkPhrase = null
-    state.speechDevice = null
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1) {
-			if (!settings?.motionResumePlay1 == null) { resume = settings.motionResumePlay1 }
-		}
-        if (resume == null) { resume = true }
-	} else { resume = false }
-    if (settings?.motionPersonality1 == "Yes") {personality = true}
-    if (settings?.motionPersonality1 == "No") {personality = false}
-    if (evt.value == "active") {
-        if (index == 1) { state.TalkPhrase = settings.motionTalkActive1; state.speechDevice = motionSpeechDevice1; myVolume = getDesiredVolume(settings.motionVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "inactive") {
-        if (index == 1) { state.TalkPhrase = settings.motionTalkInactive1; state.speechDevice = motionSpeechDevice1; myVolume = getDesiredVolume(settings.motionVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    state.TalkPhrase = null
-    state.speechDevice = null
+ 	def deviceType = "motion" //lowercase first char
+	def deviceState1 = "active"   //on,open,etc
+	def deviceState2 = "inactive"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
 }
 //END HANDLE MOTIONS
+
 //BEGIN HANDLE SWITCHES
+//START QUEUE FOR LEFT IN STATE -- IN DEVELOPMENT
+def runQueuedSwitch1Event(){
+	def deviceType = "switch" //lowercase first char
+	def deviceState1 = "on"   //on,open,etc
+	def deviceState2 = "off"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	def evt = [name: state.switch1EventName, displayName: state.switch1EventDisplayName, value: state.switch1EventValue]
+	LOGDEBUG("Processing Queued Message: (${evt})", true)
+	processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+//END QUEUE FOR LEFT IN STATE -- IN DEVELOPMENT
+
 def onSwitch1Event(evt){
-    processSwitchEvent(1, evt)
+	def deviceType = "switch" //lowercase first char
+	def deviceState1 = "on"   //on,open,etc
+	def deviceState2 = "off"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+//END HANDLE SWITCHES
+
+//BEGIN HANDLE PRESENCE
+def onPresence1Event(evt){
+	def deviceType = "presence" //lowercase first char
+	def deviceState1 = "present"   //on,open,etc
+	def deviceState2 = "not present"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+    //processPresenceEvent(1, evt)
+}
+//END HANDLE PRESENCE
+
+//BEGIN HANDLE LOCK
+def onLock1Event(evt){
+	def deviceType = "lock" //lowercase first char
+	def deviceState1 = "locked"   //on,open,etc
+	def deviceState2 = "unlocked"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
 }
 
-def processSwitchEvent(index, evt){
+//END HANDLE LOCK
+
+//BEGIN HANDLE CONTACT
+def onContact1Event(evt){
+	def deviceType = "contact" //lowercase first char
+	def deviceState1 = "open"   //on,open,etc
+	def deviceState2 = "closed"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+//END HANDLE CONTACT
+
+//BEGIN HANDLE THERMOSTAT
+def onThermostat1Event(evt){
+	def deviceType = "thermostat" //lowercase first char
+	def deviceState1 = "idle"   //on,open,etc
+	def deviceState2 = "heating"  //off,closed,etc
+	def deviceState3 = "cooling"
+	def deviceState4 = "fan only"
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+    //processThermostatEvent(1, evt)
+}
+//END HANDLE THERMOSTAT
+
+//BEGIN HANDLE ACCELERATION
+def onAcceleration1Event(evt){
+	def deviceType = "acceleration" //lowercase first char
+	def deviceState1 = "active"   //on,open,etc
+	def deviceState2 = "inactive"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+//END HANDLE ACCELERATION
+
+//BEGIN HANDLE WATER
+def onWater1Event(evt){
+    def deviceType = "water" //lowercase first char
+	def deviceState1 = "wet"   //on,open,etc
+	def deviceState2 = "dry"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+//END HANDLE WATER
+
+//BEGIN HANDLE SMOKE
+def onSmoke1Event(evt){
+	def deviceType = "smoke" //lowercase first char
+	def deviceState1 = "detected"   //on,open,etc
+	def deviceState2 = "clear"  //off,closed,etc
+	def deviceState3 = "tested"
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+//END HANDLE SMOKE
+
+//BEGIN HANDLE BUTTON
+def onButton1Event(evt){
+	def deviceType = "button" //lowercase first char
+	def deviceState1 = "pushed"   //on,open,etc
+	def deviceState2 = "held"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+
+//END HANDLE BUTTON
+
+////BEGIN PROCESSEVENT
+def processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt){
 	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
     def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
-    def myVoice = getMyVoice(settings?.switchVoice1)
-    LOGDEBUG("(onSwitchEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
+	def myVoice = getMyVoice(settings?."${deviceType}Voice${index}")
+	LOGDEBUG("(processEvent(): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
     //Check Restrictions
-    if (!(processRestrictions("switch",index))){ return }
+	if (!(processRestrictions("${deviceType}",index))){ return }
+	//LOGDEBUG("VarCheck" + (evt.value == "${deviceState1}") + "," + deviceType + "," + state."${deviceType}${index}EventTime" + "," + settings."${deviceType}${deviceState1.capitalize()}Threshold",False)
+	// START QUEUE FOR LEFT IN STATE -- IN DEVELOPMENT
+	/*
+	if (evt.value == "${deviceState1}" && shouldDelay(deviceType, state."${deviceType}${index}EventTime", settings."${deviceType}${deviceState1.capitalize()}Threshold")) {
+		runIn(60, "runQueued${deviceType.capitalize()}${index}Event", [overwrite: false])
+		LOGDEBUG("Queued message",true)
+        return
+    }
+	unschedule("runQueued${deviceType.capitalize()}${index}Event")
+    */
+	// END QUEUE FOR LEFT IN STATE -- IN DEVELOPMENT
     state.TalkPhrase = null
     state.speechDevice = null
 	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -1603,128 +1300,34 @@ def processSwitchEvent(index, evt){
 		}
         if (resume == null) { resume = true }
 	} else { resume = false }
-    if (settings?.switchPersonality1 == "Yes") {personality = true}
-    if (settings?.switchPersonality1 == "No") {personality = false}
-    if (evt.value == "on") {
-        if (index == 1) { state.TalkPhrase = settings.switchTalkOn1; state.speechDevice = switchSpeechDevice1; myVolume = getDesiredVolume(settings.switchVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
+	if (settings?."${deviceType}switchPersonality${index}" == "Yes") {personality = true}
+	if (settings?."${deviceType}switchPersonality${index}" == "No") {personality = false}
+    if (evt.value == deviceState1) {
+		state.TalkPhrase = settings."${deviceType}TalkOn${deviceState1.capitalize()}${index}"; state.speechDevice = settings."${deviceType}SpeechDevice${index}"; myVolume = getDesiredVolume(settings."${deviceType}Volume${index}")
+        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event (${evt.value} <> ${deviceState1})", true)}
     }
-    if (evt.value == "off") {
-        if (index == 1) { state.TalkPhrase = settings.switchTalkOff1; state.speechDevice = switchSpeechDevice1; myVolume = getDesiredVolume(settings.switchVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
+    if (evt.value == deviceState2) {
+        state.TalkPhrase = settings."${deviceType}TalkOn${deviceState2.capitalize()}${index}"; state.speechDevice = settings."${deviceType}SpeechDevice${index}"; myVolume = getDesiredVolume(settings."${deviceType}Volume${index}")
+        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event (${evt.value} <> ${deviceState2})", true)}
+    }
+	if (evt.value == deviceState3) {
+        state.TalkPhrase = settings."${deviceType}TalkOn${deviceState3.capitalize()}${index}"; state.speechDevice = settings."${deviceType}SpeechDevice${index}"; myVolume = getDesiredVolume(settings."${deviceType}Volume${index}")
+        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event (${evt.value} <> ${deviceState3})", true)}
+    }
+	if (evt.value == deviceState4) {
+        state.TalkPhrase = settings."${deviceType}TalkOn${deviceState4.capitalize()}${index}"; state.speechDevice = settings."${deviceType}SpeechDevice${index}"; myVolume = getDesiredVolume(settings."${deviceType}Volume${index}")
+        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event (${evt.value} <> ${deviceState3})", true)}
     }
     state.TalkPhrase = null
     state.speechDevice = null
 }
-//END HANDLE SWITCHES
-//BEGIN HANDLE PRESENCE
-def onPresence1Event(evt){
-    processPresenceEvent(1, evt)
-}
+////END PROCESSEVENT
 
-def processPresenceEvent(index, evt){
-	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = getMyVoice(settings?.presVoice1)
-    LOGDEBUG("(onPresenceEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Check Restrictions
-    if (!(processRestrictions("presence",index))){ return }
-    state.TalkPhrase = null
-    state.speechDevice = null
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1) {
-			if (!settings?.presResumePlay1 == null) { resume = settings.presResumePlay1 }
-		}
-        if (resume == null) { resume = true }
-	} else { resume = false }
-    if (settings?.presPersonality1 == "Yes") {personality = true}
-    if (settings?.presPersonality1 == "No") {personality = false}
-    if (evt.value == "present") {
-        if (index == 1) { state.TalkPhrase = settings.presTalkOnArrive1; state.speechDevice = presSpeechDevice1; myVolume = getDesiredVolume(settings.presVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "not present") {
-        if (index == 1) { state.TalkPhrase = settings.presTalkOnLeave1; state.speechDevice = presSpeechDevice1; myVolume = getDesiredVolume(settings.presVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    state.TalkPhrase = null
-    state.speechDevice = null
-}
-//END HANDLE PRESENCE
-
-//BEGIN HANDLE LOCK
-def onLock1Event(evt){
-    LOGDEBUG("onLock1Event(evt) ${evt.value}", true)
-    processLockEvent(1, evt)
-}
-
-def processLockEvent(index, evt){
-	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = getMyVoice(settings?.lockVoice1)
-    LOGDEBUG("(onLockEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Check Restrictions
-    if (!(processRestrictions("lock",index))){ return }
-    state.TalkPhrase = null
-    state.speechDevice = null
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1) {
-			if (!settings?.lockResumePlay1 == null) { resume = settings.lockResumePlay1 }
-		}
-        if (resume == null) { resume = true }
-	} else { resume = false }
-    if (settings?.lockPersonality1 == "Yes") {personality = true}
-    if (settings?.lockPersonality1 == "No") {personality = false}
-    if (evt.value == "locked") {
-        if (index == 1) { state.TalkPhrase = settings.lockTalkOnLock1; state.speechDevice = lockSpeechDevice1; myVolume = getDesiredVolume(settings.lockVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "unlocked") {
-        if (index == 1) { state.TalkPhrase = settings.lockTalkOnUnlock1; state.speechDevice = lockSpeechDevice1; myVolume = getDesiredVolume(settings.lockVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    state.TalkPhrase = null
-    state.speechDevice = null
-}
-//END HANDLE LOCK
-
-//BEGIN HANDLE CONTACT
-def onContact1Event(evt){
-    processContactEvent(1, evt)
-}
-
-def processContactEvent(index, evt){
-	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = getMyVoice(settings?.contactVoice1)
-    LOGDEBUG("(onContactEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Check Restrictions
-    if (!(processRestrictions("contact",index))){ return }
-    state.TalkPhrase = null
-    state.speechDevice = null
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1) {
-			if (!settings?.contactResumePlay1 == null) { resume = settings.contactResumePlay1 }
-		}
-        if (resume == null) { resume = true }
-	} else { resume = false }
-    if (settings?.contactPersonality1 == "Yes") {personality = true}
-    if (settings?.contactPersonality1 == "No") {personality = false}
-    if (evt.value == "open") {
-        if (index == 1) { state.TalkPhrase = settings.contactTalkOnOpen1; state.speechDevice = contactSpeechDevice1; myVolume = getDesiredVolume(settings.contactVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "closed") {
-        if (index == 1) { state.TalkPhrase = settings.contactTalkOnClose1; state.speechDevice = contactSpeechDevice1; myVolume = getDesiredVolume(settings.contactVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    state.TalkPhrase = null
-    state.speechDevice = null
-}
-//END HANDLE CONTACT
+///////////////////////////////////////
+///////////////////////////////////////
+// SPECIAL DEVICES / PROCESSING      //
+///////////////////////////////////////
+///////////////////////////////////////
 
 //BEGIN MODE CHANGE
 def onModeChangeEvent(evt){
@@ -1774,194 +1377,6 @@ def processModeChangeEvent(index, evt){
     parent.setLastMode(location.mode)
 }
 //END MODE CHANGE
-
-//BEGIN HANDLE THERMOSTAT
-def onThermostat1Event(evt){
-    processThermostatEvent(1, evt)
-}
-
-def processThermostatEvent(index, evt){
-	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = getMyVoice(settings?.thermostatVoice1)
-    LOGDEBUG("(onThermostatEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Check Restrictions
-    if (!(processRestrictions("thermostat",index))){ return }
-    state.TalkPhrase = null
-    state.speechDevice = null
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1) {
-			if (!settings?.thermostatResumePlay1 == null) { resume = settings.thermostatResumePlay1 }
-		}
-        if (resume == null) { resume = true }
-	} else { resume = false }
-    if (settings?.thermostatPersonality1 == "Yes") {personality = true}
-    if (settings?.thermostatPersonality1 == "No") {personality = false}
-    if (evt.value == "idle") {
-        if (index == 1) { state.TalkPhrase = settings.thermostatTalkOnIdle1; state.speechDevice = thermostatSpeechDevice1; myVolume = getDesiredVolume(settings.thermostatVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "heating") {
-        if (index == 1) { state.TalkPhrase = settings.thermostatTalkOnHeating1; state.speechDevice = thermostatSpeechDevice1; myVolume = getDesiredVolume(settings.thermostatVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "cooling") {
-        if (index == 1) { state.TalkPhrase = settings.thermostatTalkOnCooling1; state.speechDevice = thermostatSpeechDevice1; myVolume = getDesiredVolume(settings.thermostatVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "fan only") {
-        if (index == 1) { state.TalkPhrase = settings.thermostatTalkOnFan1; state.speechDevice = thermostatSpeechDevice1; myVolume = getDesiredVolume(settings.thermostatVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-
-    state.TalkPhrase = null
-    state.speechDevice = null
-}
-//END HANDLE THERMOSTAT
-
-//BEGIN HANDLE ACCELERATION
-def onAcceleration1Event(evt){
-    processAccelerationEvent(1, evt)
-}
-
-def processAccelerationEvent(index, evt){
-	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = getMyVoice(settings?.accelerationVoice1)
-    LOGDEBUG("(onAccelerationEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Check Restrictions
-    if (!(processRestrictions("acceleration",index))){ return }
-    state.TalkPhrase = null
-    state.speechDevice = null
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1) {
-			if (!settings?.accelerationResumePlay1 == null) { resume = settings.accelerationResumePlay1 }
-		}
-        if (resume == null) { resume = true }
-	} else { resume = false }
-    if (settings?.accelerationPersonality1 == "Yes") {personality = true}
-    if (settings?.accelerationPersonality1 == "No") {personality = false}
-    if (evt.value == "active") {
-        if (index == 1) { state.TalkPhrase = settings.accelerationTalkOnActive1; state.speechDevice = accelerationSpeechDevice1; myVolume = getDesiredVolume(settings.accelerationVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "inactive") {
-        if (index == 1) { state.TalkPhrase = settings.accelerationTalkOnInactive1; state.speechDevice = accelerationSpeechDevice1; myVolume = getDesiredVolume(settings.accelerationVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    state.TalkPhrase = null
-    state.speechDevice = null
-}
-//END HANDLE ACCELERATION
-
-//BEGIN HANDLE WATER
-def onWater1Event(evt){
-    processWaterEvent(1, evt)
-}
-
-def processWaterEvent(index, evt){
-	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = getMyVoice(settings?.waterVoice1)
-    LOGDEBUG("(onWaterEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Check Restrictions
-    if (!(processRestrictions("water",index))){ return }
-    state.TalkPhrase = null
-    state.speechDevice = null
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1) {
-			if (!settings?.waterResumePlay1 == null) { resume = settings.waterResumePlay1 }
-		}
-        if (resume == null) { resume = true }
-	} else { resume = false }
-    if (settings?.waterPersonality1 == "Yes") {personality = true}
-    if (settings?.waterPersonality1 == "No") {personality = false}
-    if (evt.value == "wet") {
-        if (index == 1) { state.TalkPhrase = settings.waterTalkOnWet1; state.speechDevice = waterSpeechDevice1; myVolume = getDesiredVolume(settings.waterVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "dry") {
-        if (index == 1) { state.TalkPhrase = settings.waterTalkOnDry1; state.speechDevice = waterSpeechDevice1; myVolume = getDesiredVolume(settings.waterVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    state.TalkPhrase = null
-    state.speechDevice = null
-}
-//END HANDLE WATER
-
-//BEGIN HANDLE SMOKE
-def onSmoke1Event(evt){
-    processSmokeEvent(1, evt)
-}
-
-def processSmokeEvent(index, evt){
-	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = getMyVoice(settings?.smokeVoice1)
-    LOGDEBUG("(onSmokeEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-    //Check Restrictions
-    if (!(processRestrictions("smoke",index))){ return }
-    state.TalkPhrase = null
-    state.speechDevice = null
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1) {
-			if (!settings?.smokeResumePlay1 == null) { resume = settings.smokeResumePlay1 }
-		}
-        if (resume == null) { resume = true }
-	} else { resume = false }
-    if (settings?.smokePersonality1 == "Yes") {personality = true}
-    if (settings?.smokePersonality1 == "No") {personality = false}
-    if (evt.value == "detected") {
-        if (index == 1) { state.TalkPhrase = settings.smokeTalkOnDetect1; state.speechDevice = smokeSpeechDevice1; myVolume = getDesiredVolume(settings.smokeVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "clear") {
-        if (index == 1) { state.TalkPhrase = settings.smokeTalkOnClear1; state.speechDevice = smokeSpeechDevice1; myVolume = getDesiredVolume(settings.smokeVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    if (evt.value == "tested") {
-        if (index == 1) { state.TalkPhrase = settings.smokeTalkOnTest1; state.speechDevice = smokeSpeechDevice1; myVolume = getDesiredVolume(settings.smokeVolume1)}
-        if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    }
-    state.TalkPhrase = null
-    state.speechDevice = null
-}
-//END HANDLE SMOKE
-
-//BEGIN HANDLE BUTTON
-def onButton1Event(evt){
-    processButtonEvent(1, evt)
-}
-
-def processButtonEvent(index, evt){
-	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
-    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
-    def myVolume = -1
-    def myVoice = getMyVoice(settings?.buttonVoice1)
-    LOGDEBUG("(onButtonEvent): ${evt.name}, ${index}, ${evt.value}, ${myVoice}", true)
-	//Check Restrictions
-    if (!(processRestrictions("button",index))){ return }
-    state.TalkPhrase = null
-    state.speechDevice = null
-	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-		if (index == 1) {
-			if (!settings?.buttonResumePlay1 == null) { resume = settings.buttonResumePlay1 }
-		}
-        if (resume == null) { resume = true }
-	} else { resume = false }
-    if (settings?.buttonPersonality1 == "Yes") {personality = true}
-    if (settings?.buttonPersonality1 == "No") {personality = false}
-    if (index == 1 && evt.value == "pushed") { state.TalkPhrase = settings.buttonTalkOnPress1; state.speechDevice = buttonSpeechDevice1; myVolume = getDesiredVolume(settings.buttonVolume1)}
-    if (index == 1 && evt.value == "held") { state.TalkPhrase = settings.buttonTalkOnHold1; state.speechDevice = buttonSpeechDevice1; myVolume = getDesiredVolume(settings.buttonVolume1)}
-    if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
-    state.TalkPhrase = null
-    state.speechDevice = null
-}
-//END HANDLE BUTTON
 
 //BEGIN HANDLE SHM
 def onSHMEvent(evt){
@@ -2142,7 +1557,57 @@ def processRoutineEvent(index, evt){
 }
 //END HANDLE ROUTINE
 
+//BEGIN HANDLE TIME SCHEDULE
+def onSchedule1Event(){
+    processScheduledEvent(1, timeSlotTime1, timeSlotDays1)
+}
+def onSchedule2Event(){
+    processScheduledEvent(2, timeSlotTime2, timeSlotDays2)
+}
+def onSchedule3Event(){
+    processScheduledEvent(3, timeSlotTime3, timeSlotDays3)
+}
 
+def processScheduledEvent(index, eventtime, alloweddays){
+	
+	def resume = ""; resume = parent.returnVar("resumePlay")
+    if (resume == "" || resume == null) { resume = false }
+    def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
+    def timeNow = getTimeFromCalendar(false, true)
+    //def personality = false; personality = parent.returnVar("personalityMode
+    //if (personality == "" || personality == null) { personality = false }
+    def myVolume = -1
+    def myVoice = ""
+    if (index == 1) {myVoice = getMyVoice(settings?.timeSlotVoice1)}
+    if (index == 2) {myVoice = getMyVoice(settings?.timeSlotVoice2)}
+    if (index == 3) {myVoice = getMyVoice(settings?.timeSlotVoice3)}
+    LOGDEBUG("(onScheduledEvent): ${timeNow}, ${index}, ${myVoice}", true)
+    //Check Restrictions
+    if (!(processRestrictions("timeSlot",index))){ return }
+	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
+		if (index == 1){if (!settings?.timeSlotResumePlay1 == null) { resume = settings.timeSlotResumePlay1 }}
+		if (index == 2){if (!settings?.timeSlotResumePlay2 == null) { resume = settings.timeSlotResumePlay2 }}
+		if (index == 3){if (!settings?.timeSlotResumePlay3 == null) { resume = settings.timeSlotResumePlay3 }}
+	}
+	if (resume == null) { resume = true } else { resume = false }
+    if (index == 1 && settings?.timeSlotPersonality1 == "Yes") {personality = true}
+    if (index == 1 && settings?.timeSlotPersonality1 == "No") {personality = false}
+	if (index == 2 && settings?.timeSlotPersonality2 == "Yes") {personality = true}
+    if (index == 2 && settings?.timeSlotPersonality2 == "No") {personality = false}
+    if (index == 3 && settings?.timeSlotPersonality3 == "Yes") {personality = true}
+    if (index == 3 && settings?.timeSlotPersonality3 == "No") {personality = false}  
+	if (index == 1) { state.TalkPhrase = settings.timeSlotOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1) }
+	if (index == 2) { state.TalkPhrase = settings.timeSlotOnTime2; state.speechDevice = timeSlotSpeechDevice2; myVolume = getDesiredVolume(settings.timeSlotVolume2) }
+	if (index == 3) { state.TalkPhrase = settings.timeSlotOnTime3; state.speechDevice = timeSlotSpeechDevice3; myVolume = getDesiredVolume(settings.timeSlotVolume3) }
+	def customevent = [displayName: 'BigTalker:OnSchedule', name: 'OnSchedule', value: "${todayStr}@${timeNow}"]
+	sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume,resume, personality, myVoice, customevent)
+	state.TalkPhrase = null
+    state.speechDevice = null
+}
+//END HANDLE TIME SCHEDULE
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 def getDesiredVolume(invol) {
 	def globalVolume = parent.returnVar("speechVolume")
@@ -2211,5 +1676,5 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.7_a1"
+    state.appversion = "C2.0.7"
 }
