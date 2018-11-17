@@ -5,9 +5,9 @@ definition(
     description: "Let's talk about mode changes, switches, motions, and so on.",
     category: "Fun & Social",
     singleInstance: true,
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.6.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.6.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.6.png")
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.7.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.7.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.7.png")
 
 preferences {
     page(name: "pageStart")
@@ -1816,7 +1816,7 @@ def pageTalkNow(){
                 input name: "talkNowVoice", type: "enum", title: "Select custom voice:", options: state.supportedVoices, required: false, submitOnChange: true
                 myTalkNowResume = settings.talkNowResume
             }
-            input name: "speechTalkNow", type: text, title: "Speak phrase", required: false, submitOnChange: true
+            input name: "speechTalkNow", type: "text", title: "Speak phrase", required: false, submitOnChange: true
             input name: "talkNowSpeechDevice", type: state.speechDeviceType, title: "Talk with these text-to-speech devices", multiple: true, required: false, submitOnChange: true
             //LOGDEBUG("previoustext=${state.lastTalkNow} New=${settings.speechTalkNow}")
             if (((!(state.lastTalkNow == settings.speechTalkNow)) && (settings.talkNowSpeechDevice)) || (settings.speechTalkNow?.contains("%askalexa%"))){
@@ -1856,9 +1856,9 @@ def pageHelpPhraseTokens(){
     dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
        section("The following tokens can be used in your event phrases and will be replaced as listed:"){
        	   def AvailTokens = ""
-           AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n"
+           if (state.hubType == "SmartThings"){ AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n" }
            AvailTokens += "%groupname% = Name that you gave for the event group\n\n"
-           AvailTokens += "%date% = Current date; January 01\n\n"
+           AvailTokens += "%date% = Current date; January 01 2018\n\n"
            AvailTokens += "%day% = Current day; Monday\n\n"
            AvailTokens += "%devicename% = Triggering devices display name\n\n"
            AvailTokens += "%devicetype% = Triggering device type; motion, switch, etc\n\n"
@@ -1870,16 +1870,16 @@ def pageHelpPhraseTokens(){
            AvailTokens += "%mp3(url)% = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3 \n"
            AvailTokens += "No other tokens or phrases can be used with %mp3(url)%\n\n"
            AvailTokens += "%time% = Current hub time; HH:mm am/pm\n\n"
-           AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n"
-           AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n"
-           AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n"
-           AvailTokens += "%weathertoday(00000)% = Today's weather forecast* based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n"
-           AvailTokens += "%weathertonight(00000)% = Tonight's weather* forecast based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n"
-           AvailTokens += "%weathertomorrow(00000)% = Tomorrow's weather forecast* based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "\n*Weather forecasts provided by Weather Underground"
+		   if (state.hubType == "SmartThings"){ AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday(00000)% = Today's weather forecast* based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight(00000)% = Tonight's weather* forecast based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow(00000)% = Tomorrow's weather forecast* based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "\n*Weather forecasts provided by Weather Underground" }
            paragraph(AvailTokens)
        }
    }
@@ -3626,5 +3626,5 @@ def playTrackAndResume(device, uri, volume, myDelay) {
 
 
 def setAppVersion(){
-    state.appversion = "P2.0.7_a6"
+    state.appversion = "P2.0.7"
 }
