@@ -3605,13 +3605,18 @@ def returnVar(var) {
 def playTrackAndRestore(device, uri, duration, volume, myDelay) {
     LOGDEBUG("playTrackAndRestore(${device.displayName},${uri},${duration},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
-    	device.playTrackAndRestore("uri":uri, "duration":duration, volume, [delay: myDelay])
+    	device.playTrackAndRestore("uri": uri, "duration":duration, volume, [delay: myDelay])
+		//device.playTrackAndRestore(uri, duration, volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-        device.playTrackAndRestore("uri" :uri, "duration" :duration, volume)
+        //device.playTrackAndRestore("uri" :uri, "duration" :duration, volume) //Disabled 11/18/2018
+		//device.playTrackAndRestore(uri, duration, volume) //Disabled 11/18/2018
+		device.playTrackAndRestore(uri, duration, volume)
     }
 }
 
+/*
+//Disabled 11/18/2018
 def playTrackAndRestore(device, uri, volume, myDelay) {
     LOGDEBUG("playTrackAndRestore(${device.displayName},${uri},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
@@ -3621,6 +3626,7 @@ def playTrackAndRestore(device, uri, volume, myDelay) {
    		device.playTrackAndRestore("uri":uri, volume)
     }
 }
+*/
 
 def playTrackAndResume(device, uri, duration, volume, myDelay) {
     LOGDEBUG("playTrackAndResume(${device.displayName},${uri},${duration},${volume},${myDelay})")
@@ -3628,10 +3634,12 @@ def playTrackAndResume(device, uri, duration, volume, myDelay) {
     	device.playTrackAndResume("uri":uri, "duration":duration, "volume":volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-        device.playTrackAndResume("uri":uri, "duration":duration, volume)
+      //  device.playTrackAndResume("uri":uri, "duration":duration, volume) //Disabled 11/18/2018
+		device.playTrackAndResume(uri,duration,volume)
     }
 }
-
+/*
+//Disabled 11/18/2018
 def playTrackAndResume(device, uri, volume, myDelay) {
     LOGDEBUG("playTrackAndResume(${device.displayName},${uri},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
@@ -3641,8 +3649,8 @@ def playTrackAndResume(device, uri, volume, myDelay) {
    		device.playTrackAndRestore("uri":uri, volume)
     }
 }
-
+*/
 
 def setAppVersion(){
-    state.appversion = "P2.0.8"
+    state.appversion = "P2.0.8b"
 }
