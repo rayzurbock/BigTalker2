@@ -30,3 +30,4 @@ https://raw.githubusercontent.com/rayzurbock/hubitat/master/devices/VLCThing_BLM
 * Go back into the BigTalker2 app
 * Test using Talk Now
 * Configure Event Groups as desired
+* **Visual Instructions:**  https://docs.hubitat.com/index.php?title=How_to_Install_Custom_Apps
