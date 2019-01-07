@@ -26,10 +26,15 @@ preferences {
     page(name: "pageConfigSHM")
     page(name: "pageConfigPowerMeter")
     page(name: "pageConfigRoutine")
+	page(name: "pageConfigAlarm")
+	page(name: "pageConfigFilterStatus")
+	page(name: "pageConfigOvenMode")
     page(name: "pageHelpPhraseTokens")
+	
 }
 
 def pageConfigureEvents(){
+	setAppVersion()
     state.hubType = parent.returnVar("hubType")
     dynamicPage(name: "pageConfigureEvents", title: "Configure Events", install: (!(app?.getInstallationState == true)), uninstall: (app?.getInstallationState == true)) {
         section("Group Settings:"){
@@ -97,6 +102,21 @@ def pageConfigureEvents(){
             } else {
                 href "pageConfigButton", title: "Button", description:"Tap to configure"
             }
+			if (settings.alarmDeviceGroup1 || settings.alarmDeviceGroup2 || settings.alarmDeviceGroup3) {
+                href "pageConfigAlarm", title: "Alarm", description:"Tap to modify", state:"complete"
+            } else {
+                href "pageConfigAlarm", title: "Alarm", description:"Tap to configure"
+            }
+			if (settings.consumableDeviceGroup1 || settings.consumableDeviceGroup2 || settings.consumableDeviceGroup3) {
+                href "pageConfigFilterStatus", title: "Filter Status", description:"Tap to modify", state:"complete"
+            } else {
+                href "pageConfigFilterStatus", title: "Filter Status", description:"Tap to configure"
+            }
+			if (settings.ovenModeDeviceGroup1 || settings.ovenModeDeviceGroup2 || settings.ovenModeDeviceGroup3) {
+                href "pageConfigOvenMode", title: "Oven Mode", description:"Tap to modify", state:"complete"
+            } else {
+                href "pageConfigOvenMode", title: "Oven Mode", description:"Tap to configure"
+            }
             if (hubType == "SmartThings"){
             	if (settings.SHMTalkOnHome || settings.SHMTalkOnAway || settings.SHMTalkOnDisarm) {
                 	href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to modify", state:"complete"
@@ -117,6 +137,9 @@ def pageConfigureEvents(){
             	}
             }
         }
+		updateCheck()
+		//checkButtons()
+		displayVersionStatus()
     }
 }
 
@@ -355,7 +378,7 @@ def pageConfigMode(){
         }
         section("Restrictions"){
             input name: "modeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "modeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.modeStartTime1 == null))
+            input name: "modeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: false//(!(settings.modeStartTime1 == null))
             input name: "modeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "modeDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
@@ -479,16 +502,16 @@ def pageConfigSmoke(){
         section(){
             def defaultSpeechDetect1 = ""
             def defaultSpeechClear1 = ""
-            def defaultSpeechTest1 = ""
+            def defaultSpeechTested1 = ""
             if (!smokeDeviceGroup1) {
                 defaultSpeechDetect1 = "Smoke, %devicename% has detected smoke"
                 defaultSpeechClear1 = "Smoke, %devicename% has cleared smoke alert"
-                defaultSpeechTest1 = "Smoke, %devicename% has been tested"
+                defaultSpeechTested1 = "Smoke, %devicename% has been tested"
             }
             input name: "smokeDeviceGroup1", type: "capability.smokeDetector", title: "Smoke detector(s)", required: false, multiple: true
             input name: "smokeTalkOnDetect1", type: "text", title: "Say this when detected:", required: false, defaultValue: defaultSpeechDetect1
             input name: "smokeTalkOnClear1", type: "text", title: "Say this when cleared:", required: false, defaultValue: defaultSpeechClear1
-            input name: "smokeTalkOnTest1", type: "text", title: "Say this when tested:", required: false, defaultValue: defaultSpeechTest1
+            input name: "smokeTalkOnTested1", type: "text", title: "Say this when tested:", required: false, defaultValue: defaultSpeechTested1
             input name: "smokePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "smokeSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -512,12 +535,12 @@ def pageConfigSmoke(){
 }
 
 def pageConfigButton(){
-    dynamicPage(name: "pageConfigButton", title: "Configure talk on button presenceS", install: false, uninstall: false) {
+    dynamicPage(name: "pageConfigButton", title: "Configure talk on button press", install: false, uninstall: false) {
         section(){
             def defaultSpeechButton1 = ""
             def defaultSpeechButtonHold1 = ""
             if (!buttonDeviceGroup1) {
-                defaultSpeechButton1 = "%devicename% button presenceSed"
+                defaultSpeechButton1 = "%devicename% button pressed"
                 defaultSpeechButtonHold1 = "%devicename% button held"
             }
             input name: "buttonDeviceGroup1", type: "capability.button", title: "Button(s)", required: false, multiple: true
@@ -543,6 +566,120 @@ def pageConfigButton(){
         }
     }
 //End pageConfigButton()
+}
+
+def pageConfigAlarm(){
+    dynamicPage(name: "pageConfigAlarm", title: "Configure talk on alarm", install: false, uninstall: false) {
+        section(){
+            def defaultSpeechAlarmOff1 = ""
+            def defaultSpeechAlarmBoth1 = ""
+			def defaultSpeechAlarmSiren1 = ""
+			def defaultSpeechAlarmStrobe1 = ""
+            if (!alarmDeviceGroup1) {
+                defaultSpeechAlarmOff1 = "%devicename% alarm is now off"
+                defaultSpeechAlarmBoth1 = "%devicename% alarm siren and strobe are now active"
+				defaultSpeechAlarmSiren1 = "%devicename% alarm siren is now active"
+				defaultSpeechAlarmStrobe1 = "%devicename% alarm strobe is now active"
+            }
+            input name: "alarmDeviceGroup1", type: "capability.alarm", title: "Alarm(s)", required: false, multiple: true
+            input name: "alarmTalkOnOff1", type: "text", title: "Say this when turned off:", required: false, defaultValue: defaultSpeechAlarmOff1
+            input name: "alarmTalkOnBoth1", type: "text", title: "Say this when siren and strobe are active:", required: false, defaultValue: defaultSpeechAlarmBoth1
+			input name: "alarmTalkOnSiren1", type: "text", title: "Say this when only the siren is active:", required: false, defaultValue: defaultSpeechAlarmSiren1
+			input name: "alarmTalkOnStrobe1", type: "text", title: "Say this when only the strobe is active:", required: false, defaultValue: defaultSpeechAlarmStrobe1
+            input name: "alarmPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "alarmSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
+            	input name: "alarmVolume1", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "alarmResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "alarmVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            }
+        }
+        section("Restrictions"){
+            input name: "alarmModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "alarmStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
+            input name: "alarmEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.buttonStartTime1 == null))
+            input name: "alarmDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "alarmDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+        }
+        section("Help"){
+            href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+    }
+//End pageConfigAlarm()
+}
+
+def pageConfigFilterStatus(){
+    dynamicPage(name: "pageConfigFilterStatus", title: "Configure talk on Filter Status change", install: false, uninstall: false) {
+        section(){
+            def defaultSpeechFilterStatusNormal1 = ""
+            def defaultSpeechFilterStatusReplace1 = ""
+            if (!filteStatusDeviceGroup1) {
+                defaultSpeechFilterStatusNormal1 = "%devicename% filter is normal"
+                defaultSpeechFilterStatusReplace1 = "%devicename% filter needs to be replaced"
+            }
+            input name: "filterStatusGroup1", type: "capability.filterstatus", title: "Filter(s)", required: false, multiple: true
+            input name: "filterStatusTalkOnNormal1", type: "text", title: "Say this when filter status changes to normal:", required: false, defaultValue: defaultSpeechFilterStatusNormal1
+            input name: "filterStatusTalkOnReplace1", type: "text", title: "Say this when filter status changes to replace:", required: false, defaultValue: defaultSpeechFilterStatusReplace1
+            input name: "filterStatusPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "filterSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
+            	input name: "filterStatusVolume1", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "filterStatusResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "filterStatusVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            }
+        }
+        section("Restrictions"){
+            input name: "filterStatusModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "filterStatusStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
+            input name: "filterStatusEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.buttonStartTime1 == null))
+            input name: "filterStatusDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "filterStatusDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+        }
+        section("Help"){
+            href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+    }
+//End pageConfigFilterStatus()
+}
+
+def pageConfigOvenMode(){
+    dynamicPage(name: "pageConfigOvenMode", title: "Configure talk on oven mode", install: false, uninstall: false) {
+        section(){
+            def defaultSpeechOvenModeHeating1 = ""
+            def defaultSpeechOvenModeGrill1 = ""
+			def defaultSpeechOvenModeWarming1 = ""
+			def defaultSpeechOvenModeDefrosting1 = ""
+            if (!alarmDeviceGroup1) {
+                defaultSpeechOvenModeHeating1 = "%devicename% oven is now heating"
+                defaultSpeechOvenModeGrill1 = "%devicename% oven is now grilling"
+				defaultSpeechOvenModeWarming1 = "%devicename% oven is now warming"
+				defaultSpeechOvenModeDefrosting1 = "%devicename% oven is now defrosting"
+            }
+            input name: "ovenModeDeviceGroup1", type: "capability.ovenMode", title: "Oven(s)", required: false, multiple: true
+            input name: "ovenModeTalkOnHeating1", type: "text", title: "Say this when heating:", required: false, defaultValue: defaultSpeechAlarmOff1
+            input name: "ovenModeTalkOnGrill1", type: "text", title: "Say this when grilling :", required: false, defaultValue: defaultSpeechAlarmBoth1
+			input name: "ovenModeTalkOnWarming1", type: "text", title: "Say this when warming:", required: false, defaultValue: defaultSpeechAlarmSiren1
+			input name: "ovenModeTalkOnDefrosting1", type: "text", title: "Say this when defrosting:", required: false, defaultValue: defaultSpeechAlarmStrobe1
+            input name: "ovenModePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "ovenModeSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
+            	input name: "ovenModeVolume1", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "ovenModeResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "ovenModeVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            }
+        }
+        section("Restrictions"){
+            input name: "ovenModeModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "ovenModeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
+            input name: "ovenModeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.buttonStartTime1 == null))
+            input name: "ovenModeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "ovenModeDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+        }
+        section("Help"){
+            href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+    }
+//End pageConfigAlarm()
 }
 
 def pageConfigSHM(){
@@ -795,13 +932,13 @@ def initialize() {
         state.lastMode = location.mode
         parent.setLastMode(location.mode)
     }
-    LOGTRACE("Initialized (Parent Version: ${parent.returnVar("appversion")}; Child Version: ${state.appversion}; Group Enabled: ${settings.groupEnabled})")
+    LOGTRACE("Initialized (Parent Version: ${parent.returnVar("version")}; Child Version: ${state.version}; Group Enabled: ${settings.groupEnabled})")
 //End initialize()
 }
 def updated() {
     state.groupEnabled = settings.groupEnabled
 	setAppVersion()
-	LOGTRACE("Updating settings (Parent Version: ${parent.returnVar("appversion")}; Child Version: ${state.appversion}; Group Enabled: ${state.groupEnabled})")
+	LOGTRACE("Updating settings (Parent Version: ${parent.returnVar("version")}; Child Version: ${state.version}; Group Enabled: ${state.groupEnabled})")
     state.installed = true
     unschedule()
     unsubscribe()
@@ -839,6 +976,12 @@ def initSubscribe(){
     if (smokeDeviceGroup1) { subscribe(smokeDeviceGroup1, "smoke", onSmoke1Event) }
     //Subscribe Button
     if (buttonDeviceGroup1) { subscribe(buttonDeviceGroup1, "button", onButton1Event) }
+	//Subscribe Alarm
+    if (alarmDeviceGroup1) { subscribe(alarmDeviceGroup1, "alarm", onAlarm1Event) }
+	//Subscribe Filter Status
+    if (filterStatusDeviceGroup1) { subscribe(filterStatusDeviceGroup1, "filterstatus", onFilterStatus1Event) }
+	//Subscribe Oven Mode
+    if (ovenModeDeviceGroup1) { subscribe(ovenModeDeviceGroup1, "filterstatus", onOvenMode1Event) }
     //Subscribe SHM
     if (SHMTalkOnAway || SHMTalkOnHome || SHMTalkOnDisarm) { subscribe(location, "alarmSystemStatus", onSHMEvent) }
     //Subscribe PowerMeter
@@ -846,7 +989,7 @@ def initSubscribe(){
     //Subscribe Routine
     if (routineDeviceGroup1) { subscribe(location, "routineExecuted", onRoutineEvent) }
     //Subscribe Mode
-    if (modePhraseGroup1) { subscribe(location, onModeChangeEvent) }
+    if (modePhraseGroup1) { subscribe(location, "mode", onModeChangeEvent) }
     
     LOGDEBUG ("END initSubscribe()", true)
 }
@@ -938,7 +1081,7 @@ def processDayRestriction(allowedDays){
     if (allowedDays == null || allowedDays == ""){
         return true
     }
-    if (allowedDays.contains(todayStr)) {
+    if (allowedDays.contains(todayStr) || allowedDays == null) {
         return true
     } else {
         return false
@@ -1272,6 +1415,69 @@ def onButton1Event(evt){
 
 //END HANDLE BUTTON
 
+//BEGIN HANDLE ALARM
+def onAlarm1Event(evt){
+	def deviceType = "alarm" //lowercase first char
+	def deviceState1 = "off"   //on,open,etc
+	def deviceState2 = "strobe"  //off,closed,etc
+	def deviceState3 = "siren"
+	def deviceState4 = "both"
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+
+//END HANDLE ALARM
+
+//BEGIN HANDLE FILTER STATUS
+def onFilterStatus1Event(evt){
+	def deviceType = "filterStatus" //lowercase first char
+	def deviceState1 = "normal"   //on,open,etc
+	def deviceState2 = "replace"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+
+//END HANDLE FILTER STATUS
+
+//BEGIN HANDLE OVEN MODE
+def onOvenMode1Event(evt){
+	def deviceType = "ovenMode" //lowercase first char
+	def deviceState1 = "heating"   //on,open,etc
+	def deviceState2 = "grill"  //off,closed,etc
+	def deviceState3 = "warming"
+	def deviceState4 = "defrosting"
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+
+//END HANDLE OVEN MODE
+
 ////BEGIN PROCESSEVENT
 def processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt){
 	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
@@ -1300,8 +1506,8 @@ def processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceSta
 		}
         if (resume == null) { resume = true }
 	} else { resume = false }
-	if (settings?."${deviceType}switchPersonality${index}" == "Yes") {personality = true}
-	if (settings?."${deviceType}switchPersonality${index}" == "No") {personality = false}
+	if (settings?."${deviceType}Personality${index}" == "Yes") {personality = true}
+	if (settings?."${deviceType}Personality${index}" == "No") {personality = false}
     if (evt.value == deviceState1) {
 		state.TalkPhrase = settings."${deviceType}TalkOn${deviceState1.capitalize()}${index}"; state.speechDevice = settings."${deviceType}SpeechDevice${index}"; myVolume = getDesiredVolume(settings."${deviceType}Volume${index}")
         if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event (${evt.value} <> ${deviceState1})", true)}
@@ -1339,6 +1545,8 @@ def processModeChangeEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.modeVoice1)
     LOGDEBUG("(onModeEvent): Last Mode: ${state.lastMode}, New Mode: ${location.mode}, ${myVoice}", true)
+	//LOGDEBUG("(onModeEvent): Restricted FROM modes: ${settings.modeExcludePhraseGroup1}",true)
+	//LOGDEBUG("(onModeEvent): FROM restriction test: ${(settings.modeExcludePhraseGroup1.contains(state.lastMode))},${(!(settings.modeExcludePhraseGroup1 == null))}",true)
     //Check Restrictions
     if (!(processRestrictions("mode",index))){ return }
 	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -1350,9 +1558,10 @@ def processModeChangeEvent(index, evt){
     if (settings?.modePersonality1 == "Yes") {personality = true}
     if (settings?.modePersonality1 == "No") {personality = false}
     if (settings.modePhraseGroup1.contains(location.mode)){
-        if (!settings.modeExcludePhraseGroup1 == null){
+        if (!(settings.modeExcludePhraseGroup1 == null)){
             //settings.modeExcluePhraseGroup1 is not empty
-            if (!(settings.modeExcludePhraseGroup1.contains(state.lastMode))) {
+            if ((settings.modeExcludePhraseGroup1.contains(state.lastMode)) == false) {
+				//LOGDEBUG("onModeEvent(): Exclusion modes exist but we are not coming from one of them",true)
                 //If we are not coming from an exclude mode, Talk.
                 state.TalkPhrase = null
                 state.speechDevice = null
@@ -1365,6 +1574,7 @@ def processModeChangeEvent(index, evt){
             }
         } else {
             //settings.modeExcluePhraseGroup1 is empty, no exclusions, Talk.
+			//LOGDEBUG("onModeEvent(): Exclusion modes do not exist",true)
             state.TalkPhrase = null
             state.speechDevice = null
             state.TalkPhrase = settings.TalkOnModeChange1; state.speechDevice = modePhraseSpeechDevice1; myVolume = getDesiredVolume(settings.modePhraseVolume1)
@@ -1596,9 +1806,9 @@ def processScheduledEvent(index, eventtime, alloweddays){
     if (index == 2 && settings?.timeSlotPersonality2 == "No") {personality = false}
     if (index == 3 && settings?.timeSlotPersonality3 == "Yes") {personality = true}
     if (index == 3 && settings?.timeSlotPersonality3 == "No") {personality = false}  
-	if (index == 1) { state.TalkPhrase = settings.timeSlotOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1) }
-	if (index == 2) { state.TalkPhrase = settings.timeSlotOnTime2; state.speechDevice = timeSlotSpeechDevice2; myVolume = getDesiredVolume(settings.timeSlotVolume2) }
-	if (index == 3) { state.TalkPhrase = settings.timeSlotOnTime3; state.speechDevice = timeSlotSpeechDevice3; myVolume = getDesiredVolume(settings.timeSlotVolume3) }
+	if (index == 1) { state.TalkPhrase = settings.timeSlotTalkOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1) }
+	if (index == 2) { state.TalkPhrase = settings.timeSlotTalkOnTime2; state.speechDevice = timeSlotSpeechDevice2; myVolume = getDesiredVolume(settings.timeSlotVolume2) }
+	if (index == 3) { state.TalkPhrase = settings.timeSlotTalkOnTime3; state.speechDevice = timeSlotSpeechDevice3; myVolume = getDesiredVolume(settings.timeSlotVolume3) }
 	def customevent = [displayName: 'BigTalker:OnSchedule', name: 'OnSchedule', value: "${todayStr}@${timeNow}"]
 	sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume,resume, personality, myVoice, customevent)
 	state.TalkPhrase = null
@@ -1637,8 +1847,8 @@ def getMyVoice(deviceVoice){
     def myVoice = "Not Used"
     if (!(deviceVoice == null )) { myVoice = deviceVoice }
     if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-    	log.debug "getMyVoice: deviceVoice=${myVoice}"
-        log.debug "getMyVoice: settings.parent.speechVoice=${parent.returnVar("speechVoice")}"
+    	LOGDEBUG("getMyVoice: deviceVoice=${myVoice}",false)
+        LOGDEBUG("getMyVoice: settings.parent.speechVoice=${parent.returnVar("speechVoice")}",false)
 		myVoice = (!(deviceVoice == null || deviceVoice == "")) ? deviceVoice : (parent.returnVar("speechVoice") ? parent.returnVar("speechVoice") : "Salli(en-us)")
     }
     return myVoice
@@ -1650,12 +1860,16 @@ def sendTalk(appname, phrase, customSpeechDevice, volume, resume, personality, v
 }
 
 def LOGDEBUG(txt, send){
+	if (txt == null) { 
+		log.debug "Debug log data was null"
+		if (send == true) { parent.LOGDEBUG("[CHILD:${app.label}] Debug log data was null") }
+	}
 	if (send == true || send == null || send == "") { def sendToParent = true } else { def sendToParent = false }
-	if (parent.returnVar("debugmode") && sendToParent) { parent.LOGDEBUG("[CHILD:${app.label}] ${txt}", true) }
+	if (parent?.returnVar("debugMode") && sendToParent) {parent.LOGDEBUG("[CHILD:${app?.label}] ${txt}")}
     try {
-    	if (parent.returnVar("debugmode") || sendToParent == false) { log.debug("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${txt}")}
+    	if (parent?.returnVar("debugMode") || sendToParent == false) { log.debug("${app?.label?.replace(" ","").toUpperCase()}(${state.appversion}) || ${txt}")}
     } catch(ex) {
-    	log.error("LOGDEBUG unable to output requested data!", true)
+		log.error("LOGDEBUG unable to output requested data! || ${text}")
     }
 }
 def LOGTRACE(txt){
@@ -1676,5 +1890,163 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.7"
+    state.appversion = "C2.0.8.0"
+}
+
+def version(){
+    resetBtnName()
+	//schedule("0 0 9 ? * FRI *", updateCheck) //  Check for updates at 9am every Friday
+	updateCheck()  
+    //checkButtons()
+    //pauseOrNot()
+    
+}
+
+def checkButtons(){
+    LOGDEBUG("Running checkButtons",false)
+    appButtonHandler("updateBtn")
+}
+
+
+def appButtonHandler(btn){
+    state.btnCall = btn
+    if(state.btnCall == "updateBtn"){
+       log.info "Checking for updates now..."
+        updateCheck()
+        pause(3000)
+  		state.btnName = state.versionBtn
+        runIn(2, resetBtnName)
+    }
+    if(state.btnCall == "updateBtn1"){
+    state.btnName = "Update Available - Click Here" 
+    //httpGet("https://github.com/CobraVmax/Hubitat/tree/master/Apps' target='_blank")
+    }
+    
+}   
+def resetBtnName(){
+//    log.info "Resetting Update Button Name"
+	if(state.versionStatus != "Current"){
+		state.btnName = state.versionBtn
+	}
+	else{
+		state.btnName = "Check For Update" 
+	}
+}    
+
+def displayVersionStatus(){
+	section("<HR size=3><B>Version Information</B>"){
+	}
+	if(state.versionStatus){
+		section{paragraph "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png''</img><BR>${state.ExternalName} - Version: $state.version <BR><font face='Lucida Handwriting'>$state.Copyright </font>"}
+	}
+
+	if((state.versionStatus != "<b>** This app is no longer supported by $state.author  **</b>") & (state.versionStatus != "Current")){
+		//section(){ input "updateBtn", "button", title: "${state.btnName}"}
+    
+		//  section(){
+		//		log.info "app.label = $app.label"
+		//		input "pause1", "bool", title: "Pause This App", required: true, submitOnChange: true, defaultValue: false  
+		//	}
+		//	pauseOrNot()   
+			//if(state.versionStatus != "Current"){
+		section{ 
+			paragraph "<b>${state.versionStatus}</b><BR>${state.updateURI}<BR>${state.UpdateInfo}<BR>"
+			//}
+		}
+		//section(" ") {
+		//	input "updateNotification", "bool", title: "Send a 'Pushover' message when an update is available", required: true, defaultValue: false, submitOnChange: true 
+		//	if(updateNotification == true){ input "speaker", "capability.speechSynthesis", title: "PushOver Device", required: true, multiple: true}
+		//}
+	} else {
+		section{
+				paragraph "<i>App is up to date</i>"
+		}
+	}
+}
+
+def updateCheck(){
+	setVersion()
+	def lastKnownVersionStatus = state.versionStatus
+	if (state?.versionStatus == null) { state.versionStatus = "<i>Unknown</i>" }
+	def paramsUD = [uri: "https://lowrance.cc/ST/manifests/RayzurCodeHE.json"]
+	if (updateCheckAllowed() || lastKnownVersionStatus == "<i>Unknown</i>" || lastKnownVersionStatus == null){
+		state.Copyright = ""
+		state.updateURI = ""
+		state.UpdateInfo = ""
+		state.author = ""
+		state.versionBtn = ""
+		def newVerRaw = ""
+		def newVer = ""
+		def currentVer = ""
+		try {
+			httpGet(paramsUD) { respUD ->
+ 			  //log.warn " Version Checking - Response Data: ${respUD.data}"   // Troubleshooting Debug Code 
+				def copyrightRead = (respUD.data.copyright)
+				state.Copyright = copyrightRead
+				def updateUri = (respUD.data.versions.UpdateInfo.GithubFiles.(state.InternalName))
+				state.updateURI = updateUri   
+            	newVerRaw = (respUD.data.versions.Application.(state.InternalName))
+				newVer = (respUD.data.versions.Application.(state.InternalName).replace(".", ""))
+				currentVer = state.version.replace(".", "")
+				state.UpdateInfo = (respUD.data.versions.UpdateInfo.Application.(state.InternalName))
+				state.author = (respUD.data.author)
+			
+				if(newVer == "NLS"){
+					state.versionStatus = "<b>** This app is no longer supported by ${state.author}  **</b>"  
+					log.warn "** This app is no longer supported by ${state.author} **" 
+				}
+				else if(currentVer < newVer){
+					state.versionStatus = "New Version Available (Version: ${newVerRaw})"
+					log.warn "** There is a newer version of this app available  (Version: ${newVerRaw}) **"
+					log.warn "** ${state.UpdateInfo} **"
+					state.versionBtn = "UPDATE AVAILABLE"
+					def updateMsg = "There is a new version of '${state.ExternalName}' available (Version: ${newVerRaw})"
+					//pushOverNow(updateMsg)
+				} 
+				else{ 
+					state.versionStatus = "Current"
+					log.info "You are using the current version of this app"
+				}
+			}
+		} catch (e) {
+			log.error "Something went wrong: CHECK THE JSON FILE AND IT'S URI -  $e"
+		}
+		if(state.versionStatus != "Current"){
+			state.versionBtn = "UPDATE AVAILABLE"
+		}
+		else{
+			state.versionBtn = "No Update Available"
+		}
+	} else {
+		return
+	}
+}
+
+def updateCheckAllowed(){
+	// rayzurbock code, used with Cobra update code
+	def proceed = false
+	def updateCheckCurrentDate = new Date().getTime()
+	def updateCheckIntervalInMil = (state.updateActiveUseIntervalMin * 60000)
+	if (state?.updateNextCheckDate == null) { state.updateNextCheckDate = new Date().getTime() }
+	def timeDiff = state?.updateNextCheckDate - updateCheckCurrentDate
+	if (timeDiff <= 0 || timeDiff == null) { proceed = true }
+	if (state?.updateNextCheckDate == null) { proceed = true }
+	//if (!(proceed == true)) { log.debug "updateCheckAllowed() result: not allowed to proceed"}
+	LOGDEBUG("updateCheckAllowed() timeDiff=${timeDiff}, proceed=${proceed}", false)
+	if (proceed) {
+		//log.debug("updateCheckAllowed(): result: proceed")
+		state.updateNextCheckDate = new Date().getTime() + updateCheckIntervalInMil
+		return true
+	} else { 
+		//log.debug("updateCheckAllowed(): result: do not proceed (${timeDiff})")
+		return false
+	}
+	
+}
+
+def setVersion(){
+		state.version = "2.0.8.4"	 
+		state.InternalName = "BigTalker2-Child" 
+    		state.ExternalName = "BigTalker2 Child"
+		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
