@@ -1,13 +1,13 @@
 definition(
-    name: "BigTalker2",
+    name: "BigTalker2-Parent-Dev",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
     description: "Let's talk about mode changes, switches, motions, and so on.",
     category: "Fun & Social",
-    singleInstance: true,
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.8.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.8.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.8.png")
+	//singleInstance: true,
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png")
 
 preferences {
     page(name: "pageStart")
@@ -20,10 +20,10 @@ preferences {
 }
 
 def pageStart(){
-    state.childAppName = "BigTalker2-Child"
-    state.parentAppName = "BigTalker2"
+    state.childAppName = "BigTalker2-Child-Dev"
+    state.parentAppName = "BigTalker2-Parent-Dev"
     state.namespace = "rayzurbock"
-	setAppVersion()
+	setVersion()
     state.hubType = getHubType()
     LOGDEBUG("Hub Type: ${state.hubType}")
     state.supportedVoices = ["Ivy(en-us)","Joanna(en-us)","Joey(en-us)","Justin(en-us)","Kendra(en-us)","Kimberly(en-us)","Salli(en-us)","Amy(en-gb)","Brian(en-gb)","Emma(en-gb)","Miguel(es-us)","Penelope(es-us)"]
@@ -63,16 +63,14 @@ def pageStart(){
         }
         section("About"){
             def AboutApp = ""
-            AboutApp += 'Big Talker is a SmartApp that can make your house talk depending on various triggered events.\n\n'
-            if (state.hubType == "Hubitat") {AboutApp += 'Pair with a Hubitat compatible audio device such as Sonos, Ubi, LANnouncer, and/or VLC Thing (running on your computer or Raspberry Pi)\n\n'}
-            if (state.hubType == "SmartThings") {AboutApp += 'Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the "Generic MediaRenderer" SmartApp/Device and/or AskAlexa SmartApp\n\n'}
+            AboutApp += '<HR>Big Talker is a SmartApp that can make your house talk depending on various triggered events.\n\n'
+            if (state.hubType == "Hubitat") {AboutApp += 'Pair with a Hubitat compatible audio device such as Sonos, Ubi, LANnouncer, and/or VLC Thing (running on your computer or Raspberry Pi)\n'}
+            if (state.hubType == "SmartThings") {AboutApp += 'Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the "Generic MediaRenderer" SmartApp/Device and/or AskAlexa SmartApp\n'}
             AboutApp += 'You can contribute to the development of this SmartApp by making a PayPal donation to rayzur@rayzurbock.com or visit http://rayzurbock.com/store\n\n'
-            if (!(state.appversion == null)){ 
-                AboutApp += "Big Talker ${state.appversion}\nhttp://www.github.com/rayzurbock\n" 
-            } else {
-                AboutApp += 'Big Talker \nhttp://www.github.com/rayzurbock\n'
-            }
             paragraph(AboutApp)
+			updateCheck()
+			//checkButtons()
+			displayVersionStatus()
         }
     }
 }
@@ -1886,13 +1884,17 @@ def pageHelpPhraseTokens(){
 }
 
 def pageConfigureSpeechDeviceType(){
-    if (!(state.installed == true)) { state.installed = false; state.speechDeviceType = "capability.musicPlayer"}
-    dynamicPage(name: "pageConfigureSpeechDeviceType", title: "Configure", nextPage: "pageConfigureDefaults", install: false, uninstall: false) {
+	def myNextPage = ""
+    if (!(state?.installed == true)) { state.installed = false; state.speechDeviceType = "capability.musicPlayer"; myNextPage = "pageConfigureDefaults"}
+    dynamicPage(name: "pageConfigureSpeechDeviceType", title: "Configure", nextPage: myNextPage, install: false, uninstall: false) {
         //section ("Speech Device Type Support"){
         section (){
+			if (state.installed == true) { 
+				paragraph "<font color=red><strong>PROCEED WITH CAUTION!</strong></font>\n<font color=red><strong>WARNING!</strong></font> If you change this setting after the app has been configured, you will need to update your selected default and custom speech devices!\n <strong>To Cancel:</strong> Don't move the switch and press Next\n<font color=red><strong>PROCEED WITH CAUTION!</strong></font>"
+			}
             paragraph "${app.label} can support either 'Music Player' or 'Speech Synthesis' devices."
             if (state.hubType == "SmartThings") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing, Generic Media Renderer.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nIf only using with AskAlexa this setting can be ignored.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
-            if (state.hubType == "Hubitat") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
+            if (state.hubType == "Hubitat") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer."}
             input "speechDeviceType", "bool", title: "ON=Music Player\nOFF=Speech Synthesis", required: true, defaultValue: true, submitOnChange: true
             paragraph "Click Next (top right) to continue configuration...\n"
             if (speechDeviceType == true) {state.speechDeviceType = "capability.musicPlayer"}
@@ -1945,15 +1947,25 @@ def pageConfigureDefaults(){
         }
         section(){
             input "personalityMode", "bool", title: "Allow Personality?", required: true, defaultValue: false
-            input "debugmode", "bool", title: "Enable debug logging", required: true, defaultValue: false
+            input "debugmode", "bool", title: "Enable debug logging", required: true, defaultValue: false, submitOnChange: true
+			if (debugmode) { 
+				if (state.debugMode == false || state?.debugMode == null){
+					state.debugMode = true; myRunIn(1800, disableDebug); LOGTRACE("Debug logging has been enabled.  Will auto-disable in 30 minutes.")
+				}
+			} else {
+				state.debugMode = false; unschedule("disableDebug");  LOGTRACE("Debug logging is not enabled.")
+			}
         }
+		section("Advanced"){
+				href "pageConfigureSpeechDeviceType", title:"Change Speech Mode", description:"Tap to change speech mode (musicPlayer <> speechSynthesis)"
+		}
     }
 }
 
 def installed() {
 	state.installed = true
     //LOGTRACE("Installed with settings: ${settings}")
-    LOGTRACE("Installed (Parent Version: ${state.appVersion})")
+    LOGTRACE("Installed (Parent Version: ${state.version})")
 	initialize()
     if (((settings?.allowScheduledPoll == true || state?.allowScheduledPoll == true)) || ((settings?.allowScheduledPoll == null) || (state?.allowScheduledPoll == null))){ 
     	myRunIn(60, poll) 
@@ -1965,7 +1977,7 @@ def updated() {
     unschedule()
     state.installed = true
 	//LOGTRACE("Updated with settings: ${settings}")
-    LOGTRACE("Updated settings (Parent Version: ${state.appVersion})")
+    LOGTRACE("Updated settings (Parent Version: ${state.version})")
     unsubscribe()
     initialize()
     if (((settings?.allowScheduledPoll == true || state?.allowScheduledPoll == true)) || ((settings?.allowScheduledPoll == null) || (state?.allowScheduledPoll == null))){ 
@@ -2009,7 +2021,8 @@ def initialize() {
         state.polledDevices = ""
         return //App not properly configured, exit, don't subscribe
     }
-    LOGTRACE("Initialized (Parent Version: ${state.appVersion})")
+	version()
+	LOGTRACE("Initialized (Parent Version: ${state.version})")
     if (state.hubType == "SmartThings") {sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")}
     state.lastMode = location.mode
     state.lastTalkNow = settings.speechTalkNow
@@ -3552,20 +3565,29 @@ def setLastMode(mode){
 	state.lastMode = mode
 }
 
+def disableDebug(){
+	LOGTRACE("Debug timer has expired. Disabling debugging")
+	state.debugMode = false
+	unschedule("disableDebug")
+	settings.debugmode = false
+}
+
 def LOGDEBUG(txt){
-	def msgfrom = "[PARENT] "
-	if (txt?.contains("[CHILD:")) { msgfrom = "" }
-    try {
-    	if (settings.debugmode) { log.debug("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${msgfrom}${txt}") }
-    } catch(ex) {
-    	log.error("LOGDEBUG unable to output requested data!")
-    }
+	if (state.debugMode) { 
+		def msgfrom = "[PARENT] "
+		if (txt?.contains("[CHILD:")) { msgfrom = "" }
+    	try {
+    		log.debug("${app.label.replace(" ","").toUpperCase()}(${state.version}) || ${msgfrom}${txt}")
+    	} catch(ex) {
+    		log.error("LOGDEBUG unable to output requested data!")
+    	}
+	}
 }
 def LOGTRACE(txt){
 	def msgfrom = "[PARENT] "
     if (txt?.contains("[CHILD:")) { msgfrom = "" }
     try {
-    	log.trace("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${msgfrom}${txt}")
+    	log.trace("${app.label.replace(" ","").toUpperCase()}(${state.version}) || ${msgfrom}${txt}")
     } catch(ex) {
     	log.error("LOGTRACE unable to output requested data!")
     }
@@ -3574,7 +3596,7 @@ def LOGERROR(txt){
 	def msgfrom = "[PARENT] "
     if (txt?.contains("[CHILD:")) { msgfrom = "" }
     try {
-    log.error("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${msgfrom}ERROR: ${txt}")
+    log.error("${app.label.replace(" ","").toUpperCase()}(${state.version}) || ${msgfrom}ERROR: ${txt}")
     } catch(ex) {
     	log.error("LOGERROR unable to output requested data!")
     }
@@ -3603,7 +3625,11 @@ def returnVar(var) {
 }
 
 def playTrackAndRestore(device, uri, duration, volume, myDelay) {
-    LOGDEBUG("playTrackAndRestore(${device.displayName},${uri},${duration},${volume},${myDelay})")
+    LOGDEBUG("playTrackAndRestore(device=${device.displayName})")
+	LOGDEBUG("playTrackAndRestore(uri=${uri})")
+	LOGDEBUG("playTrackAndRestore(duration=${duration})")
+	LOGDEBUG("playTrackAndRestore(volume=${volume})")
+	LOGDEBUG("playTrackAndRestore(myDelay=${myDelay})")
     if (state.hubType == "SmartThings") {
     	device.playTrackAndRestore("uri": uri, "duration":duration, volume, [delay: myDelay])
 		//device.playTrackAndRestore(uri, duration, volume, [delay: myDelay])
@@ -3651,6 +3677,166 @@ def playTrackAndResume(device, uri, volume, myDelay) {
 }
 */
 
-def setAppVersion(){
-    state.appversion = "P2.0.8b"
+def version(){
+	//Cobra update code, modified by Rayzurbock
+    resetBtnName()
+	//schedule("0 0 9 ? * FRI *", updateCheck) //  Check for updates at 9am every Friday
+	updateCheck()  
+	//checkButtons()
+    //pauseOrNot()
+    
+}
+
+def checkButtons(){
+	//Cobra update code
+    LOGDEBUG("Running checkButtons")
+    appButtonHandler("updateBtn")
+}
+
+
+def appButtonHandler(btn){
+	//Cobra update code
+    state.btnCall = btn
+    if(state.btnCall == "updateBtn"){
+       log.info "Checking for updates now..."
+        updateCheck()
+        pause(3000)
+  		state.btnName = state.versionBtn
+        runIn(2, resetBtnName)
+    }
+    if(state.btnCall == "updateBtn1"){
+    state.btnName = "Update Available - refresh page" 
+    //httpGet("https://github.com/CobraVmax/Hubitat/tree/master/Apps' target='_blank")
+    }
+    
+}   
+def resetBtnName(){
+	//Cobra update code
+//    log.info "Resetting Update Button Name"
+	if(state.versionStatus != "Current"){
+		state.btnName = state.versionBtn
+	}
+	else{
+		state.btnName = "Check For Update" 
+	}
+}    
+
+def displayVersionStatus(){
+	//Cobra update code, modified by Rayzurbock
+	section("<HR size=3><B>Version Information</B>"){
+	}
+	if(state.versionStatus){
+		section{paragraph "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png''</img><BR>${state.ExternalName} - Version: $state.version <BR><font face='Lucida Handwriting'>$state.Copyright </font>"}
+	}
+
+	if((state.versionStatus != "<b>** This app is no longer supported by $state.author  **</b>") & (state.versionStatus != "Current")){
+		section(){ input "updateBtn", "button", title: "${state.btnName}"}
+    
+		//  section(){
+		//		log.info "app.label = $app.label"
+		//		input "pause1", "bool", title: "Pause This App", required: true, submitOnChange: true, defaultValue: false  
+		//	}
+		//	pauseOrNot()   
+			//if(state.versionStatus != "Current"){
+		section{ 
+			paragraph "<b>${state.versionStatus}</b><BR>${state.updateURI}<BR>${state.UpdateInfo}<BR>"
+			//}
+		}
+		//section(" ") {
+		//	input "updateNotification", "bool", title: "Send a 'Pushover' message when an update is available", required: true, defaultValue: false, submitOnChange: true 
+		//	if(updateNotification == true){ input "speaker", "capability.speechSynthesis", title: "PushOver Device", required: true, multiple: true}
+		//}
+	} else {
+		section{
+				paragraph "<i>App is up to date</i>"
+		}
+	}
+}
+
+def updateCheck(){
+	setVersion()
+	def lastKnownVersionStatus = state.versionStatus
+	if (state?.versionStatus == null) { state.versionStatus = "<i>Unknown</i>" }
+	def paramsUD = [uri: "https://lowrance.cc/ST/manifests/RayzurCodeHE.json"]
+	if (updateCheckAllowed() || lastKnownVersionStatus == "<i>Unknown</i>" || lastKnownVersionStatus == null){
+		state.Copyright = ""
+		state.updateURI = ""
+		state.UpdateInfo = ""
+		state.author = ""
+		state.versionBtn = ""
+		def newVerRaw = ""
+		def newVer = ""
+		def currentVer = ""
+		try {
+			httpGet(paramsUD) { respUD ->
+ 			  //log.warn " Version Checking - Response Data: ${respUD.data}"   // Troubleshooting Debug Code 
+				def copyrightRead = (respUD.data.copyright)
+				state.Copyright = copyrightRead
+				def updateUri = (respUD.data.versions.UpdateInfo.GithubFiles.(state.InternalName))
+				state.updateURI = updateUri   
+            	newVerRaw = (respUD.data.versions.Application.(state.InternalName))
+				newVer = (respUD.data.versions.Application.(state.InternalName).replace(".", ""))
+				currentVer = state.version.replace(".", "")
+				state.UpdateInfo = (respUD.data.versions.UpdateInfo.Application.(state.InternalName))
+				state.author = (respUD.data.author)
+			
+				if(newVer == "NLS"){
+					state.versionStatus = "<b>** This app is no longer supported by ${state.author}  **</b>"  
+					log.warn "** This app is no longer supported by ${state.author} **" 
+				}
+				else if(currentVer < newVer){
+					state.versionStatus = "New Version Available (Version: ${newVerRaw})"
+					log.warn "** There is a newer version of this app available  (Version: ${newVerRaw}) **"
+					log.warn "** ${state.UpdateInfo} **"
+					state.versionBtn = "UPDATE AVAILABLE"
+					def updateMsg = "There is a new version of '${state.ExternalName}' available (Version: ${newVerRaw})"
+					//pushOverNow(updateMsg)
+				} 
+				else{ 
+					state.versionStatus = "Current"
+					log.info "You are using the current version of this app"
+				}
+			}
+		} catch (e) {
+			log.error "Something went wrong: CHECK THE JSON FILE AND IT'S URI -  $e"
+		}
+		if(state.versionStatus != "Current"){
+			state.versionBtn = "UPDATE AVAILABLE"
+		}
+		else{
+			state.versionBtn = "No Update Available"
+		}
+	} else {
+		return
+	}
+}
+
+def updateCheckAllowed(){
+	// rayzurbock code, used with Cobra update code
+	def proceed = false
+	def updateCheckCurrentDate = new Date().getTime()
+	def updateCheckIntervalInMil = (state.updateActiveUseIntervalMin * 60000)
+	if (state?.updateNextCheckDate == null) { state.updateNextCheckDate = new Date().getTime() }
+	def timeDiff = state?.updateNextCheckDate - updateCheckCurrentDate
+	if (timeDiff <= 0 || timeDiff == null) { proceed = true }
+	if (state?.updateNextCheckDate == null) { proceed = true }
+	//if (!(proceed == true)) { log.debug "updateCheckAllowed() result: not allowed to proceed"}
+	LOGDEBUG("updateCheckAllowed() timeDiff=${timeDiff}, proceed=${proceed}")
+	if (proceed) {
+		//log.debug("updateCheckAllowed(): result: proceed")
+		state.updateNextCheckDate = new Date().getTime() + updateCheckIntervalInMil
+		return true
+	} else { 
+		//log.debug("updateCheckAllowed(): result: do not proceed (${timeDiff})")
+		return false
+	}
+	
+}
+
+def setVersion(){
+		//Cobra update code, modified by Rayzurbock
+		state.version = "2.0.8.4.1"	 
+		state.InternalName = "BigTalker2-Parent-Dev" 
+    	state.ExternalName = "BigTalker2 Beta"
+		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
