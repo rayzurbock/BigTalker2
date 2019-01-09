@@ -1,13 +1,13 @@
 definition(
-    name: "BigTalker2-Child",
+    name: "BigTalker2-Child-Dev",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
     description: "Do not install in the mobile app, Save don't publish (needed by BigTalker2)",
     category: "Fun & Social",
-    parent: "rayzurbock:BigTalker2",
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.6.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.6.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.6.png")
+    parent: "rayzurbock:BigTalker2-Parent-Dev",
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png")
 
 preferences {
     page(name: "pageConfigureEvents")
@@ -26,10 +26,14 @@ preferences {
     page(name: "pageConfigSHM")
     page(name: "pageConfigPowerMeter")
     page(name: "pageConfigRoutine")
+	page(name: "pageConfigAlarm")
+	page(name: "pageConfigFilterStatus")
     page(name: "pageHelpPhraseTokens")
+	
 }
 
 def pageConfigureEvents(){
+	setAppVersion()
     state.hubType = parent.returnVar("hubType")
     dynamicPage(name: "pageConfigureEvents", title: "Configure Events", install: (!(app?.getInstallationState == true)), uninstall: (app?.getInstallationState == true)) {
         section("Group Settings:"){
@@ -97,6 +101,16 @@ def pageConfigureEvents(){
             } else {
                 href "pageConfigButton", title: "Button", description:"Tap to configure"
             }
+			if (settings.alarmDeviceGroup1 || settings.alarmDeviceGroup2 || settings.alarmDeviceGroup3) {
+                href "pageConfigAlarm", title: "Alarm", description:"Tap to modify", state:"complete"
+            } else {
+                href "pageConfigAlarm", title: "Alarm", description:"Tap to configure"
+            }
+			if (settings.consumableDeviceGroup1 || settings.consumableDeviceGroup2 || settings.consumableDeviceGroup3) {
+                href "pageConfigFilterStatus", title: "Filter Status", description:"Tap to modify", state:"complete"
+            } else {
+                href "pageConfigFilterStatus", title: "Filter Status", description:"Tap to configure"
+            }
             if (hubType == "SmartThings"){
             	if (settings.SHMTalkOnHome || settings.SHMTalkOnAway || settings.SHMTalkOnDisarm) {
                 	href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to modify", state:"complete"
@@ -117,6 +131,9 @@ def pageConfigureEvents(){
             	}
             }
         }
+		updateCheck()
+		//checkButtons()
+		displayVersionStatus()
     }
 }
 
@@ -125,17 +142,15 @@ def pageConfigMotion(){
         section(){
             def defaultSpeechActive1 = ""
             def defaultSpeechInactive1 = ""
-            if (state?.motionTestActive1 == null) { state.motionTestActive1 = false }
-            if (state?.motionTestInactive1 == null) { state.motionTestInactive1 = false }
             if (!motionDeviceGroup1) {
                 defaultSpeechActive1 = "%devicename% is now %devicechange%"
                 defaultSpeechInactive1 = "%devicename% is now %devicechange%"
             }
             input name: "motionDeviceGroup1", type: "capability.motionSensor", title: "Motion Sensor(s)", required: false, multiple: true
             input name: "motionTalkOnActive1", type: "text", title: "Say this on motion active:", required: false, defaultValue: defaultSpeechActive1, submitOnChange: true
-            input name: "motionTestActive1", type: "bool", title: "Toggle to test motion active phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "motionTestOnActive1", type: "bool", title: "Toggle to test motion active phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "motionTalkOnInactive1", type: "text", title: "Say this on motion inactive:", required: false, defaultValue: defaultSpeechInactive1, submitOnChange: true
-            input name: "motionTestInactive1", type: "bool", title: "Toggle to test motion inactive phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "motionTestOnInactive1", type: "bool", title: "Toggle to test motion inactive phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "motionPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"], submitOnChange: true
             input name: "motionSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -152,23 +167,32 @@ def pageConfigMotion(){
             //input name: "motionCount1", type: "number", title: "Do this only x times (next prompt)...", required: false, submitOnChange: true
             //input name: "motionCountUnit1", type:"enum", title: "... per ", required: settings.motionCount1, options: ["Minute", "Hour", "Day"]
             input name: "motionDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
-            if (!(settings.motionTestActive1 == null) && !(settings.motionTestActive1 == state?.motionTestActive1)) {
-            	def testevent = [displayName: 'BigTalker Motion', name: 'MotionActiveTest', value: 'Active']
-                def myVoice = parent.returnVar("speechVoice")
-                if (settings?.motionVoice1) { myVoice = motionVoice1 }
-            	sendTalk(app.label, settings.motionTalkActive1, motionSpeechDevice1, motionVolume1, motionResumePlay1, motionPersonality1, myVoice, testevent)
-                state.motionTestActive1 = settings.motionTestActive1
-            }
-            if (!(settings.motionTestInactive1 == null) && !(settings.motionTestInactive1 == state?.motionTestInactive1)) {
-            	def testevent = [displayName: 'BigTalker Motion', name: 'MotionInactiveTest', value: 'Inactive']
-                def myVoice = parent.returnVar("speechVoice")
-                if (settings?.motionVoice1) { myVoice = motionVoice1 }
-            	sendTalk(app.label, settings.motionTalkInactive1, motionSpeechDevice1, motionVolume1, motionResumePlay1, motionPersonality1, myVoice, testevent)
-                state.motionTestInactive1 = settings.motionTestInactive1
-            }
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+		def phraseTestTogDeviceUpper = "Motion"
+		def phraseTestTogDeviceLower = "motion"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Active"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Inactive"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
         }
     }
 //End pageConfigMotion()
@@ -179,17 +203,15 @@ def pageConfigSwitch(){
         section(){
             def defaultSpeechOn1 = ""
             def defaultSpeechOff1 = ""
-            if (state?.switchTestOn1 == null) { state.switchTestOn1 = false }
-            if (state?.switchTestOff1 == null) { state.switchTestOff1 = false }
             if (!switchDeviceGroup1) {
                 defaultSpeechOn1 = "%devicename% is now %devicechange%"
                 defaultSpeechOff1 = "%devicename% is now %devicechange%"
             }
             input name: "switchDeviceGroup1", type: "capability.switch", title: "Switch(es)", required: false, multiple: true
             input name: "switchTalkOnOn1", type: "text", title: "Say this when switch is turned ON:", required: false, defaultValue: defaultSpeechOn1, submitOnChange: true
-            input name: "switchTestOn1", type: "bool", title: "Toggle to test switch ON phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "switchTestOnOn1", type: "bool", title: "Toggle to test switch ON phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "switchTalkOnOff1", type: "text", title: "Say this when switch is turned OFF:", required: false, defaultValue: defaultSpeechOff1, submitOnChange: true
-            input name: "switchTestOff1", type: "bool", title: "Toggle to test switch OFF phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "switchTestOnOff1", type: "bool", title: "Toggle to test switch OFF phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "switchPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"], submitOnChange: true
             input name: "switchSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -205,23 +227,33 @@ def pageConfigSwitch(){
             input name: "switchEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.switchStartTime1 == null))
             input name: "switchDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "switchDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
-            if (!(settings.switchTestOn1 == null) && !(settings.switchTestOn1 == state?.switchTestOn1)) {
-            	def testevent = [displayName: 'BigTalker Switch', name: 'SwitchOnTest', value: 'On']
-                def myVoice = parent.returnVar("speechVoice")
-                if (settings?.switchVoice1) { myVoice = switchVoice1 }
-            	sendTalk(app.label, settings.switchTalkOn1, switchSpeechDevice1, switchVolume1, switchResumePlay1, switchPersonality1, myVoice, testevent)
-                state.switchTestOn1 = settings.switchTestOn1
-            }
-            if (!(settings.switchTestOff1 == null) && !(settings.switchTestOff1 == state?.switchTestOff1)) {
-            	def testevent = [displayName: 'BigTalker Switch', name: 'SwitchOffTest', value: 'Off']
-                def myVoice = parent.returnVar("speechVoice")
-                if (settings?.switchVoice1) { myVoice = switchVoice1 }
-            	sendTalk(app.label, settings.switchTalkOff1, switchSpeechDevice1, switchVolume1, switchResumePlay1, switchPersonality1, myVoice, testevent)
-                state.switchTestOff1 = settings.switchTestOff1
-            }
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Switch"
+		def phraseTestTogDeviceLower = "switch"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "On"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Off"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
         }
     }
 //End pageConfigSwitch()
@@ -232,30 +264,57 @@ def pageConfigPresence(){
         section(){
             def defaultSpeechArrive1 = ""
             def defaultSpeechLeave1 = ""
+			def testState = ""
             if (!presDeviceGroup1) {
                 defaultSpeechArrive1 = "%devicename% has arrived"
                 defaultSpeechLeave1 = "%devicename% has left"
             }
-            input name: "presDeviceGroup1", type: "capability.presenceSensor", title: "Presence Sensor(s)", required: false, multiple: true
+            input name: "presenceDeviceGroup1", type: "capability.presenceSensor", title: "Presence Sensor(s)", required: false, multiple: true
             input name: "presenceTalkOnArrive1", type: "text", title: "Say this when someone arrives:", required: false, defaultValue: defaultSpeechArrive1
+			input name: "presenceTestOnArrive1", type: "bool", title: "Toggle to test arrival phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "presenceTalkOnLeave1", type: "text", title: "Say this when someone leaves:", required: false, defaultValue: defaultSpeechLeave1
-            input name: "presPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+			input name: "presenceTestOnLeave1", type: "bool", title: "Toggle to test departure phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "presencePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "presenceSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "presenceVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-            	input name: "presResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+            	input name: "presenceResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
                 input name: "presenceVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
         section("Restrictions"){
-            input name: "presModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "presenceModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
             input name: "presenceStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "presEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.presenceStartTime1 == null))
-            input name: "presDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "presenceEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.presenceStartTime1 == null))
+            input name: "presenceDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "presDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Presence"
+		def phraseTestTogDeviceLower = "presence"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Arrive"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Leave"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
         }
     }
 //End pageConfigPresence()
@@ -267,12 +326,14 @@ def pageConfigLock(){
             def defaultSpeechUnlock1 = ""
             def defaultSpeechLock1 = ""
             if (!lockDeviceGroup1) {
-                defaultSpeechUnlock1 = "%devicename% is now %devicechange%"
-                defaultSpeechLock1 = "%devicename% is now %devicechange%"
+                defaultSpeechUnlock1 = "%devicename% is now unlocked"
+                defaultSpeechLock1 = "%devicename% is now locked"
             }
             input name: "lockDeviceGroup1", type: "capability.lock", title: "Lock(s)", required: false, multiple: true
             input name: "lockTalkOnUnlock1", type: "text", title: "Say this when unlocked:", required: false, defaultValue: defaultSpeechUnlock1
+			input name: "lockTestOnUnlock1", type: "bool", title: "Toggle to test unlock phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "lockTalkOnLock1", type: "text", title: "Say this when locked:", required: false, defaultValue: defaultSpeechLock1
+			input name: "lockTestOnLock1", type: "bool", title: "Toggle to test lock phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "lockPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "lockSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -291,6 +352,30 @@ def pageConfigLock(){
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Lock"
+		def phraseTestTogDeviceLower = "lock"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Lock"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Unlock"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
     }
 //End pageConfigLock()
 }
@@ -306,7 +391,9 @@ def pageConfigContact(){
             }
             input name: "contactDeviceGroup1", type: "capability.contactSensor", title: "Contact sensor(s)", required: false, multiple: true
             input name: "contactTalkOnOpen1", type: "text", title: "Say this when opened:", required: false, defaultValue: defaultSpeechOpen1
+			input name: "contactTestOnOpen1", type: "bool", title: "Toggle to test opened phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "contactTalkOnClosed1", type: "text", title: "Say this when closed:", required: false, defaultValue: defaultSpeechClosed1
+			input name: "contactTestOnClosed1", type: "bool", title: "Toggle to test closed phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "contactPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "contactSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -326,6 +413,30 @@ def pageConfigContact(){
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Contact"
+		def phraseTestTogDeviceLower = "contact"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Open"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Closed"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
     }
 //End pageConfigContact()
 }
@@ -344,7 +455,8 @@ def pageConfigMode(){
             }
             input name: "modePhraseGroup1", type:"mode", title:"When mode changes to: ", required:false, multiple:true, submitOnChange:false
             input name: "modeExcludePhraseGroup1", type: "mode", title: "But not when changed from (optional): ", required: false, multiple: true
-            input name: "TalkOnModeChange1", type: "text", title: "Say this when home mode is changed", required: false, defaultValue: defaultSpeechMode1
+            input name: "modeTalkOnChange1", type: "text", title: "Say this when home mode is changed", required: false, defaultValue: defaultSpeechMode1
+			input name: "modeTestOnChange1", type: "bool", title: "Toggle to test mode change phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "modePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "modePhraseSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -355,12 +467,27 @@ def pageConfigMode(){
         }
         section("Restrictions"){
             input name: "modeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "modeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.modeStartTime1 == null))
+            input name: "modeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: false//(!(settings.modeStartTime1 == null))
             input name: "modeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "modeDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Mode"
+		def phraseTestTogDeviceLower = "mode"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Change"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
         }
     }
 //End pageConfigMode()
@@ -381,9 +508,13 @@ def pageConfigThermostat(){
             }
             input name: "thermostatDeviceGroup1", type: "capability.thermostat", title: "Thermostat(s)", required: false, multiple: true
             input name: "thermostatTalkOnIdle1", type: "text", title: "Say this on change to Idle:", required: false, defaultValue: defaultSpeechIdle1
+			input name: "thermostatTestOnIdle1", type: "bool", title: "Toggle to test Idle phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "thermostatTalkOnHeating1", type: "text", title: "Say this on change to heating:", required: false, defaultValue: defaultSpeechHeating1
+			input name: "thermostatTestOnHeating1", type: "bool", title: "Toggle to test Heating phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "thermostatTalkOnCooling1", type: "text", title: "Say this on change to cooling:", required: false, defaultValue: defaultSpeechCooling1
+			input name: "thermostatTestOnCooling1", type: "bool", title: "Toggle to test Cooling phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "thermostatTalkOnFan1", type: "text", title: "Say this on change to fan only:", required: false, defaultValue: defaultSpeechFan1
+			input name: "thermostatTestOnFan1", type: "bool", title: "Toggle to test Fan phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "thermostatPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "thermostatSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -402,6 +533,48 @@ def pageConfigThermostat(){
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Thermostat"
+		def phraseTestTogDeviceLower = "thermostat"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Idle"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Heating"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Cooling"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Fan"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
     }
 //End pageConfigThermostat()
 }
@@ -417,7 +590,9 @@ def pageConfigAcceleration(){
             }
             input name: "accelerationDeviceGroup1", type: "capability.accelerationSensor", title: "Acceleration sensor(s)", required: false, multiple: true
             input name: "accelerationTalkOnActive1", type: "text", title: "Say this when activated:", required: false, defaultValue: defaultSpeechActive1
+			input name: "accelerationTestOnActive1", type: "bool", title: "Toggle to test activate phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "accelerationTalkOnInactive1", type: "text", title: "Say this when inactivated:", required: false, defaultValue: defaultSpeechInactive1
+			input name: "accelerationTestOnInactive1", type: "bool", title: "Toggle to test inactivate phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "accelerationPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "accelerationSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -436,6 +611,30 @@ def pageConfigAcceleration(){
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Acceleration"
+		def phraseTestTogDeviceLower = "acceleration"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Active"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Inactive"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
     }
 //End pageConfigAcceleration()
 }
@@ -451,7 +650,9 @@ def pageConfigWater(){
             }
             input name: "waterDeviceGroup1", type: "capability.waterSensor", title: "Water sensor(s)", required: false, multiple: true
             input name: "waterTalkOnWet1", type: "text", title: "Say this when wet:", required: false, defaultValue: defaultSpeechWet1
+			input name: "waterTestOnWet1", type: "bool", title: "Toggle to test wet phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "waterTalkOnDry1", type: "text", title: "Say this when dry:", required: false, defaultValue: defaultSpeechDry1
+			input name: "waterTestOnDry1", type: "bool", title: "Toggle to test dry phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "waterPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "waterSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -470,6 +671,30 @@ def pageConfigWater(){
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Water"
+		def phraseTestTogDeviceLower = "water"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Wet"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Dry"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
     }
 //End pageConfigWater()
 }
@@ -479,16 +704,19 @@ def pageConfigSmoke(){
         section(){
             def defaultSpeechDetect1 = ""
             def defaultSpeechClear1 = ""
-            def defaultSpeechTest1 = ""
+            def defaultSpeechTested1 = ""
             if (!smokeDeviceGroup1) {
                 defaultSpeechDetect1 = "Smoke, %devicename% has detected smoke"
                 defaultSpeechClear1 = "Smoke, %devicename% has cleared smoke alert"
-                defaultSpeechTest1 = "Smoke, %devicename% has been tested"
+                defaultSpeechTested1 = "Smoke, %devicename% has been tested"
             }
             input name: "smokeDeviceGroup1", type: "capability.smokeDetector", title: "Smoke detector(s)", required: false, multiple: true
             input name: "smokeTalkOnDetect1", type: "text", title: "Say this when detected:", required: false, defaultValue: defaultSpeechDetect1
+			input name: "smokeTestOnDetect1", type: "bool", title: "Toggle to test smoke detected phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "smokeTalkOnClear1", type: "text", title: "Say this when cleared:", required: false, defaultValue: defaultSpeechClear1
-            input name: "smokeTalkOnTest1", type: "text", title: "Say this when tested:", required: false, defaultValue: defaultSpeechTest1
+			input name: "smokeTestOnClear1", type: "bool", title: "Toggle to test smoke cleared phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "smokeTalkOnTested1", type: "text", title: "Say this when tested:", required: false, defaultValue: defaultSpeechTested1
+			input name: "smokeTestOnTested1", type: "bool", title: "Toggle to test smoke tested phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "smokePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "smokeSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -507,22 +735,57 @@ def pageConfigSmoke(){
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Smoke"
+		def phraseTestTogDeviceLower = "smoke"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Detect"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Clear"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Tested"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
     }
 //End pageConfigSmoke()
 }
 
 def pageConfigButton(){
-    dynamicPage(name: "pageConfigButton", title: "Configure talk on button presenceS", install: false, uninstall: false) {
+    dynamicPage(name: "pageConfigButton", title: "Configure talk on button press", install: false, uninstall: false) {
         section(){
             def defaultSpeechButton1 = ""
             def defaultSpeechButtonHold1 = ""
             if (!buttonDeviceGroup1) {
-                defaultSpeechButton1 = "%devicename% button presenceSed"
+                defaultSpeechButton1 = "%devicename% button pressed"
                 defaultSpeechButtonHold1 = "%devicename% button held"
             }
             input name: "buttonDeviceGroup1", type: "capability.button", title: "Button(s)", required: false, multiple: true
             input name: "buttonTalkOnPressed1", type: "text", title: "Say this when pressed:", required: false, defaultValue: defaultSpeechButton1
+			input name: "buttonTestOnPressed1", type: "bool", title: "Toggle to test pressed phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "buttonTalkOnHeld1", type: "text", title: "Say this when held:", required: false, defaultValue: defaultSpeechButtonHold1
+			input name: "buttonTestOnHeld1", type: "bool", title: "Toggle to test held phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "buttonPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "buttonSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -541,8 +804,177 @@ def pageConfigButton(){
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Button"
+		def phraseTestTogDeviceLower = "button"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Pressed"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Held"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
     }
 //End pageConfigButton()
+}
+
+def pageConfigAlarm(){
+    dynamicPage(name: "pageConfigAlarm", title: "Configure talk on alarm", install: false, uninstall: false) {
+        section(){
+            def defaultSpeechAlarmOff1 = ""
+            def defaultSpeechAlarmBoth1 = ""
+			def defaultSpeechAlarmSiren1 = ""
+			def defaultSpeechAlarmStrobe1 = ""
+            if (!alarmDeviceGroup1) {
+                defaultSpeechAlarmOff1 = "%devicename% alarm is now off"
+                defaultSpeechAlarmBoth1 = "%devicename% alarm siren and strobe are now active"
+				defaultSpeechAlarmSiren1 = "%devicename% alarm siren is now active"
+				defaultSpeechAlarmStrobe1 = "%devicename% alarm strobe is now active"
+            }
+            input name: "alarmDeviceGroup1", type: "capability.alarm", title: "Alarm(s)", required: false, multiple: true
+            input name: "alarmTalkOnOff1", type: "text", title: "Say this when turned off:", required: false, defaultValue: defaultSpeechAlarmOff1
+			input name: "alarmTestOnOff1", type: "bool", title: "Toggle to test off phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "alarmTalkOnBoth1", type: "text", title: "Say this when siren and strobe are active:", required: false, defaultValue: defaultSpeechAlarmBoth1
+			input name: "alarmTestOnBoth1", type: "bool", title: "Toggle to test siren and strobe active phrase", required: false, defaultValue: false, submitOnChange: true
+			input name: "alarmTalkOnSiren1", type: "text", title: "Say this when only the siren is active:", required: false, defaultValue: defaultSpeechAlarmSiren1
+			input name: "alarmTestOnSiren1", type: "bool", title: "Toggle to test siren phrase", required: false, defaultValue: false, submitOnChange: true
+			input name: "alarmTalkOnStrobe1", type: "text", title: "Say this when only the strobe is active:", required: false, defaultValue: defaultSpeechAlarmStrobe1
+			input name: "alarmTestOnStrobe1", type: "bool", title: "Toggle to test strobe phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "alarmPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "alarmSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
+            	input name: "alarmVolume1", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "alarmResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "alarmVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            }
+        }
+        section("Restrictions"){
+            input name: "alarmModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "alarmStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
+            input name: "alarmEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.buttonStartTime1 == null))
+            input name: "alarmDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "alarmDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+        }
+        section("Help"){
+            href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Alarm"
+		def phraseTestTogDeviceLower = "alarm"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Off"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Both"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Siren"
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Strobe"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+    }
+//End pageConfigAlarm()
+}
+
+def pageConfigFilterStatus(){
+    dynamicPage(name: "pageConfigFilterStatus", title: "Configure talk on Filter Status change", install: false, uninstall: false) {
+        section(){
+            def defaultSpeechFilterStatusNormal1 = ""
+            def defaultSpeechFilterStatusReplace1 = ""
+            if (!filteStatusDeviceGroup1) {
+                defaultSpeechFilterStatusNormal1 = "%devicename% filter is normal"
+                defaultSpeechFilterStatusReplace1 = "%devicename% filter needs to be replaced"
+            }
+            input name: "filterStatusGroup1", type: "capability.filterstatus", title: "Filter(s)", required: false, multiple: true
+            input name: "filterStatusTalkOnNormal1", type: "text", title: "Say this when filter status changes to normal:", required: false, defaultValue: defaultSpeechFilterStatusNormal1
+			input name: "filterStatusTestOnNormal1", type: "bool", title: "Toggle to test normal phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "filterStatusTalkOnReplace1", type: "text", title: "Say this when filter status changes to replace:", required: false, defaultValue: defaultSpeechFilterStatusReplace1
+			input name: "filterStatusTestOnReplace1", type: "bool", title: "Toggle to test replace phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "filterStatusPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
+            input name: "filterSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
+            	input name: "filterStatusVolume1", type: "number", title: "Set volume to (overrides default):", required: false
+                input name: "filterStatusResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "filterStatusVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            }
+        }
+        section("Restrictions"){
+            input name: "filterStatusModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
+            input name: "filterStatusStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
+            input name: "filterStatusEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.buttonStartTime1 == null))
+            input name: "filterStatusDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "filterStatusDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+        }
+        section("Help"){
+            href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "FilterStatus"
+		def phraseTestTogDeviceLower = "filterStatus"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Normal"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Replace"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+    }
+//End pageConfigFilterStatus()
 }
 
 def pageConfigSHM(){
@@ -556,6 +988,7 @@ def pageConfigSHM(){
                 defaultSpeechSHMAway = "Smart Home Monitor is now Armed in Away mode"
             }
             input name: "SHMTalkOnAway", type: "text", title: "Say this when Armed, Away:", required: false, defaultValue: defaultSpeechSHMAway
+			input name: "SHMTestOnAway", type: "bool", title: "Toggle to test Armed, Away phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "SHMSpeechDeviceAway", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             input name: "SHMDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -576,6 +1009,7 @@ def pageConfigSHM(){
                 defaultSpeechSHMHome = "Smart Home Monitor is now Armed in Home mode"
             }
             input name: "SHMTalkOnHome", type: "text", title: "Say this when Armed, Home:", required: false, defaultValue: defaultSpeechSHMHome
+			input name: "SHMTestOnHome", type: "bool", title: "Toggle to test Armed, Home phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "SHMSpeechDeviceHome", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "SHMVolumeHome", type: "number", title: "Set volume to (overrides default):", required: false
@@ -595,6 +1029,7 @@ def pageConfigSHM(){
                 defaultSpeechSHMDisarm = "Smart Home Monitor is now Disarmed"
             }
             input name: "SHMTalkOnDisarm", type: "text", title: "Say this when Disarmed:", required: false, defaultValue: defaultSpeechSHMDisarm
+			input name: "SHMTestOnDisarm", type: "bool", title: "Toggle to test Disarmed phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "SHMSpeechDeviceDisarm", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
             	input name: "SHMVolumeDisarm", type: "number", title: "Set volume to (overrides default):", required: false
@@ -611,6 +1046,39 @@ def pageConfigSHM(){
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
+		//Test Phrase Toggle Switch - Deviates from standard template
+		def phraseTestTogDeviceUpper = "SHM"
+		def phraseTestTogDeviceLower = "shm"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Away"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice${phraseTestTogState}" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}", settings."${phraseTestTogDeviceLower}SpeechDevice${phraseTestTogState}", settings."${phraseTestTogDeviceLower}Volume${phraseTestTogState}", settings."${phraseTestTogDeviceLower}ResumePlay${phraseTestTogState}", settings."${phraseTestTogDeviceLower}Personality${phraseTestTogState}", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}${phraseTestTogState}" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}${phraseTestTogState}" //capture toggle switch state
+        }
+		phraseTestTogState = "Home"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice${phraseTestTogState}" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}", settings."${phraseTestTogDeviceLower}SpeechDevice${phraseTestTogState}", settings."${phraseTestTogDeviceLower}Volume${phraseTestTogState}", settings."${phraseTestTogDeviceLower}ResumePlay${phraseTestTogState}", settings."${phraseTestTogDeviceLower}Personality${phraseTestTogState}", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}${phraseTestTogState}" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}${phraseTestTogState}" //capture toggle switch state
+        }
+		phraseTestTogState = "Disarm"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice${phraseTestTogState}" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}", settings."${phraseTestTogDeviceLower}SpeechDevice${phraseTestTogState}", settings."${phraseTestTogDeviceLower}Volume${phraseTestTogState}", settings."${phraseTestTogDeviceLower}ResumePlay${phraseTestTogState}", settings."${phraseTestTogDeviceLower}Personality${phraseTestTogState}", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}${phraseTestTogState}" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}${phraseTestTogState}" //capture toggle switch state
+        }
     }
 //End pageConfigSHM()
 }
@@ -621,6 +1089,7 @@ def pageConfigTime(){
             input name: "timeSlotDays1", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "timeSlotTime1", type: "time", title: "Time of day", required: false
             input name: "timeSlotTalkOnTime1", type: "text", title: "Say on schedule:", required: false
+			input name: "timeSlotTestOnTime1", type: "bool", title: "Toggle to test schedule phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "timeSlotPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "timeSlotSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -637,6 +1106,7 @@ def pageConfigTime(){
             input name: "timeSlotDays2", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "timeSlotTime2", type: "time", title: "Time of day", required: false
             input name: "timeSlotTalkOnTime2", type: "text", title: "Say on schedule:", required: false
+			input name: "timeSlotTestOnTime2", type: "bool", title: "Toggle to test schedule phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "timeSlotPersonality2", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "timeSlotSpeechDevice2", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -653,6 +1123,7 @@ def pageConfigTime(){
             input name: "timeSlotDays3", type: "enum", title: "Which day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "timeSlotTime3", type: "time", title: "Time of day", required: false
             input name: "timeSlotTalkOnTime3", type: "text", title: "Say on schedule:", required: false
+			input name: "timeSlotTestOnTime3", type: "bool", title: "Toggle to test schedule phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "timeSlotPersonality3", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "timeSlotSpeechDevice3", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -667,6 +1138,39 @@ def pageConfigTime(){
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+		//Test Phrase Toggle Switch - Deviates from standard template
+		def phraseTestTogDeviceUpper = "TimeSlot"
+		def phraseTestTogDeviceLower = "timeSlot"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Time1"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" //capture toggle switch state
+        }
+		phraseTestTogState = "Time2"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice2") { myVoice = settings?."${phraseTestTogDeviceLower}Voice2" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}", settings."${phraseTestTogDeviceLower}SpeechDevice2", settings."${phraseTestTogDeviceLower}Volume2", settings."${phraseTestTogDeviceLower}ResumePlay2", settings."${phraseTestTogDeviceLower}Personality2", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" //capture toggle switch state
+        }
+		phraseTestTogState = "Time3"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice3") { myVoice = settings?."${phraseTestTogDeviceLower}Voice3" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}", settings."${phraseTestTogDeviceLower}SpeechDevice3", settings."${phraseTestTogDeviceLower}Volume3", settings."${phraseTestTogDeviceLower}ResumePlay3", settings."${phraseTestTogDeviceLower}Personality3", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}" //capture toggle switch state
         }
     }
 }
@@ -685,8 +1189,11 @@ def pageConfigPowerMeter(){
             }
             input name: "powerMeterDeviceGroup1", type: "capability.powerMeter", title: "Power Meter(s)", required: false, multiple: true
             input name: "powerMeterTalkOnRise1", type: "text", title: "Say this if power rises above threshold:", required: false, defaultValue: defaultSpeechPowerMeterRise1, submitOnChange: true
+			input name: "powerMeterTestOnRise1", type: "bool", title: "Toggle to test power rise phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "powerMeterTalkOnFall1", type: "text", title: "Say this if power falls below threshold:", required: false, defaultValue: defaultSpeechPowerMeterFall1, submitOnChange: true
+			input name: "powerMeterTestOnFall1", type: "bool", title: "Toggle to test power fall phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "powerMeterTalkOnNormal1", type: "text", title: "Say this if power returns to normal:", required: false, defaultValue: defaultSpeechPowerMeterNormal1, submitOnChange: false
+			input name: "powerMeterTestOnNormal1", type: "bool", title: "Toggle to test power normal phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "powerMeterTalkOnRiseThold1", type: "number", title: "High energy usage threshold (watts):", required: powerMeterTalkOnRise1, defaultValue: defaultSpeechpowerMeterRise1
             input name: "powerMeterTalkOnFallThold1", type: "number", title: "Low energy usage threshold (watts):", required: powerMeterTalkOnFall1, defaultValue: defaultSpeechpowerMeterFall1
             input name: "powerMeterPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
@@ -707,6 +1214,39 @@ def pageConfigPowerMeter(){
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "PowerMeter"
+		def phraseTestTogDeviceLower = "powerMeter"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Rise"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Fall"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Normal"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
     }
 //End pageConfigpowerMeter()
 }
@@ -725,6 +1265,7 @@ def pageConfigRoutine(){
             }
             input name: "routineDeviceGroup1", type: "enum", title: "Routine", required: true, multiple: true, options: routines
             input name: "routineTalkOnRun1", type: "text", title: "Say when this routine runs:", required: false, defaultValue: defaultSpeechRoutine1
+			input name: "routineTestOnRun1", type: "bool", title: "Toggle to test routine phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "routinePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "routineSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -742,6 +1283,20 @@ def pageConfigRoutine(){
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+		//Test Phrase Toggle Switch
+		def phraseTestTogDeviceUpper = "Routine"
+		def phraseTestTogDeviceLower = "routine"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Run"
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
         }
     }
 //End pageConfigRoutine()
@@ -795,13 +1350,13 @@ def initialize() {
         state.lastMode = location.mode
         parent.setLastMode(location.mode)
     }
-    LOGTRACE("Initialized (Parent Version: ${parent.returnVar("appversion")}; Child Version: ${state.appversion}; Group Enabled: ${settings.groupEnabled})")
+    LOGTRACE("Initialized (Parent Version: ${parent.returnVar("version")}; Child Version: ${state.version}; Group Enabled: ${settings.groupEnabled})")
 //End initialize()
 }
 def updated() {
     state.groupEnabled = settings.groupEnabled
 	setAppVersion()
-	LOGTRACE("Updating settings (Parent Version: ${parent.returnVar("appversion")}; Child Version: ${state.appversion}; Group Enabled: ${state.groupEnabled})")
+	LOGTRACE("Updating settings (Parent Version: ${parent.returnVar("version")}; Child Version: ${state.version}; Group Enabled: ${state.groupEnabled})")
     state.installed = true
     unschedule()
     unsubscribe()
@@ -839,6 +1394,12 @@ def initSubscribe(){
     if (smokeDeviceGroup1) { subscribe(smokeDeviceGroup1, "smoke", onSmoke1Event) }
     //Subscribe Button
     if (buttonDeviceGroup1) { subscribe(buttonDeviceGroup1, "button", onButton1Event) }
+	//Subscribe Alarm
+    if (alarmDeviceGroup1) { subscribe(alarmDeviceGroup1, "alarm", onAlarm1Event) }
+	//Subscribe Filter Status
+    if (filterStatusDeviceGroup1) { subscribe(filterStatusDeviceGroup1, "filterstatus", onFilterStatus1Event) }
+	//Subscribe Oven Mode
+    if (ovenModeDeviceGroup1) { subscribe(ovenModeDeviceGroup1, "filterstatus", onOvenMode1Event) }
     //Subscribe SHM
     if (SHMTalkOnAway || SHMTalkOnHome || SHMTalkOnDisarm) { subscribe(location, "alarmSystemStatus", onSHMEvent) }
     //Subscribe PowerMeter
@@ -846,7 +1407,7 @@ def initSubscribe(){
     //Subscribe Routine
     if (routineDeviceGroup1) { subscribe(location, "routineExecuted", onRoutineEvent) }
     //Subscribe Mode
-    if (modePhraseGroup1) { subscribe(location, onModeChangeEvent) }
+    if (modePhraseGroup1) { subscribe(location, "mode", onModeChangeEvent) }
     
     LOGDEBUG ("END initSubscribe()", true)
 }
@@ -938,7 +1499,7 @@ def processDayRestriction(allowedDays){
     if (allowedDays == null || allowedDays == ""){
         return true
     }
-    if (allowedDays.contains(todayStr)) {
+    if (allowedDays.contains(todayStr) || allowedDays == null) {
         return true
     } else {
         return false
@@ -1272,6 +1833,69 @@ def onButton1Event(evt){
 
 //END HANDLE BUTTON
 
+//BEGIN HANDLE ALARM
+def onAlarm1Event(evt){
+	def deviceType = "alarm" //lowercase first char
+	def deviceState1 = "off"   //on,open,etc
+	def deviceState2 = "strobe"  //off,closed,etc
+	def deviceState3 = "siren"
+	def deviceState4 = "both"
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+
+//END HANDLE ALARM
+
+//BEGIN HANDLE FILTER STATUS
+def onFilterStatus1Event(evt){
+	def deviceType = "filterStatus" //lowercase first char
+	def deviceState1 = "normal"   //on,open,etc
+	def deviceState2 = "replace"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+
+//END HANDLE FILTER STATUS
+
+//BEGIN HANDLE OVEN MODE
+def onOvenMode1Event(evt){
+	def deviceType = "ovenMode" //lowercase first char
+	def deviceState1 = "heating"   //on,open,etc
+	def deviceState2 = "grill"  //off,closed,etc
+	def deviceState3 = "warming"
+	def deviceState4 = "defrosting"
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+
+//END HANDLE OVEN MODE
+
 ////BEGIN PROCESSEVENT
 def processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt){
 	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
@@ -1300,8 +1924,8 @@ def processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceSta
 		}
         if (resume == null) { resume = true }
 	} else { resume = false }
-	if (settings?."${deviceType}switchPersonality${index}" == "Yes") {personality = true}
-	if (settings?."${deviceType}switchPersonality${index}" == "No") {personality = false}
+	if (settings?."${deviceType}Personality${index}" == "Yes") {personality = true}
+	if (settings?."${deviceType}Personality${index}" == "No") {personality = false}
     if (evt.value == deviceState1) {
 		state.TalkPhrase = settings."${deviceType}TalkOn${deviceState1.capitalize()}${index}"; state.speechDevice = settings."${deviceType}SpeechDevice${index}"; myVolume = getDesiredVolume(settings."${deviceType}Volume${index}")
         if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event (${evt.value} <> ${deviceState1})", true)}
@@ -1339,6 +1963,8 @@ def processModeChangeEvent(index, evt){
     def myVolume = -1
     def myVoice = getMyVoice(settings?.modeVoice1)
     LOGDEBUG("(onModeEvent): Last Mode: ${state.lastMode}, New Mode: ${location.mode}, ${myVoice}", true)
+	//LOGDEBUG("(onModeEvent): Restricted FROM modes: ${settings.modeExcludePhraseGroup1}",true)
+	//LOGDEBUG("(onModeEvent): FROM restriction test: ${(settings.modeExcludePhraseGroup1.contains(state.lastMode))},${(!(settings.modeExcludePhraseGroup1 == null))}",true)
     //Check Restrictions
     if (!(processRestrictions("mode",index))){ return }
 	if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -1350,13 +1976,14 @@ def processModeChangeEvent(index, evt){
     if (settings?.modePersonality1 == "Yes") {personality = true}
     if (settings?.modePersonality1 == "No") {personality = false}
     if (settings.modePhraseGroup1.contains(location.mode)){
-        if (!settings.modeExcludePhraseGroup1 == null){
+        if (!(settings.modeExcludePhraseGroup1 == null)){
             //settings.modeExcluePhraseGroup1 is not empty
-            if (!(settings.modeExcludePhraseGroup1.contains(state.lastMode))) {
+            if ((settings.modeExcludePhraseGroup1.contains(state.lastMode)) == false) {
+				//LOGDEBUG("onModeEvent(): Exclusion modes exist but we are not coming from one of them",true)
                 //If we are not coming from an exclude mode, Talk.
                 state.TalkPhrase = null
                 state.speechDevice = null
-                state.TalkPhrase = settings.TalkOnModeChange1; state.speechDevice = modePhraseSpeechDevice1; myVolume = getDesiredVolume(settings.modePhraseVolume1)
+                state.TalkPhrase = settings.modeTalkOnChange1; state.speechDevice = modePhraseSpeechDevice1; myVolume = getDesiredVolume(settings.modePhraseVolume1)
                 if (!(state?.TalkPhrase == null)) {sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume, resume, personality, myVoice, evt)} else {LOGDEBUG("Not configured to speak for this event", true)}
                 state.TalkPhrase = null
                 state.speechDevice = null
@@ -1365,6 +1992,7 @@ def processModeChangeEvent(index, evt){
             }
         } else {
             //settings.modeExcluePhraseGroup1 is empty, no exclusions, Talk.
+			//LOGDEBUG("onModeEvent(): Exclusion modes do not exist",true)
             state.TalkPhrase = null
             state.speechDevice = null
             state.TalkPhrase = settings.TalkOnModeChange1; state.speechDevice = modePhraseSpeechDevice1; myVolume = getDesiredVolume(settings.modePhraseVolume1)
@@ -1596,9 +2224,9 @@ def processScheduledEvent(index, eventtime, alloweddays){
     if (index == 2 && settings?.timeSlotPersonality2 == "No") {personality = false}
     if (index == 3 && settings?.timeSlotPersonality3 == "Yes") {personality = true}
     if (index == 3 && settings?.timeSlotPersonality3 == "No") {personality = false}  
-	if (index == 1) { state.TalkPhrase = settings.timeSlotOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1) }
-	if (index == 2) { state.TalkPhrase = settings.timeSlotOnTime2; state.speechDevice = timeSlotSpeechDevice2; myVolume = getDesiredVolume(settings.timeSlotVolume2) }
-	if (index == 3) { state.TalkPhrase = settings.timeSlotOnTime3; state.speechDevice = timeSlotSpeechDevice3; myVolume = getDesiredVolume(settings.timeSlotVolume3) }
+	if (index == 1) { state.TalkPhrase = settings.timeSlotTalkOnTime1; state.speechDevice = timeSlotSpeechDevice1; myVolume = getDesiredVolume(settings.timeSlotVolume1) }
+	if (index == 2) { state.TalkPhrase = settings.timeSlotTalkOnTime2; state.speechDevice = timeSlotSpeechDevice2; myVolume = getDesiredVolume(settings.timeSlotVolume2) }
+	if (index == 3) { state.TalkPhrase = settings.timeSlotTalkOnTime3; state.speechDevice = timeSlotSpeechDevice3; myVolume = getDesiredVolume(settings.timeSlotVolume3) }
 	def customevent = [displayName: 'BigTalker:OnSchedule', name: 'OnSchedule', value: "${todayStr}@${timeNow}"]
 	sendTalk(app.label,state.TalkPhrase, state.speechDevice, myVolume,resume, personality, myVoice, customevent)
 	state.TalkPhrase = null
@@ -1637,8 +2265,8 @@ def getMyVoice(deviceVoice){
     def myVoice = "Not Used"
     if (!(deviceVoice == null )) { myVoice = deviceVoice }
     if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-    	log.debug "getMyVoice: deviceVoice=${myVoice}"
-        log.debug "getMyVoice: settings.parent.speechVoice=${parent.returnVar("speechVoice")}"
+    	LOGDEBUG("getMyVoice: deviceVoice=${myVoice}",false)
+        LOGDEBUG("getMyVoice: settings.parent.speechVoice=${parent.returnVar("speechVoice")}",false)
 		myVoice = (!(deviceVoice == null || deviceVoice == "")) ? deviceVoice : (parent.returnVar("speechVoice") ? parent.returnVar("speechVoice") : "Salli(en-us)")
     }
     return myVoice
@@ -1650,12 +2278,16 @@ def sendTalk(appname, phrase, customSpeechDevice, volume, resume, personality, v
 }
 
 def LOGDEBUG(txt, send){
+	if (txt == null) { 
+		log.debug "Debug log data was null"
+		if (send == true) { parent.LOGDEBUG("[CHILD:${app.label}] Debug log data was null") }
+	}
 	if (send == true || send == null || send == "") { def sendToParent = true } else { def sendToParent = false }
-	if (parent.returnVar("debugmode") && sendToParent) { parent.LOGDEBUG("[CHILD:${app.label}] ${txt}", true) }
+	if (parent?.returnVar("debugMode") && sendToParent) {parent.LOGDEBUG("[CHILD:${app?.label}] ${txt}")}
     try {
-    	if (parent.returnVar("debugmode") || sendToParent == false) { log.debug("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${txt}")}
+    	if (parent?.returnVar("debugMode") || sendToParent == false) { log.debug("${app?.label?.replace(" ","").toUpperCase()}(${state.appversion}) || ${txt}")}
     } catch(ex) {
-    	log.error("LOGDEBUG unable to output requested data!", true)
+		log.error("LOGDEBUG unable to output requested data! || ${text}")
     }
 }
 def LOGTRACE(txt){
@@ -1676,5 +2308,163 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.7"
+    state.appversion = "C2.0.8.0"
+}
+
+def version(){
+    resetBtnName()
+	//schedule("0 0 9 ? * FRI *", updateCheck) //  Check for updates at 9am every Friday
+	updateCheck()  
+    //checkButtons()
+    //pauseOrNot()
+    
+}
+
+def checkButtons(){
+    LOGDEBUG("Running checkButtons",false)
+    appButtonHandler("updateBtn")
+}
+
+
+def appButtonHandler(btn){
+    state.btnCall = btn
+    if(state.btnCall == "updateBtn"){
+       log.info "Checking for updates now..."
+        updateCheck()
+        pause(3000)
+  		state.btnName = state.versionBtn
+        runIn(2, resetBtnName)
+    }
+    if(state.btnCall == "updateBtn1"){
+    state.btnName = "Update Available - Click Here" 
+    //httpGet("https://github.com/CobraVmax/Hubitat/tree/master/Apps' target='_blank")
+    }
+    
+}   
+def resetBtnName(){
+//    log.info "Resetting Update Button Name"
+	if(state.versionStatus != "Current"){
+		state.btnName = state.versionBtn
+	}
+	else{
+		state.btnName = "Check For Update" 
+	}
+}    
+
+def displayVersionStatus(){
+	section("<HR size=3><B>Version Information</B>"){
+	}
+	if(state.versionStatus){
+		section{paragraph "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png''</img><BR>${state.ExternalName} - Version: $state.version <BR><font face='Lucida Handwriting'>$state.Copyright </font>"}
+	}
+
+	if((state.versionStatus != "<b>** This app is no longer supported by $state.author  **</b>") & (state.versionStatus != "Current")){
+		//section(){ input "updateBtn", "button", title: "${state.btnName}"}
+    
+		//  section(){
+		//		log.info "app.label = $app.label"
+		//		input "pause1", "bool", title: "Pause This App", required: true, submitOnChange: true, defaultValue: false  
+		//	}
+		//	pauseOrNot()   
+			//if(state.versionStatus != "Current"){
+		section{ 
+			paragraph "<b>${state.versionStatus}</b><BR>${state.updateURI}<BR>${state.UpdateInfo}<BR>"
+			//}
+		}
+		//section(" ") {
+		//	input "updateNotification", "bool", title: "Send a 'Pushover' message when an update is available", required: true, defaultValue: false, submitOnChange: true 
+		//	if(updateNotification == true){ input "speaker", "capability.speechSynthesis", title: "PushOver Device", required: true, multiple: true}
+		//}
+	} else {
+		section{
+				paragraph "<i>App is up to date</i>"
+		}
+	}
+}
+
+def updateCheck(){
+	setVersion()
+	def lastKnownVersionStatus = state.versionStatus
+	if (state?.versionStatus == null) { state.versionStatus = "<i>Unknown</i>" }
+	def paramsUD = [uri: "https://lowrance.cc/ST/manifests/RayzurCodeHE.json"]
+	if (updateCheckAllowed() || lastKnownVersionStatus == "<i>Unknown</i>" || lastKnownVersionStatus == null){
+		state.Copyright = ""
+		state.updateURI = ""
+		state.UpdateInfo = ""
+		state.author = ""
+		state.versionBtn = ""
+		def newVerRaw = ""
+		def newVer = ""
+		def currentVer = ""
+		try {
+			httpGet(paramsUD) { respUD ->
+ 			  //log.warn " Version Checking - Response Data: ${respUD.data}"   // Troubleshooting Debug Code 
+				def copyrightRead = (respUD.data.copyright)
+				state.Copyright = copyrightRead
+				def updateUri = (respUD.data.versions.UpdateInfo.GithubFiles.(state.InternalName))
+				state.updateURI = updateUri   
+            	newVerRaw = (respUD.data.versions.Application.(state.InternalName))
+				newVer = (respUD.data.versions.Application.(state.InternalName).replace(".", ""))
+				currentVer = state.version.replace(".", "")
+				state.UpdateInfo = (respUD.data.versions.UpdateInfo.Application.(state.InternalName))
+				state.author = (respUD.data.author)
+			
+				if(newVer == "NLS"){
+					state.versionStatus = "<b>** This app is no longer supported by ${state.author}  **</b>"  
+					log.warn "** This app is no longer supported by ${state.author} **" 
+				}
+				else if(currentVer < newVer){
+					state.versionStatus = "New Version Available (Version: ${newVerRaw})"
+					log.warn "** There is a newer version of this app available  (Version: ${newVerRaw}) **"
+					log.warn "** ${state.UpdateInfo} **"
+					state.versionBtn = "UPDATE AVAILABLE"
+					def updateMsg = "There is a new version of '${state.ExternalName}' available (Version: ${newVerRaw})"
+					//pushOverNow(updateMsg)
+				} 
+				else{ 
+					state.versionStatus = "Current"
+					log.info "You are using the current version of this app"
+				}
+			}
+		} catch (e) {
+			log.error "Something went wrong: CHECK THE JSON FILE AND IT'S URI -  $e"
+		}
+		if(state.versionStatus != "Current"){
+			state.versionBtn = "UPDATE AVAILABLE"
+		}
+		else{
+			state.versionBtn = "No Update Available"
+		}
+	} else {
+		return
+	}
+}
+
+def updateCheckAllowed(){
+	// rayzurbock code, used with Cobra update code
+	def proceed = false
+	def updateCheckCurrentDate = new Date().getTime()
+	def updateCheckIntervalInMil = (state.updateActiveUseIntervalMin * 60000)
+	if (state?.updateNextCheckDate == null) { state.updateNextCheckDate = new Date().getTime() }
+	def timeDiff = state?.updateNextCheckDate - updateCheckCurrentDate
+	if (timeDiff <= 0 || timeDiff == null) { proceed = true }
+	if (state?.updateNextCheckDate == null) { proceed = true }
+	//if (!(proceed == true)) { log.debug "updateCheckAllowed() result: not allowed to proceed"}
+	LOGDEBUG("updateCheckAllowed() timeDiff=${timeDiff}, proceed=${proceed}", false)
+	if (proceed) {
+		//log.debug("updateCheckAllowed(): result: proceed")
+		state.updateNextCheckDate = new Date().getTime() + updateCheckIntervalInMil
+		return true
+	} else { 
+		//log.debug("updateCheckAllowed(): result: do not proceed (${timeDiff})")
+		return false
+	}
+	
+}
+
+def setVersion(){
+		state.version = "2.0.8.4.1"	 
+		state.InternalName = "BigTalker2-Child-Dev" 
+    	state.ExternalName = "BigTalker2 Child Dev"
+		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
