@@ -72,6 +72,13 @@ def pageStart(){
 			//checkButtons()
 			displayVersionStatus()
         }
+		section("Donations"){
+				def DonateOptions = ""
+				DonateOptions += "<HR>Big Talker is provided to the community for free.  It takes a lot of time to build and support any complex app.  If you wish to support the time and effort put into development you may submit a donation with one of the following:<BR>"
+				DonateOptions += "Cash.me = https://cash.me/$Lowrance (use a debit card, it's free for both of us)<BR>"
+				DonateOptions += "Paypal.me = https://paypal.me/brianlowrance (They take a little since I setup my account as a business account)"
+				paragraph(DonateOptions)					
+		}
     }
 }
 
@@ -1896,7 +1903,7 @@ def pageConfigureSpeechDeviceType(){
             if (state.hubType == "SmartThings") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing, Generic Media Renderer.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nIf only using with AskAlexa this setting can be ignored.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
             if (state.hubType == "Hubitat") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer."}
             input "speechDeviceType", "bool", title: "ON=Music Player\nOFF=Speech Synthesis", required: true, defaultValue: true, submitOnChange: true
-            paragraph "Click Next (top right) to continue configuration...\n"
+            paragraph "Click Next to continue configuration...\n"
             if (speechDeviceType == true) {state.speechDeviceType = "capability.musicPlayer"}
             if (speechDeviceType == false) {state.speechDeviceType = "capability.speechSynthesis"}
         }
@@ -1938,7 +1945,7 @@ def pageConfigureDefaults(){
                 input "allowScheduledPoll", "bool", title: "Enable polling device status (recommended)", required: true, defaultValue: true
             }
         }
-        section ("Talk only while in these modes:"){
+        section (""){
             input "speechModesDefault", "mode", title: "Talk only while in these modes (default)", multiple: true, required: true, submitOnChange: false
         }
         section ("Only between these times:"){
@@ -3835,7 +3842,7 @@ def updateCheckAllowed(){
 
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
-		state.version = "2.0.8.4.1"	 
+		state.version = "2.0.8.4.2"	 
 		state.InternalName = "BigTalker2-Parent-Dev" 
     	state.ExternalName = "BigTalker2 Beta"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
