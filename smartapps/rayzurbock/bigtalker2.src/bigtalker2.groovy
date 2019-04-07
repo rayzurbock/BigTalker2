@@ -1,13 +1,13 @@
 definition(
-    name: "BigTalker2",
+    name: "BigTalker2-Parent",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
     description: "Let's talk about mode changes, switches, motions, and so on.",
     category: "Fun & Social",
 	//singleInstance: true,
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-2.0.8.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.8.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-2.0.8.png")
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png")
 
 preferences {
     page(name: "pageStart")
@@ -21,7 +21,7 @@ preferences {
 
 def pageStart(){
     state.childAppName = "BigTalker2-Child"
-    state.parentAppName = "BigTalker2"
+    state.parentAppName = "BigTalker2-Parent"
     state.namespace = "rayzurbock"
 	setVersion()
     state.hubType = getHubType()
@@ -72,6 +72,13 @@ def pageStart(){
 			//checkButtons()
 			displayVersionStatus()
         }
+		section("Donations"){
+				def DonateOptions = ""
+				DonateOptions += "<HR>Big Talker is provided to the community for free.  It takes a lot of time to build and support any complex app.  If you wish to support the time and effort put into development you may submit a donation with one of the following:<BR>"
+				DonateOptions += "Cash.me = https://cash.me/$Lowrance (use a debit card, it's free for both of us)<BR>"
+				DonateOptions += "Paypal.me = https://paypal.me/brianlowrance (They take a little since I setup my account as a business account)"
+				paragraph(DonateOptions)					
+		}
     }
 }
 
@@ -1868,16 +1875,12 @@ def pageHelpPhraseTokens(){
            AvailTokens += "%mp3(url)% = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3 \n"
            AvailTokens += "No other tokens or phrases can be used with %mp3(url)%\n\n"
            AvailTokens += "%time% = Current hub time; HH:mm am/pm\n\n"
+		   AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n"
+		   AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n"
+		   AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n"
+		   AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n"
+		   AvailTokens += "\n*Weather forecasts provided by Weather.gov (U.S. Weather Only)"
 		   if (state.hubType == "SmartThings"){ AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday(00000)% = Today's weather forecast* based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight(00000)% = Tonight's weather* forecast based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow(00000)% = Tomorrow's weather forecast* based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "\n*Weather forecasts provided by Weather Underground" }
            paragraph(AvailTokens)
        }
    }
@@ -1890,13 +1893,13 @@ def pageConfigureSpeechDeviceType(){
         //section ("Speech Device Type Support"){
         section (){
 			if (state.installed == true) { 
-				paragraph "<font color=red><strong>PROCEED WITH CAUTION!</strong></font>\n<font color=red><strong>WARNING!</strong></font> If you change this setting after the app has been configured, you will need to update your selected default and custom speech devices!\n <strong>To Cancel:</strong> Don't move the switch and press Next\n<font color=red><strong>PROCEED WITH CAUTION!</strong></font>"
+				paragraph "<font color=red><strong>PROCEED WITH CAUTION!</strong></font>\n<font color=red><strong>WARNING!</strong></font> If you change this setting after the app has been configured, you will need to update your selected default and custom speech devices!\n <strong>To Cancel:</strong> Don't move the switch and press Next (or Done)\n<font color=red><strong>PROCEED WITH CAUTION!</strong></font>"
 			}
             paragraph "${app.label} can support either 'Music Player' or 'Speech Synthesis' devices."
             if (state.hubType == "SmartThings") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing, Generic Media Renderer.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nIf only using with AskAlexa this setting can be ignored.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
-            if (state.hubType == "Hubitat") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
+            if (state.hubType == "Hubitat") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer."}
             input "speechDeviceType", "bool", title: "ON=Music Player\nOFF=Speech Synthesis", required: true, defaultValue: true, submitOnChange: true
-            paragraph "Click Next (top right) to continue configuration...\n"
+            //paragraph "Click Next to continue configuration...\n"
             if (speechDeviceType == true) {state.speechDeviceType = "capability.musicPlayer"}
             if (speechDeviceType == false) {state.speechDeviceType = "capability.speechSynthesis"}
         }
@@ -1938,7 +1941,7 @@ def pageConfigureDefaults(){
                 input "allowScheduledPoll", "bool", title: "Enable polling device status (recommended)", required: true, defaultValue: true
             }
         }
-        section ("Talk only while in these modes:"){
+        section (""){
             input "speechModesDefault", "mode", title: "Talk only while in these modes (default)", multiple: true, required: true, submitOnChange: false
         }
         section ("Only between these times:"){
@@ -1957,7 +1960,7 @@ def pageConfigureDefaults(){
 			}
         }
 		section("Advanced"){
-				href "pageConfigureSpeechDeviceType", title:"Change Speech Mode", description:"Tap to change speech mode"
+				href "pageConfigureSpeechDeviceType", title:"Change Speech Mode", description:"Tap to change speech mode (musicPlayer <> speechSynthesis)"
 		}
     }
 }
@@ -3363,6 +3366,70 @@ def TalkQueue(appname, phrase, customSpeechDevice, volume, resume, personality, 
 }
 
 def getWeather(mode, zipCode) {
+	// Uses Weather.gov for data retrieval
+	def msg = ""
+	//zipCode is not used.  Data only works with US GPS coordinates due to data source (weather.gov)
+	if ((state?.latitude == null || state?.latitude == "") && settings?.latitude == null) { state.latitude = "${location.latitude}" }
+	if ((state?.longitude == null || state?.longitude == "") && settings?.latitude == null) { state.longitude = "${location.longitude}" }
+	//Get weather info by hub lat/long GPS coordinates.
+	wxURI1 = "https://api.weather.gov/points/${state.latitude}%2C${state.longitude}"
+	LOGTRACE("DEBUG wxURI1: ${wxURI1}")
+	def requestParams1 =
+		[
+			uri:  wxURI1,
+			requestContentType: "application/json",
+			contentType: "application/json"
+		]
+	httpGet(requestParams1)	{	  response1 ->
+		LOGTRACE("DEBUG response1.status: ${response1?.status}")
+		if (response1?.status == 200){
+			LOGTRACE ("response1=${response1.data}")
+			if(response1.data.properties){
+				def wxURI2 = response1.data.properties.forecast
+				def requestParams2 =
+					[
+						uri:  wxURI2,
+						requestContentType: "application/json",
+						contentType: "application/json"
+					]
+				LOGTRACE("DEBUG wxURI2: ${wxURI2}")
+				httpGet(requestParams2)	{	  response2 ->
+					LOGTRACE("DEBUG response2.status: ${response1?.status}")
+					if (response2?.status == 200){
+						if(response2.data.properties.periods){
+							period0Name = response2.data.properties.periods[0].name
+							period0DetailedForecast = response2.data.properties.periods[0].detailedForecast
+							period1Name = response2.data.properties.periods[1].name
+							period1DetailedForecast = response2.data.properties.periods[1].detailedForecast
+							period2Name = response2.data.properties.periods[2].name
+							period2DetailedForecast = response2.data.properties.periods[2].detailedForecast
+							if (mode == "current" || mode == "today") {
+								msg = "The forecast for ${period0Name} is ${period0DetailedForecast}"
+							}
+							if (mode == "tonight") {
+								if (period0Name == "Tonight") {msg = "The forecast for ${period0Name} is ${period0DetailedForecast}"}
+								if (period1Name == "Tonight") {msg = "The forecast for ${period1Name} is ${period1DetailedForecast}"}
+							}
+							if (mode == "tomorrow") {
+								if (period0Name == "Tonight") {msg = "The forecast for ${period1Name} is ${period1DetailedForecast}"}
+								if (period1Name == "Tonight") {msg = "The forecast for ${period2Name} is ${period2DetailedForecast}"}
+							}
+							msg = msg.replaceAll(/([0-9]+)C/,'$1 degrees celsius')
+    						msg = msg.replaceAll(/([0-9]+)F/,'$1 degrees fahrenheit')
+						}
+					}
+				}
+			}
+		}
+	}
+	LOGTRACE("returning msg=${msg}")
+	LOGDEBUG("msg = ${msg}")
+	return(msg)
+}
+
+/*
+OLD SmartThings - WeatherUnderground backed code
+def getWeather(mode, zipCode) {
     //Function derived from "Sonos Weather Forecast" SmartApp by Smartthings (modified)
     LOGDEBUG("Processing: getWeather(${mode},${zipCode})")
 	def weather = getWeatherFeature("forecast", zipCode)
@@ -3418,6 +3485,7 @@ def getWeather(mode, zipCode) {
     LOGDEBUG("msg = ${msg}")
 	return(msg)
 }
+*/
 
 def poll(){
     if (settings?.resumePlay == true || settings?.resumePlay == null) {
@@ -3625,11 +3693,7 @@ def returnVar(var) {
 }
 
 def playTrackAndRestore(device, uri, duration, volume, myDelay) {
-    LOGDEBUG("playTrackAndRestore(device=${device.displayName})")
-	LOGDEBUG("playTrackAndRestore(uri=${uri})")
-	LOGDEBUG("playTrackAndRestore(duration=${duration})")
-	LOGDEBUG("playTrackAndRestore(volume=${volume})")
-	LOGDEBUG("playTrackAndRestore(myDelay=${myDelay})")
+    LOGDEBUG("playTrackAndRestore(${device.displayName},${uri},${duration},${volume},${myDelay})")
     if (state.hubType == "SmartThings") {
     	device.playTrackAndRestore("uri": uri, "duration":duration, volume, [delay: myDelay])
 		//device.playTrackAndRestore(uri, duration, volume, [delay: myDelay])
@@ -3637,7 +3701,20 @@ def playTrackAndRestore(device, uri, duration, volume, myDelay) {
     if (state.hubType == "Hubitat") {
         //device.playTrackAndRestore("uri" :uri, "duration" :duration, volume) //Disabled 11/18/2018
 		//device.playTrackAndRestore(uri, duration, volume) //Disabled 11/18/2018
-		device.playTrackAndRestore(uri, duration, volume)
+		def successfulMethod = ""
+		try {
+			successfulMethod = "playTrackAndRestore(uri, duration, volume)"
+			device.playTrackAndRestore(uri, duration, volume)
+		} catch (e) {
+			try {
+				successfulMethod = "playTrackAndRestore(uri, volume)"
+				device.playTrackAndRestore(uri, volume)
+			} catch (ee) {
+				successfulMethod = "playTrackAndRestore(uri)"
+				device.playTrackAndRestore(uri)
+			}
+		}
+		LOGDEBUG("Successful Method was: ${successfulMethod}")
     }
 }
 
@@ -3660,8 +3737,22 @@ def playTrackAndResume(device, uri, duration, volume, myDelay) {
     	device.playTrackAndResume("uri":uri, "duration":duration, "volume":volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-      //  device.playTrackAndResume("uri":uri, "duration":duration, volume) //Disabled 11/18/2018
-		device.playTrackAndResume(uri,duration,volume)
+        //device.playTrackAndResume("uri" :uri, "duration" :duration, volume) //Disabled 11/18/2018
+		//device.playTrackAndResume(uri, duration, volume) //Disabled 11/18/2018
+		def successfulMethod = ""
+		try {
+			successfulMethod = "playTrackAndResume(uri, duration, volume)"
+			device.playTrackAndResume(uri, duration, volume)
+		} catch (e) {
+			try {
+				successfulMethod = "playTrackAndResume(uri, volume)"
+				device.playTrackAndResume(uri, volume)
+			} catch (ee) {
+				successfulMethod = "playTrackAndResume(uri)"
+				device.playTrackAndResume(uri)
+			}
+		}
+		LOGDEBUG("Successful Method was: ${successfulMethod}")
     }
 }
 /*
@@ -3835,8 +3926,8 @@ def updateCheckAllowed(){
 
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
-		state.version = "2.0.8.4"	 
+		state.version = "2.0.8.5"	 
 		state.InternalName = "BigTalker2-Parent" 
- 	   	state.ExternalName = "BigTalker2 Parent"
+    	state.ExternalName = "BigTalker2"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
