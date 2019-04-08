@@ -3703,6 +3703,7 @@ def playTrackAndRestore(device, uri, duration, volume, myDelay) {
 			LOGDEBUG("playTrackAndRestore: Sonos detected by device name")
 			device.playTrackAndRestore(uri, volume)  //Hubitat only supports playTrackAndRestore(uri,volume) for Sonos
 		} else {
+			if (device.displayName.contains("VLC")){LOGDEBUG("playTrackAndRestore: VLCThing detected by device name")}
 			def curVol = device.level
 			def curTrack = device.trackData
 			LOGDEBUG("playTrackAndRestore: setLevel(${volume})")
@@ -3736,8 +3737,10 @@ def playTrackAndResume(device, uri, duration, volume, myDelay) {
     if (state.hubType == "Hubitat") {
 		if (device.displayName.contains("Sonos")){
 			LOGDEBUG("playTrackAndResume: Sonos detected by device name")
+			LOGTRACE("playTrackAndResume is desired, but built-in Sonos driver doesn't support it.")
 			playTrackAndRestore(device,uri,duration,volume,myDelay)  //Hubitat only supports playTrackAndRestore(uri,volume) for Sonos
 		} else {
+			if (device.displayName.contains("VLC")){LOGDEBUG("playTrackAndResume: VLCThing detected by device name")}
 			def curVol = device.level
 			def curTrack = device.trackData
 			LOGDEBUG("playTrackAndResume: setLevel(${volume})")
@@ -3922,6 +3925,6 @@ def setVersion(){
 		//Cobra update code, modified by Rayzurbock
 		state.version = "2.0.8.5.1"	 
 		state.InternalName = "BigTalker2-Parent" 
-    		state.ExternalName = "BigTalker2"
+    	state.ExternalName = "BigTalker2"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
