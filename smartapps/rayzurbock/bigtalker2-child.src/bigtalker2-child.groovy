@@ -1,10 +1,10 @@
 definition(
-    name: "BigTalker2-Child-Dev",
+    name: "BigTalker2-Child",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
     description: "Do not install in the mobile app, Save don't publish (needed by BigTalker2)",
     category: "Fun & Social",
-    parent: "rayzurbock:BigTalker2-Parent-Dev",
+    parent: "rayzurbock:BigTalker2-Parent",
     iconUrl: "http://lowrance.cc/ST/icons/BigTalker.png",
     iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png",
     iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png")
@@ -56,7 +56,7 @@ def pageConfigureEvents(){
             } else {
                 href "pageConfigSwitch", title:"Switch", description:"Tap to configure"
             }
-            if (settings.presDeviceGroup1 || settings.presDeviceGroup2 || settings.presDeviceGroup3) {
+            if (settings.presenceDeviceGroup1 || settings.presenceDeviceGroup2 || settings.presenceDeviceGroup3) {
                 href "pageConfigPresence", title:"Presence", description:"Tap to modify", state:"complete"
             } else {
                 href "pageConfigPresence", title:"Presence", description:"Tap to configure"
@@ -1379,7 +1379,7 @@ def initSubscribe(){
     //Subscribe Switches
     if (switchDeviceGroup1) { subscribe(switchDeviceGroup1, "switch", onSwitch1Event) }
     //Subscribe Presence
-    if (presDeviceGroup1) { subscribe(presDeviceGroup1, "presence", onPresence1Event) }
+    if (presenceDeviceGroup1) { subscribe(presenceDeviceGroup1, "presence", onPresence1Event) }
     //Subscribe Lock
     if (lockDeviceGroup1) { subscribe(lockDeviceGroup1, "lock", onLock1Event) }
     //Subscribe Contact
@@ -2308,7 +2308,7 @@ def LOGERROR(txt){
 }
 
 def setAppVersion(){
-    state.appversion = "C2.0.8.0"
+    state.appversion = "C2.0.8.5.1"
 }
 
 def version(){
@@ -2463,8 +2463,8 @@ def updateCheckAllowed(){
 }
 
 def setVersion(){
-		state.version = "2.0.8.4.1"	 
-		state.InternalName = "BigTalker2-Child-Dev" 
-    	state.ExternalName = "BigTalker2 Child Dev"
+		state.version = "2.0.8.5.1"	 
+		state.InternalName = "BigTalker2-Child" 
+    	state.ExternalName = "BigTalker2 Child"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
