@@ -26,7 +26,7 @@ def pageStart(){
 	setVersion()
     state.hubType = getHubType()
     LOGDEBUG("Hub Type: ${state.hubType}")
-    state.supportedVoices = ["Ivy(en-us)","Joanna(en-us)","Joey(en-us)","Justin(en-us)","Kendra(en-us)","Kimberly(en-us)","Salli(en-us)","Amy(en-gb)","Brian(en-gb)","Emma(en-gb)","Miguel(es-us)","Penelope(es-us)"]
+    state.supportedVoices = ["Ivy(en-us)","Joanna(en-us)","Joey(en-us)","Justin(en-us)","Matthew(en-us)","Kendra(en-us)","Kimberly(en-us)","Salli(en-us)","Amy(en-gb)","Brian(en-gb)","Emma(en-gb)","Miguel(es-us)","Penelope(es-us)"]
     if (checkConfig()) { 
         // Do nothing here, but run checkConfig() 
     } 
@@ -75,7 +75,8 @@ def pageStart(){
 		section("Donations"){
 				def DonateOptions = ""
 				DonateOptions += "<HR>Big Talker is provided to the community for free.  It takes a lot of time to build and support any complex app.  If you wish to support the time and effort put into development you may submit a donation with one of the following:<BR>"
-				DonateOptions += "Cash.me = https://cash.me/$Lowrance (use a debit card, it's free for both of us)<BR>"
+				DonateOptions += "Cash.me = https://cash.me/\$Lowrance (use a debit card, it's free for both of us)<BR>"
+				DonateOptions += "Venmo = @BrianLowrance <BR>"
 				DonateOptions += "Paypal.me = https://paypal.me/brianlowrance (They take a little since I setup my account as a business account)"
 				paragraph(DonateOptions)					
 		}
@@ -3923,7 +3924,7 @@ def updateCheckAllowed(){
 
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
-		state.version = "2.0.8.5.1"	 
+		state.version = "2.0.8.5.2"	 
 		state.InternalName = "BigTalker2-Parent" 
     	state.ExternalName = "BigTalker2"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
