@@ -3700,7 +3700,7 @@ def playTrackAndRestore(device, uri, duration, volume, myDelay) {
 		//device.playTrackAndRestore(uri, duration, volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-		if (device.displayName.contains("Sonos")){
+		if (device.displayName.contains("SonosDISABLED")){
 			LOGDEBUG("playTrackAndRestore: Sonos detected by device name")
 			device.playTrackAndRestore(uri, volume)  //Hubitat only supports playTrackAndRestore(uri,volume) for Sonos
 		} else {
@@ -3708,22 +3708,43 @@ def playTrackAndRestore(device, uri, duration, volume, myDelay) {
 			def curVol = device.level
 			def curTrack = device.trackData
 			LOGDEBUG("playTrackAndRestore: setLevel(${volume})")
-			device.setLevel(volume)
-			pauseExecution(250)
+			try {
+				device.setLevel(volume)
+				pauseExecution(250)
+				supportsSetLevel = true
+			}catch(e) {
+				LOGDEBUG("playTrackAndRestore: setLevel() is not supported by this device (${device.displayName}).")
+			}
 			LOGDEBUG("playTrackAndRestore: unmute()")
-			device.unmute()
+			def supportsSetLevel = false
+			try {
+				device.unmute()
+				pauseExecution(250)
+				supportsUnmute = true
+			}catch(e) {
+				LOGDEBUG("playTrackAndRestore: unmute() is not supported by this device (${device.displayName}).")
+			}
 			pauseExecution(250)
 			LOGDEBUG("playTrackAndRestore: playTrack(${uri})")
-			device.playTrack(uri)
-			pauseExecution((duration.toInteger() * 1000))
-			if (!curVol == null){
+			try {
+				device.playTrack(uri)
+				pauseExecution((duration.toInteger() * 1000))
+				supportsPlayTrack = true
+			} catch(e) {
+				LOGDEBUG("playTrackandRestore: playTrack() is not supported by this device (${device.displayName}).")
+			}
+			if (!curVol == null && supportsSetLevel){
 				LOGDEBUG("playTrackAndRestore: setLevel(${curVol})")
 				device.setLevel(curVol)
 				pauseExecution(250)
 			}
 			if (!curTrack?.uri == null){
 				LOGDEBUG("playTrackAndRestore: restoreTrack(${curTrack.uri})")
-				device.restoreTrack(curTrack.uri)
+				try {
+					device.restoreTrack(curTrack.uri)
+				} catch(e) {
+					LOGDEBUG("playTrackAndRestore: restoreTrack() is not supported by this device (${device.displayName}).")
+				}
 			}
 		}
 		
@@ -3736,7 +3757,7 @@ def playTrackAndResume(device, uri, duration, volume, myDelay) {
     	device.playTrackAndResume("uri":uri, "duration":duration, "volume":volume, [delay: myDelay])
     }
     if (state.hubType == "Hubitat") {
-		if (device.displayName.contains("Sonos")){
+		if (device.displayName.contains("SonosDisabled")){
 			LOGDEBUG("playTrackAndResume: Sonos detected by device name")
 			LOGTRACE("playTrackAndResume is desired, but built-in Sonos driver doesn't support it.")
 			playTrackAndRestore(device,uri,duration,volume,myDelay)  //Hubitat only supports playTrackAndRestore(uri,volume) for Sonos
@@ -3745,22 +3766,40 @@ def playTrackAndResume(device, uri, duration, volume, myDelay) {
 			def curVol = device.level
 			def curTrack = device.trackData
 			LOGDEBUG("playTrackAndResume: setLevel(${volume})")
-			device.setLevel(volume)
-			pauseExecution(250)
+			def supportsSetLevel = false
+			try {
+				device.setLevel(volume)
+				pauseExecution(250)
+				supportsSetLevel = true
+			}catch(e) {
+				LOGDEBUG("playTrackAndResume: setLevel() not supported by this device (${device.displayName}).")
+			}
 			LOGDEBUG("playTrackAndResume: unmute()")
-			device.unmute()
-			pauseExecution(250)
+			try {
+				device.unmute()
+				pauseExecution(250)
+			}catch(e) {
+				LOGDEBUG("playTrackAndResume: unmute() not supported by this device (${device.displayName}).")
+			}
 			LOGDEBUG("playTrackAndResume: playTrack(uri)")
-			device.playTrack(uri)
+			try {
+				device.playTrack(uri)
+			} catch(e) {
+				LOGDEBUG("playTrackandResume: playTrack() is not supported by this device (${device.displayName}).")
+			}
 			pauseExecution((duration.toInteger() * 1000))
-			if (!curVol == null){
+			if (!curVol == null && supportsSetLevel){
 				LOGDEBUG("playTrackAndResume: setLevel(${curVol})")
 				device.setLevel(curVol)
 				pauseExecution(250)
 			}
 			if (!curTrack?.uri == null){
 				LOGDEBUG("playTrackAndResume: resumeTrack(${curTrack.uri})")
-				device.resumeTrack(curTrack.uri)
+				try {
+					device.resumeTrack(curTrack.uri)
+				} catch(e) {
+					LOGDEBUG("playTrackAndResume: resumeTrack() is not supported by this device (${device.displayName}).")
+				}
 			}
 		}
 	}
@@ -3924,7 +3963,7 @@ def updateCheckAllowed(){
 
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
-		state.version = "2.0.8.5.2"	 
+		state.version = "2.0.8.5.3"	 
 		state.InternalName = "BigTalker2-Parent" 
     	state.ExternalName = "BigTalker2"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
