@@ -146,27 +146,27 @@ def pageConfigMotion(){
                 defaultSpeechActive1 = "%devicename% is now %devicechange%"
                 defaultSpeechInactive1 = "%devicename% is now %devicechange%"
             }
-            input name: "motionDeviceGroup1", type: "capability.motionSensor", title: "Motion Sensor(s)", required: false, multiple: true
-            input name: "motionTalkOnActive1", type: "text", title: "Say this on motion active:", required: false, defaultValue: defaultSpeechActive1, submitOnChange: true
-            input name: "motionTestOnActive1", type: "bool", title: "Toggle to test motion active phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "motionTalkOnInactive1", type: "text", title: "Say this on motion inactive:", required: false, defaultValue: defaultSpeechInactive1, submitOnChange: true
-            input name: "motionTestOnInactive1", type: "bool", title: "Toggle to test motion inactive phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "motionPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"], submitOnChange: true
-            input name: "motionSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
+			input name: "motionDeviceGroup1", type: "capability.motionSensor", title: "${parent.formatSettingRootStart}Motion Sensor(s)${parent.formatSettingRootEnd}", required: false, multiple: true
+            input name: "motionTalkOnActive1", type: "text", title: "${parent.formatSettingRootStart}Say this on motion active:${parent.formatSettingRootEnd}", required: false, defaultValue: defaultSpeechActive1, submitOnChange: true
+            input name: "motionTestOnActive1", type: "bool", title: "${parent.formatSettingOptionStart}Toggle to test motion active phrase${parent.formatSettingOptionEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "motionTalkOnInactive1", type: "text", title: "${parent.formatSettingRootStart}Say this on motion inactive:${parent.formatSettingRootEnd}", required: false, defaultValue: defaultSpeechInactive1, submitOnChange: true
+            input name: "motionTestOnInactive1", type: "bool", title: "${parent.formatSettingOptionStart}Toggle to test motion inactive phrase${parent.formatSettingOptionEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "motionPersonality1", type: "enum", title: "${parent.formatSettingRootStart}Allow Personality (overrides default)?:${parent.formatSettingRootEnd}", required: false, options: ["Yes", "No"], submitOnChange: true
+            input name: "motionSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${parent.formatSettingRootStart}Talk with these text-to-speech devices (overrides default)${parent.formatSettingRootEnd}", multiple: true, required: false, submitOnChange: true
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-            	input name: "motionVolume1", type: "number", title: "Set volume to (overrides default):", required: false, submitOnChange: true
-            	input name: "motionResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true, submitOnChange: true
-                input name: "motionVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            	input name: "motionVolume1", type: "number", title: "${parent.formatSettingRootStart}Set volume to (overrides default):${parent.formatSettingRootEnd}", required: false, submitOnChange: true
+            	input name: "motionResumePlay1", type: "bool", title: "${parent.formatSettingRootStart}Attempt to resume playing audio?${parent.formatSettingRootEnd}", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true, submitOnChange: true
+                input name: "motionVoice1", type: "enum", title: "${parent.formatSettingRootStart}Voice (overrides default):${parent.formatSettingRootEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("Restrictions"){
-            input name: "motionModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
-            input name: "motionStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "motionEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.motionStartTime1 == null))
-            input name: "motionDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
-            //input name: "motionCount1", type: "number", title: "Do this only x times (next prompt)...", required: false, submitOnChange: true
-            //input name: "motionCountUnit1", type:"enum", title: "... per ", required: settings.motionCount1, options: ["Minute", "Hour", "Day"]
-            input name: "motionDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+        section("${parent.formatSettingRootStart}Restrictions${parent.formatSettingRootEnd}"){
+            input name: "motionModes1", type: "mode", title: "${parent.formatSettingOptionStart}Talk when in these mode(s) (overrides default)${parent.formatSettingOptionEnd}", multiple: true, required: false
+            input name: "motionStartTime1", type: "time", title: "${parent.formatSettingOptionStart}Don't talk before (overrides default)${parent.formatSettingOptionEnd}", required: false, submitOnChange: true
+            input name: "motionEndTime1", type: "time", title: "${parent.formatSettingOptionStart}Don't talk after (overrides default)${parent.formatSettingOptionEnd}", required: (!(settings.motionStartTime1 == null))
+            input name: "motionDays1", type: "enum", title: "${parent.formatSettingOptionStart}Restrict to these day(s)${parent.formatSettingOptionEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            //input name: "motionCount1", type: "number", title: "${parent.formatSettingOptionEnd}Do this only x times (next prompt)...${parent.formatSettingOptionEnd}", required: false, submitOnChange: true
+            //input name: "motionCountUnit1", type:"enum", title: "${parent.formatSettingOptionEnd}... per ${parent.formatSettingOptionEnd}", required: settings.motionCount1, options: ["Minute", "Hour", "Day"]
+            input name: "motionDisableSwitch1", type: "capability.switch", title: "${parent.formatSettingOptionStart}Disable when this switch is off${parent.formatSettingOptionEnd}", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -2273,7 +2273,7 @@ def getMyVoice(deviceVoice){
 }
 
 def sendTalk(appname, phrase, customSpeechDevice, volume, resume, personality, voice, evt){
-    LOGDEBUG("parent.Talk(app=Me,customdevice=${customSpeechDevice},volume=${volume},resume=${resume},personality=${personality},voice=${myVoice},evt=${evt},phrase=${phrase})", false)
+    LOGDEBUG("parent.Talk(app=Me,customdevice=${customSpeechDevice},volume=${volume},resume=${resume},personality=${personality},voice=${voice},evt=${evt},phrase=${phrase})", false)
 	parent.Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice, evt)
 }
 
@@ -2285,7 +2285,7 @@ def LOGDEBUG(txt, send){
 	if (send == true || send == null || send == "") { def sendToParent = true } else { def sendToParent = false }
 	if (parent?.returnVar("debugMode") && sendToParent) {parent.LOGDEBUG("[CHILD:${app?.label}] ${txt}")}
     try {
-    	if (parent?.returnVar("debugMode") || sendToParent == false) { log.debug("${app?.label?.replace(" ","").toUpperCase()}(${state.appversion}) || ${txt}")}
+    	if (parent?.returnVar("debugMode") || sendToParent == false) { log.debug("BIGTALKER2-CHILD[${app?.label?.replace(" ","").toUpperCase()}](${state.appversion}) || ${txt}")}
     } catch(ex) {
 		log.error("LOGDEBUG unable to output requested data! || ${text}")
     }
@@ -2293,7 +2293,7 @@ def LOGDEBUG(txt, send){
 def LOGTRACE(txt){
 	parent.LOGTRACE("[CHILD:${app.label}] ${txt}")
     try {
-    	log.trace("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${txt}")
+    	log.trace("BIGTALKER2-CHILD[${app.label.replace(" ","").toUpperCase()}](${state.appversion}) || ${txt}")
     } catch(ex) {
     	log.error("LOGTRACE unable to output requested data!")
     }
@@ -2301,7 +2301,7 @@ def LOGTRACE(txt){
 def LOGERROR(txt){
 	parent.LOGERROR("[CHILD:${app.label}] ${txt}")
     try {
-    log.error("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ERROR: ${txt}")
+    log.error("BIGTALKER2-CHILD[${app.label.replace(" ","").toUpperCase()}](${state.appversion}) || ERROR: ${txt}")
     } catch(ex) {
     	log.error("LOGERROR unable to output requested data!")
     }
@@ -2463,7 +2463,7 @@ def updateCheckAllowed(){
 }
 
 def setVersion(){
-		state.version = "2.0.8.5.1"	 
+		state.version = "2.0.8.5.2"	 
 		state.InternalName = "BigTalker2-Child" 
     	state.ExternalName = "BigTalker2 Child"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
