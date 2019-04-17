@@ -1,5 +1,5 @@
 definition(
-    name: "BigTalker2-Parent",
+    name: "BigTalker2-Parent-DEV",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
     description: "Let's talk about mode changes, switches, motions, and so on.",
@@ -19,8 +19,8 @@ preferences {
 }
 
 def pageStart(){
-    state.childAppName = "BigTalker2-Child"
-    state.parentAppName = "BigTalker2-Parent"
+    state.childAppName = "BigTalker2-Child-DEV"
+    state.parentAppName = "BigTalker2-Parent-DEV"
     state.namespace = "rayzurbock"
 	setVersion()
     state.hubType = getHubType()
@@ -2303,8 +2303,8 @@ def updateCheckAllowed(){
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
 		state.version = "2.0.8.5.6"	 
-		state.InternalName = "BigTalker2-Parent" 
-    	state.ExternalName = "BigTalker2"
+		state.InternalName = "BigTalker2-Parent-DEV" 
+    	state.ExternalName = "BigTalker2-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
 
