@@ -265,15 +265,15 @@ def pageConfigPresence(){
             def defaultSpeechArrive1 = ""
             def defaultSpeechLeave1 = ""
 			def testState = ""
-            if (!presDeviceGroup1) {
+            if (!presenceDeviceGroup1) {
                 defaultSpeechArrive1 = "%devicename% has arrived"
                 defaultSpeechLeave1 = "%devicename% has left"
             }
             input name: "presenceDeviceGroup1", type: "capability.presenceSensor", title: "Presence Sensor(s)", required: false, multiple: true
-            input name: "presenceTalkOnArrive1", type: "text", title: "Say this when someone arrives:", required: false, defaultValue: defaultSpeechArrive1
-			input name: "presenceTestOnArrive1", type: "bool", title: "Toggle to test arrival phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "presenceTalkOnLeave1", type: "text", title: "Say this when someone leaves:", required: false, defaultValue: defaultSpeechLeave1
-			input name: "presenceTestOnLeave1", type: "bool", title: "Toggle to test departure phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "presenceTalkOnPresent1", type: "text", title: "Say this when someone arrives:", required: false, defaultValue: defaultSpeechArrive1
+			input name: "presenceTestOnPresent1", type: "bool", title: "Toggle to test arrival phrase", required: false, defaultValue: false, submitOnChange: true
+            input name: "presenceTalkOnNot present1", type: "text", title: "Say this when someone leaves:", required: false, defaultValue: defaultSpeechLeave1
+			input name: "presenceTestOnNot present1", type: "bool", title: "Toggle to test departure phrase", required: false, defaultValue: false, submitOnChange: true
             input name: "presencePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
             input name: "presenceSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
@@ -287,7 +287,7 @@ def pageConfigPresence(){
             input name: "presenceStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
             input name: "presenceEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.presenceStartTime1 == null))
             input name: "presenceDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
-            input name: "presDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+            input name: "presenceDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
         }
         section("Help"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
@@ -298,7 +298,7 @@ def pageConfigPresence(){
 		def phraseTestTogState = ""
 		def testEvent = ""
 		def myVoice = ""
-		phraseTestTogState = "Arrive"
+		phraseTestTogState = "Present"
 		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
 		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
 			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
@@ -307,7 +307,7 @@ def pageConfigPresence(){
 			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
 			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
         }
-		phraseTestTogState = "Leave"
+		phraseTestTogState = "Not present"
 		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
 		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
 			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
@@ -1348,7 +1348,7 @@ def initialize() {
         initSubscribe()
         if (state.hubType == "SmartThings") {sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")}
         state.lastMode = location.mode
-        parent.setLastMode(location.mode)
+        parent.setMode(location.mode)
     }
     LOGTRACE("Initialized (Parent Version: ${parent.returnVar("version")}; Child Version: ${state.version}; Group Enabled: ${settings.groupEnabled})")
 //End initialize()
@@ -1367,8 +1367,15 @@ def updated() {
 	}
 }
 def installed() {
+	state.groupEnabled = settings.groupEnabled
 	setAppVersion()
-	LOGTRACE("Installed")
+	LOGTRACE("Installed (Parent Version: ${parent.returnVar("version")}; Child Version: ${state.version}; Group Enabled: ${state.groupEnabled})")
+	state.installed = true
+	if (state.groupEnabled == true || state.groupEnabled == "true" || state.groupEnabled == null) { 
+        initialize() 
+    } else {
+        if (!(app.label.contains(" (disabled)"))) { app.updateLabel("${app.label.replace("${app.label}","${app.label} (disabled)")}") }
+	}
 }
 
 def initSubscribe(){
@@ -1379,7 +1386,7 @@ def initSubscribe(){
     //Subscribe Switches
     if (switchDeviceGroup1) { subscribe(switchDeviceGroup1, "switch", onSwitch1Event) }
     //Subscribe Presence
-    if (presenceDeviceGroup1) { subscribe(presenceDeviceGroup1, "presence", onPresence1Event) }
+    if (presenceDeviceGroup1) { subscribe(presenceDeviceGroup1, "presence", onPresence1Event); LOGDEBUG("Subscribed to presence: ${presenceDeviceGroup1}",false) }
     //Subscribe Lock
     if (lockDeviceGroup1) { subscribe(lockDeviceGroup1, "lock", onLock1Event) }
     //Subscribe Contact
@@ -1958,6 +1965,8 @@ def onModeChangeEvent(evt){
     processModeChangeEvent(1, evt)
 }
 def processModeChangeEvent(index, evt){
+	state.lastMode = location.mode
+    parent.setMode(location.mode)
 	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
     def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
@@ -2001,8 +2010,6 @@ def processModeChangeEvent(index, evt){
             state.speechDevice = null
         }
     }
-    state.lastMode = location.mode
-    parent.setLastMode(location.mode)
 }
 //END MODE CHANGE
 
@@ -2403,7 +2410,7 @@ def updateCheck(){
 				state.Copyright = copyrightRead
 				def updateUri = (respUD.data.versions.UpdateInfo.GithubFiles.(state.InternalName))
 				state.updateURI = updateUri   
-            	newVerRaw = (respUD.data.versions.Application.(state.InternalName))
+				newVerRaw = (respUD.data.versions.Application.(state.InternalName))
 				newVer = (respUD.data.versions.Application.(state.InternalName).replace(".", ""))
 				currentVer = state.version.replace(".", "")
 				state.UpdateInfo = (respUD.data.versions.UpdateInfo.Application.(state.InternalName))
@@ -2463,8 +2470,8 @@ def updateCheckAllowed(){
 }
 
 def setVersion(){
-		state.version = "2.0.8.5.3"	 
+		state.version = "2.0.8.5.4"	 
 		state.InternalName = "BigTalker2-Child-DEV" 
-    	state.ExternalName = "BigTalker2 Child-DEV"
+		state.ExternalName = "BigTalker2 Child-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
