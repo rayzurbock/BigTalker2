@@ -869,6 +869,7 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 			def attrs = currentSpeechDevices.supportedAttributes
 			currentSpeechDevices.each(){
 				// Determine device name either by it.displayName or it.device.displayName (whichever works)
+				LOGDEBUG("FINGERPRINT ${it.displayName} cap:${it.getSupportedCapabilities} comm:${it.getSupportedCommands()} att:${it.getSupportedAttributes()}")
 				try {
 					LOGTRACE("TALK(${appname}.${evt.name}) |sS| ${it.displayName} | Sending speak().")
 				}
@@ -1909,8 +1910,9 @@ def getDesiredVolume(invol) {
     return finalVolume
 }
 
-def setLastMode(mode){
-	state.lastMode = mode
+def setMode(mode){
+	state.lastMode = state.mode
+	state.mode = mode
 }
 
 def disableDebug(){
@@ -1990,7 +1992,7 @@ def playTrackAndRestore(device, uri, duration, volume, myDelay, phrase) {
 		def curVol = -100
 		if (supportsATTRLevel){ curVol = device.latestValue("level") }
 		if (supportsATTRVolume){ curVol = device.latestValue("volume") }
-		LOGDEBUG("playTrackAndRestore: ${device.displayName} FINGERPRINT comm:${device.getSupportedCommands()} att:${device.getSupportedAttributes()}")
+		LOGDEBUG("FINGERPRINT ${device.displayName} cap:${device.getSupportedCapabilities} comm:${device.getSupportedCommands()} att:${device.getSupportedAttributes()}")
 		if (isSonosLike){ //NEED ADDITIONAL SUPPORTED COMMANDS/ATTRIBUTES TO FINGERPRINT!
 			// SONOS SUPPORT
 			LOGDEBUG("playTrackAndRestore: Sonos like device detected, Please send previous debug log entry to Rayzurbock for Fingerprinting.")
@@ -2074,7 +2076,7 @@ def playTrackAndResume(device, uri, duration, volume, myDelay, phrase) {
 		def curVol = -100
 		if (supportsATTRLevel){ curVol = device.latestValue("level") }
 		if (supportsATTRVolume){ curVol = device.latestValue("volume") }
-		LOGDEBUG("playTrackAndResume: ${device.displayName} FINGERPRINT comm:${device.getSupportedCommands()} att:${device.getSupportedAttributes()}")
+		LOGDEBUG("FINGERPRINT ${device.displayName} cap:${device.getSupportedCapabilities} comm:${device.getSupportedCommands()} att:${device.getSupportedAttributes()}")
 		if (isSonosLike){ //NEED ADDITIONAL SUPPORTED COMMANDS/ATTRIBUTES TO FINGERPRINT!
 			// SONOS SUPPORT
 			LOGDEBUG("playTrackAndRestore: Sonos like device detected, Please send previous debug log entry to Rayzurbock for Fingerprinting.")
@@ -2241,7 +2243,7 @@ def updateCheck(){
 				state.Copyright = copyrightRead
 				def updateUri = (respUD.data.versions.UpdateInfo.GithubFiles.(state.InternalName))
 				state.updateURI = updateUri   
-            	newVerRaw = (respUD.data.versions.Application.(state.InternalName))
+				newVerRaw = (respUD.data.versions.Application.(state.InternalName))
 				newVer = (respUD.data.versions.Application.(state.InternalName).replace(".", ""))
 				currentVer = state.version.replace(".", "")
 				state.UpdateInfo = (respUD.data.versions.UpdateInfo.Application.(state.InternalName))
@@ -2302,9 +2304,9 @@ def updateCheckAllowed(){
 
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
-		state.version = "2.0.8.5.6"	 
+		state.version = "2.0.8.5.7"	 
 		state.InternalName = "BigTalker2-Parent-DEV" 
-    	state.ExternalName = "BigTalker2-DEV"
+		state.ExternalName = "BigTalker2-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
 
