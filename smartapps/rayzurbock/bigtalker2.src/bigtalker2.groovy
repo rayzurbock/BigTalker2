@@ -66,18 +66,18 @@ def pageStart(){
             AboutApp += '<HR>Big Talker is a SmartApp that can make your house talk depending on various triggered events.\n\n'
             if (state.hubType == "Hubitat") {AboutApp += 'Pair with a Hubitat compatible audio device such as Sonos, Ubi, LANnouncer, and/or VLC Thing (running on your computer or Raspberry Pi)\n'}
             if (state.hubType == "SmartThings") {AboutApp += 'Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the "Generic MediaRenderer" SmartApp/Device and/or AskAlexa SmartApp\n'}
-            AboutApp += 'You can contribute to the development of this SmartApp by making a PayPal donation to rayzur@rayzurbock.com or visit http://rayzurbock.com/store\n\n'
             paragraph(AboutApp)
 			updateCheck()
 			//checkButtons()
 			displayVersionStatus()
         }
-		section("Donations"){
+		section("<HR><HR><B><CENTER>Donations</CENTER></B>"){
 				def DonateOptions = ""
-				DonateOptions += "<HR>Big Talker is provided to the community for free.  It takes a lot of time to build and support any complex app.  If you wish to support the time and effort put into development you may submit a donation with one of the following:<BR>"
-				DonateOptions += "Cash.me = https://cash.me/\$Lowrance (use a debit card, it's free for both of us)<BR>"
-				DonateOptions += "Venmo = @BrianLowrance <BR>"
-				DonateOptions += "Paypal.me = https://paypal.me/brianlowrance (They take a little since I setup my account as a business account)"
+				DonateOptions += "Big Talker is provided to the community for free.  It takes a lot of time to build and support any complex app.  If you wish to support the time and effort put into development you may submit a donation with one of the following:<BR>"
+				DonateOptions += "<ul>"
+				DonateOptions += '<li><B>Cash.me</B> = <a target="_blank" href="https://cash.me/$Lowrance">https://cash.me/$Lowrance</a> (use a debit card, it\'s free for both of us)</li>'
+				DonateOptions += '<li><B>Venmo</B> = <a target="_blank" href="https://venmo.com/code?user_id=2603208862072832399">@BrianLowrance</a></li>'
+				DonateOptions += '<li><B>Paypal.me</B> = <a target="_blank" href="https://paypal.me/brianlowrance">https://paypal.me/brianlowrance</a> (They take a little since I setup my account as a business account)</li>'
 				paragraph(DonateOptions)					
 		}
     }
@@ -141,25 +141,32 @@ def pageHelpPhraseTokens(){
        section("The following tokens can be used in your event phrases and will be replaced as listed:"){
        	   def AvailTokens = ""
            if (state.hubType == "SmartThings"){ AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n" }
-           AvailTokens += "%groupname% = Name that you gave for the event group\n\n"
-           AvailTokens += "%date% = Current date; January 01 2018\n\n"
-           AvailTokens += "%day% = Current day; Monday\n\n"
-           AvailTokens += "%devicename% = Triggering devices display name\n\n"
-           AvailTokens += "%devicetype% = Triggering device type; motion, switch, etc\n\n"
-           AvailTokens += "%devicechange% = State change that occurred; on/off, active/inactive, etc...\n\n"
-           AvailTokens += "%description% = The description of the event that is to be displayed to the user in the mobile application. \n\n"
-           AvailTokens += "%locationname% = Hub location name; home, work, etc\n\n"
-           AvailTokens += "%lastmode% = Last hub mode; home, away, etc\n\n"
-           AvailTokens += "%mode% = Current hub mode; home, away, etc\n\n"
-           AvailTokens += "%mp3(url)% = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3 \n"
-           AvailTokens += "No other tokens or phrases can be used with %mp3(url)%\n\n"
-           AvailTokens += "%time% = Current hub time; HH:mm am/pm\n\n"
-		   AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n"
-		   AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n"
-		   AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n"
-		   AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n"
-		   AvailTokens += "\n*Weather forecasts provided by Weather.gov (U.S. Weather Only)"
+           AvailTokens += "<ul>"
+		   AvailTokens += "<li><B>%groupname%</B> = Name that you gave for the event group</li>"
+           AvailTokens += "<li><B>%date%</B> = Current date; January 01 20xx</li>"
+           AvailTokens += "<li><B>%day%</B> = Current day; Monday</li>"
+           AvailTokens += "<li><B>%devicename%</B> = Triggering devices display name</li>"
+           AvailTokens += "<li><B>%devicetype%</B> = Triggering device type; motion, switch, etc</li>"
+           AvailTokens += "<li><B>%devicechange%</B> = State change that occurred; on/off, active/inactive, etc...</li>"
+           AvailTokens += "<li><B>%description%</B> = The description of the event that is to be displayed to the user in the mobile application.</li>"
+           AvailTokens += "<li><B>%locationname%</B> = Hub location name; home, work, etc</li>"
+           AvailTokens += "<li><B>%lastmode%</B> = Last hub mode; home, away, etc</li>"
+           AvailTokens += "<li><B>%mode%</B> = Current hub mode; home, away, etc</li>"
+           AvailTokens += "<li><B>%mp3(url)%</B> = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3"
+               AvailTokens += "<ul><li><I>No other tokens or phrases can be used with %mp3(url)%</I></li></ul>"
+		   AvailTokens += "</li>"
+           AvailTokens += "<li><B>%time%</B> = Current hub time; HH:mm am/pm\n\n</B></li>"
+		   AvailTokens += "</ul>"
 		   if (state.hubType == "SmartThings"){ AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday(00000)% = Today's weather forecast* based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight(00000)% = Tonight's weather* forecast based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow(00000)% = Tomorrow's weather forecast* based on custom zipcode (replace 00000)\n\n" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "\n*Weather forecasts provided by Weather Underground" }
            paragraph(AvailTokens)
        }
    }
@@ -2192,7 +2199,7 @@ def resetBtnName(){
 
 def displayVersionStatus(){
 	//Cobra update code, modified by Rayzurbock
-	section("<HR size=3><B>Version Information</B>"){
+	section("<HR><HR><B><CENTER>Version Information</CENTER></B>"){
 	}
 	if(state.versionStatus){
 		section{paragraph "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png''</img><BR>${state.ExternalName} - Version: $state.version <BR><font face='Lucida Handwriting'>$state.Copyright </font>"}
@@ -2208,7 +2215,7 @@ def displayVersionStatus(){
 		//	pauseOrNot()   
 			//if(state.versionStatus != "Current"){
 		section{ 
-			paragraph "<b>${state.versionStatus}</b><BR>${state.updateURI}<BR>${state.UpdateInfo}<BR>"
+			paragraph "<b>${state.versionStatus}</b><BR>${state.updateURI}<BR><B><I>Release Notes:</I></B>${state.UpdateInfo}<BR>"
 			//}
 		}
 		//section(" ") {
@@ -2302,20 +2309,12 @@ def updateCheckAllowed(){
 	
 }
 
-def setVersion(){
-		//Cobra update code, modified by Rayzurbock
-		state.version = "2.0.8.5.7"	 
-		state.InternalName = "BigTalker2-Parent-DEV" 
-		state.ExternalName = "BigTalker2-DEV"
-		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
-}
-
 def setFormatting(){
 	if (state.hubType == "Hubitat") {
-		state.formatSettingRootStart = "<B><font color='blue'>"
-		state.formatSettingRootEnd = "</font></B>"
-		state.formatSettingOptionalStart = ""
-		state.formatSettingOptionalEnd = ""
+		state.formatSettingRootStart = "<B><span style='color: blue;'>"
+		state.formatSettingRootEnd = "</span></B>"
+		state.formatSettingOptionalStart = "<B><span style='color: #6897bb;'>"
+		state.formatSettingOptionalEnd = "</font></B>"
 	}
 	if (state.hubType == "SmartThings") { 
 		state.formatSettingRootStart = ""
@@ -2323,4 +2322,12 @@ def setFormatting(){
 		state.formatSettingOptionalStart = ""
 		state.formatSettingOptionalEnd = ""
 	}
+}
+
+def setVersion(){
+		//Cobra update code, modified by Rayzurbock
+		state.version = "2.0.8.5.8"	 
+		state.InternalName = "BigTalker2-Parent-DEV" 
+		state.ExternalName = "BigTalker2-DEV"
+		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
