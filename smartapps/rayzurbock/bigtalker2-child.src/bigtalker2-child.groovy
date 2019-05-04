@@ -33,7 +33,7 @@ preferences {
 }
 
 def pageConfigureEvents(){
-	setAppVersion()
+	setVersion()
     state.hubType = parent.returnVar("hubType")
     dynamicPage(name: "pageConfigureEvents", title: "Configure Events", install: (!(app?.getInstallationState == true)), uninstall: (app?.getInstallationState == true)) {
         section("Group Settings:"){
@@ -139,36 +139,43 @@ def pageConfigureEvents(){
 
 def pageConfigMotion(){
     dynamicPage(name: "pageConfigMotion", title: "Configure talk on motion", install: false, uninstall: false) {
-        section(){
-            def defaultSpeechActive1 = ""
+		def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		//CONFIGURATION
+		section(){
+			def defaultSpeechActive1 = ""
             def defaultSpeechInactive1 = ""
             if (!motionDeviceGroup1) {
                 defaultSpeechActive1 = "%devicename% is now %devicechange%"
                 defaultSpeechInactive1 = "%devicename% is now %devicechange%"
             }
-			input name: "motionDeviceGroup1", type: "capability.motionSensor", title: "${parent.formatSettingRootStart}Motion Sensor(s)${parent.formatSettingRootEnd}", required: false, multiple: true
-            input name: "motionTalkOnActive1", type: "text", title: "${parent.formatSettingRootStart}Say this on motion active:${parent.formatSettingRootEnd}", required: false, defaultValue: defaultSpeechActive1, submitOnChange: true
-            input name: "motionTestOnActive1", type: "bool", title: "${parent.formatSettingOptionStart}Toggle to test motion active phrase${parent.formatSettingOptionEnd}", required: false, defaultValue: false, submitOnChange: true
-            input name: "motionTalkOnInactive1", type: "text", title: "${parent.formatSettingRootStart}Say this on motion inactive:${parent.formatSettingRootEnd}", required: false, defaultValue: defaultSpeechInactive1, submitOnChange: true
-            input name: "motionTestOnInactive1", type: "bool", title: "${parent.formatSettingOptionStart}Toggle to test motion inactive phrase${parent.formatSettingOptionEnd}", required: false, defaultValue: false, submitOnChange: true
-            input name: "motionPersonality1", type: "enum", title: "${parent.formatSettingRootStart}Allow Personality (overrides default)?:${parent.formatSettingRootEnd}", required: false, options: ["Yes", "No"], submitOnChange: true
-            input name: "motionSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${parent.formatSettingRootStart}Talk with these text-to-speech devices (overrides default)${parent.formatSettingRootEnd}", multiple: true, required: false, submitOnChange: true
+			input name: "motionDeviceGroup1", type: "capability.motionSensor", title: "${formatSettingRootStart}Motion Sensor(s)${formatSettingRootEnd}", required: false, multiple: true
+            input name: "motionTalkOnActive1", type: "text", title: "${formatSettingRootStart}Say this on motion active:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechActive1, submitOnChange: true
+            input name: "motionTestOnActive1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test motion active phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "motionTalkOnInactive1", type: "text", title: "${formatSettingRootStart}Say this on motion inactive:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechInactive1, submitOnChange: true
+            input name: "motionTestOnInactive1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test motion inactive phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "motionPersonality1", type: "enum", title: "${formatSettingRootStart}Allow Personality (overrides default)?:${formatSettingRootEnd}", required: false, options: ["Yes", "No"], submitOnChange: true
+            input name: "motionSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${formatSettingRootStart}Talk with these text-to-speech devices (overrides default)${formatSettingRootEnd}", multiple: true, required: false, submitOnChange: true
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-            	input name: "motionVolume1", type: "number", title: "${parent.formatSettingRootStart}Set volume to (overrides default):${parent.formatSettingRootEnd}", required: false, submitOnChange: true
-            	input name: "motionResumePlay1", type: "bool", title: "${parent.formatSettingRootStart}Attempt to resume playing audio?${parent.formatSettingRootEnd}", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true, submitOnChange: true
-                input name: "motionVoice1", type: "enum", title: "${parent.formatSettingRootStart}Voice (overrides default):${parent.formatSettingRootEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            	input name: "motionVolume1", type: "number", title: "${formatSettingRootStart}Set volume to (overrides default):${formatSettingRootEnd}", required: false, submitOnChange: true
+            	input name: "motionResumePlay1", type: "bool", title: "${formatSettingRootStart}Attempt to resume playing audio?${formatSettingRootEnd}", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true, submitOnChange: true
+                input name: "motionVoice1", type: "enum", title: "${formatSettingRootStart}Voice (overrides default):${parent.SettingRootEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("${parent.formatSettingRootStart}Restrictions${parent.formatSettingRootEnd}"){
-            input name: "motionModes1", type: "mode", title: "${parent.formatSettingOptionStart}Talk when in these mode(s) (overrides default)${parent.formatSettingOptionEnd}", multiple: true, required: false
-            input name: "motionStartTime1", type: "time", title: "${parent.formatSettingOptionStart}Don't talk before (overrides default)${parent.formatSettingOptionEnd}", required: false, submitOnChange: true
-            input name: "motionEndTime1", type: "time", title: "${parent.formatSettingOptionStart}Don't talk after (overrides default)${parent.formatSettingOptionEnd}", required: (!(settings.motionStartTime1 == null))
-            input name: "motionDays1", type: "enum", title: "${parent.formatSettingOptionStart}Restrict to these day(s)${parent.formatSettingOptionEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
-            //input name: "motionCount1", type: "number", title: "${parent.formatSettingOptionEnd}Do this only x times (next prompt)...${parent.formatSettingOptionEnd}", required: false, submitOnChange: true
-            //input name: "motionCountUnit1", type:"enum", title: "${parent.formatSettingOptionEnd}... per ${parent.formatSettingOptionEnd}", required: settings.motionCount1, options: ["Minute", "Hour", "Day"]
-            input name: "motionDisableSwitch1", type: "capability.switch", title: "${parent.formatSettingOptionStart}Disable when this switch is off${parent.formatSettingOptionEnd}", required: false, multiple: false
+		//RESTRICTIONS
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+            input name: "motionModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
+            input name: "motionStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
+            input name: "motionEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.motionStartTime1 == null))
+            input name: "motionDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            //input name: "motionCount1", type: "number", title: "${formatSettingOptionalEnd}Do this only x times (next prompt)...${parent.formatSettingOptionalEnd}", required: false, submitOnChange: true
+            //input name: "motionCountUnit1", type:"enum", title: "${formatSettingOptionalEnd}... per ${parent.formatSettingOptionalEnd}", required: settings.motionCount1, options: ["Minute", "Hour", "Day"]
+            input name: "motionDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("Help"){
+		//HELP
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		def phraseTestTogDeviceUpper = "Motion"
@@ -200,6 +207,11 @@ def pageConfigMotion(){
 
 def pageConfigSwitch(){
     dynamicPage(name: "pageConfigSwitch", title: "Configure talk on switch", install: false, uninstall: false) {
+		def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		//CONFIGURATION
         section(){
             def defaultSpeechOn1 = ""
             def defaultSpeechOff1 = ""
@@ -207,28 +219,30 @@ def pageConfigSwitch(){
                 defaultSpeechOn1 = "%devicename% is now %devicechange%"
                 defaultSpeechOff1 = "%devicename% is now %devicechange%"
             }
-            input name: "switchDeviceGroup1", type: "capability.switch", title: "Switch(es)", required: false, multiple: true
-            input name: "switchTalkOnOn1", type: "text", title: "Say this when switch is turned ON:", required: false, defaultValue: defaultSpeechOn1, submitOnChange: true
-            input name: "switchTestOnOn1", type: "bool", title: "Toggle to test switch ON phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "switchTalkOnOff1", type: "text", title: "Say this when switch is turned OFF:", required: false, defaultValue: defaultSpeechOff1, submitOnChange: true
-            input name: "switchTestOnOff1", type: "bool", title: "Toggle to test switch OFF phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "switchPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"], submitOnChange: true
-            input name: "switchSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false, submitOnChange: true
+            input name: "switchDeviceGroup1", type: "capability.switch", title: "${formatSettingRootStart}Switch(es)${formatSettingRootEnd}", required: false, multiple: true
+            input name: "switchTalkOnOn1", type: "text", title: "${formatSettingRootStart}Say this when switch is turned ON:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechOn1, submitOnChange: true
+            input name: "switchTestOnOn1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test switch ON phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "switchTalkOnOff1", type: "text", title: "${formatSettingRootStart}Say this when switch is turned OFF:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechOff1, submitOnChange: true
+            input name: "switchTestOnOff1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test switch OFF phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "switchPersonality1", type: "enum", title: "${formatSettingRootStart}Allow Personality (overrides default)?:${formatSettingRootEnd}", required: false, options: ["Yes", "No"], submitOnChange: true
+            input name: "switchSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${formatSettingRootStart}Talk with these text-to-speech devices (overrides default)${formatSettingRootEnd}", multiple: true, required: false, submitOnChange: true
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-            	input name: "switchVolume1", type: "number", title: "Set volume to (overrides default):", required: false, submitOnChange: true
-            	input name: "switchResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true, submitOnChange: true
-                input name: "switchVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            	input name: "switchVolume1", type: "number", title: "${formatSettingRootStart}Set volume to (overrides default):${formatSettingRootEnd}", required: false, submitOnChange: true
+            	input name: "switchResumePlay1", type: "bool", title: "${formatSettingRootStart}Attempt to resume playing audio?${formatSettingRootEnd}", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true, submitOnChange: true
+                input name: "switchVoice1", type: "enum", title: "${formatSettingRootStart}Voice (overrides default):${formatSettingRootEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("Restrictions"){
-            //IN DEVELOPMENT  input name: "switchOnThreshold", type: "number", title: "If it's on for more than this many minutes (default 0)", required: false, defaultValue: 0
-            input name: "switchModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
-            input name: "switchStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "switchEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.switchStartTime1 == null))
-            input name: "switchDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
-            input name: "switchDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+		//RESTRICTIONS
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+            //IN DEVELOPMENT  input name: "switchOnThreshold", type: "number", title: "${formatSettingOptionalStart}If it's on for more than this many minutes (default 0)${formatSettingOptionalEnd}", required: false, defaultValue: 0
+            input name: "switchModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
+            input name: "switchStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
+            input name: "switchEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.switchStartTime1 == null))
+            input name: "switchDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "switchDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("Help"){
+		//HELP
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -260,7 +274,12 @@ def pageConfigSwitch(){
 }
 
 def pageConfigPresence(){
+	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
     dynamicPage(name: "pageConfigPresence", title: "Configure talk on presence", install: false, uninstall: false) {
+		//CONFIGURATION
         section(){
             def defaultSpeechArrive1 = ""
             def defaultSpeechLeave1 = ""
@@ -269,27 +288,29 @@ def pageConfigPresence(){
                 defaultSpeechArrive1 = "%devicename% has arrived"
                 defaultSpeechLeave1 = "%devicename% has left"
             }
-            input name: "presenceDeviceGroup1", type: "capability.presenceSensor", title: "Presence Sensor(s)", required: false, multiple: true
-            input name: "presenceTalkOnPresent1", type: "text", title: "Say this when someone arrives:", required: false, defaultValue: defaultSpeechArrive1
-			input name: "presenceTestOnPresent1", type: "bool", title: "Toggle to test arrival phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "presenceTalkOnNot present1", type: "text", title: "Say this when someone leaves:", required: false, defaultValue: defaultSpeechLeave1
-			input name: "presenceTestOnNot present1", type: "bool", title: "Toggle to test departure phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "presencePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "presenceSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            input name: "presenceDeviceGroup1", type: "capability.presenceSensor", title: "${formatSettingRootStart}Presence Sensor(s)${formatSettingRootEnd}", required: false, multiple: true
+            input name: "presenceTalkOnPresent1", type: "text", title: "${formatSettingRootStart}Say this when someone arrives:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechArrive1
+			input name: "presenceTestOnPresent1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test arrival phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "presenceTalkOnNot present1", type: "text", title: "${formatSettingRootStart}Say this when someone leaves:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechLeave1
+			input name: "presenceTestOnNot present1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test departure phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "presencePersonality1", type: "enum", title: "${formatSettingRootStart}Allow Personality (overrides default)?:${formatSettingRootEnd}", required: false, options: ["Yes", "No"]
+            input name: "presenceSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${formatSettingRootEnd}Talk with these text-to-speech devices (overrides default)${formatSettingRootEnd}", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-            	input name: "presenceVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-            	input name: "presenceResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
-                input name: "presenceVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            	input name: "presenceVolume1", type: "number", title: "${formatSettingRootStart}Set volume to (overrides default):${formatSettingRootEnd}", required: false
+            	input name: "presenceResumePlay1", type: "bool", title: "${formatSettingRootStart}Attempt to resume playing audio?${formatSettingRootEnd}", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "presenceVoice1", type: "enum", title: "${formatSettingRootStart}Voice (overrides default):${formatSettingRootEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("Restrictions"){
-            input name: "presenceModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
-            input name: "presenceStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "presenceEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.presenceStartTime1 == null))
-            input name: "presenceDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
-            input name: "presenceDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+		//RESTRICTIONS
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+            input name: "presenceModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
+            input name: "presenceStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
+            input name: "presenceEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.presenceStartTime1 == null))
+            input name: "presenceDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "presenceDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("Help"){
+		//HELP
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -321,7 +342,12 @@ def pageConfigPresence(){
 }
 
 def pageConfigLock(){
+	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
     dynamicPage(name: "pageConfigLock", title: "Configure talk on lock", install: false, uninstall: false) {
+		//CONFIGURATION
         section(){
             def defaultSpeechUnlock1 = ""
             def defaultSpeechLock1 = ""
@@ -329,27 +355,29 @@ def pageConfigLock(){
                 defaultSpeechUnlock1 = "%devicename% is now unlocked"
                 defaultSpeechLock1 = "%devicename% is now locked"
             }
-            input name: "lockDeviceGroup1", type: "capability.lock", title: "Lock(s)", required: false, multiple: true
-            input name: "lockTalkOnUnlock1", type: "text", title: "Say this when unlocked:", required: false, defaultValue: defaultSpeechUnlock1
-			input name: "lockTestOnUnlock1", type: "bool", title: "Toggle to test unlock phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "lockTalkOnLock1", type: "text", title: "Say this when locked:", required: false, defaultValue: defaultSpeechLock1
-			input name: "lockTestOnLock1", type: "bool", title: "Toggle to test lock phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "lockPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "lockSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            input name: "lockDeviceGroup1", type: "capability.lock", title: "${formatSettingRootStart}Lock(s)${formatSettingRootEnd}", required: false, multiple: true
+            input name: "lockTalkOnUnlock1", type: "text", title: "${formatSettingRootStart}Say this when unlocked:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechUnlock1
+			input name: "lockTestOnUnlock1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test unlock phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "lockTalkOnLock1", type: "text", title: "${formatSettingRootStart}Say this when locked:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechLock1
+			input name: "lockTestOnLock1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test lock phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "lockPersonality1", type: "enum", title: "${formatSettingRootStart}Allow Personality (overrides default)?:${formatSettingRootEnd}", required: false, options: ["Yes", "No"]
+            input name: "lockSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${formatSettingRootStart}Talk with these text-to-speech devices (overrides default)${formatSettingRootEnd}", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-            	input name: "lockVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-            	input name: "lockResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
-                input name: "lockVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            	input name: "lockVolume1", type: "number", title: "${formatSettingRootStart}Set volume to (overrides default):${formatSettingRootEnd}", required: false
+            	input name: "lockResumePlay1", type: "bool", title: "${formatSettingRootStart}Attempt to resume playing audio?${formatSettingRootEnd}", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "lockVoice1", type: "enum", title: "${formatSettingRootStart}Voice (overrides default):${formatSettingRootEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("Restrictions"){
-            input name: "lockModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
-            input name: "lockStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "lockEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.lockStartTime1 == null))
-            input name: "lockDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
-            input name: "lockDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+		//RESTRICTIONS
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+            input name: "lockModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
+            input name: "lockStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
+            input name: "lockEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.lockStartTime1 == null))
+            input name: "lockDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s${formatSettingOptionalEnd})", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "lockDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("Help"){
+		//HELP
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -381,7 +409,12 @@ def pageConfigLock(){
 }
 
 def pageConfigContact(){
+	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
     dynamicPage(name: "pageConfigContact", title: "Configure talk on contact sensor", install: false, uninstall: false) {
+		//CONFIGURATION
         section(){
             def defaultSpeechOpen1 = ""
             def defaultSpeechClosed1 = ""
@@ -389,28 +422,30 @@ def pageConfigContact(){
                 defaultSpeechOpen1 = "%devicename% is now %devicechange%"
                 defaultSpeechClosed1 = "%devicename% is now %devicechange%"
             }
-            input name: "contactDeviceGroup1", type: "capability.contactSensor", title: "Contact sensor(s)", required: false, multiple: true
-            input name: "contactTalkOnOpen1", type: "text", title: "Say this when opened:", required: false, defaultValue: defaultSpeechOpen1
-			input name: "contactTestOnOpen1", type: "bool", title: "Toggle to test opened phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "contactTalkOnClosed1", type: "text", title: "Say this when closed:", required: false, defaultValue: defaultSpeechClosed1
-			input name: "contactTestOnClosed1", type: "bool", title: "Toggle to test closed phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "contactPersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "contactSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            input name: "contactDeviceGroup1", type: "capability.contactSensor", title: "${formatSettingRootStart}Contact sensor(s)${formatSettingRootEnd}", required: false, multiple: true
+            input name: "contactTalkOnOpen1", type: "text", title: "${formatSettingRootStart}Say this when opened:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechOpen1
+			input name: "contactTestOnOpen1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test opened phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "contactTalkOnClosed1", type: "text", title: "${formatSettingRootStart}Say this when closed:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechClosed1
+			input name: "contactTestOnClosed1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test closed phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "contactPersonality1", type: "enum", title: "${formatSettingRootStart}Allow Personality (overrides default)?:${formatSettingRootEnd}", required: false, options: ["Yes", "No"]
+            input name: "contactSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${formatSettingRootStart}Talk with these text-to-speech devices (overrides default)${formatSettingRootEnd}", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-            	input name: "contactVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "contactResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
-                input name: "contactVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            	input name: "contactVolume1", type: "number", title: "${formatSettingRootStart}Set volume to (overrides default):${formatSettingRootEnd}", required: false
+                input name: "contactResumePlay1", type: "bool", title: "${formatSettingRootStart}Attempt to resume playing audio?${formatSettingRootEnd}", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "contactVoice1", type: "enum", title: "${formatSettingRootStart}Voice (overrides default):${formatSettingRootEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("Restrictions"){
+		//RESTRICTIONS
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
             //IN DEVELOPMENT input name: "contactOpenThreshold", type: "number", title: "If it's open for more than this many minutes (default 0)", required: false, defaultValue: 0
-            input name: "contactModes1", type: "mode", title: "Talk when in these mode(s) (overrides default)", multiple: true, required: false
-            input name: "contactStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "contactEndTime1", type: "time", title: "Don't talk after (overrides default)", required: (!(settings.contactStartTime1 == null))
-            input name: "contactDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
-            input name: "contactDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+            input name: "contactModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
+            input name: "contactStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
+            input name: "contactEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.contactStartTime1 == null))
+            input name: "contactDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "contactDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("Help"){
+		//HELP
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -447,31 +482,38 @@ def pageConfigMode(){
        locationmodes += it
     }
     LOGDEBUG("locationmodes=${locationmodes}", true)
+	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
     dynamicPage(name: "pageConfigMode", title: "Configure talk on home mode change", install: false, uninstall: false) {
+		//CONFIGURATION
         section(){
             def defaultSpeechMode1 = ""
             if (!modePhraseGroup1) {
                 defaultSpeechMode1 = "%locationname% mode has changed from %lastmode% to %mode%"
             }
-            input name: "modePhraseGroup1", type:"mode", title:"When mode changes to: ", required:false, multiple:true, submitOnChange:false
-            input name: "modeExcludePhraseGroup1", type: "mode", title: "But not when changed from (optional): ", required: false, multiple: true
-            input name: "modeTalkOnChange1", type: "text", title: "Say this when home mode is changed", required: false, defaultValue: defaultSpeechMode1
-			input name: "modeTestOnChange1", type: "bool", title: "Toggle to test mode change phrase", required: false, defaultValue: false, submitOnChange: true
-            input name: "modePersonality1", type: "enum", title: "Allow Personality (overrides default)?:", required: false, options: ["Yes", "No"]
-            input name: "modePhraseSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "Talk with these text-to-speech devices (overrides default)", multiple: true, required: false
+            input name: "modePhraseGroup1", type:"mode", title:"${formatSettingRootStart}When mode changes to:${formatSettingRootEnd}", required:false, multiple:true, submitOnChange:false
+            input name: "modeExcludePhraseGroup1", type: "mode", title: "${formatSettingOptionalStart}But not when changed from (optional):${formatSettingOptionalEnd}", required: false, multiple: true
+            input name: "modeTalkOnChange1", type: "text", title: "${formatSettingRootStart}Say this when home mode is changed${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechMode1
+			input name: "modeTestOnChange1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test mode change phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "modePersonality1", type: "enum", title: "${formatSettingRootStart}Allow Personality (overrides default)?:${formatSettingRootEnd}", required: false, options: ["Yes", "No"]
+            input name: "modePhraseSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${formatSettingRootStart}Talk with these text-to-speech devices (overrides default)${formatSettingRootEnd}", multiple: true, required: false
             if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
-            	input name: "modePhraseVolume1", type: "number", title: "Set volume to (overrides default):", required: false
-                input name: "modePhraseResumePlay1", type: "bool", title: "Attempt to resume playing audio?", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
-                input name: "modePhraseVoice1", type: "enum", title: "Voice (overrides default):", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            	input name: "modePhraseVolume1", type: "number", title: "${formatSettingRootStart}Set volume to (overrides default):${formatSettingRootEnd}", required: false
+                input name: "modePhraseResumePlay1", type: "bool", title: "${formatSettingRootStart}Attempt to resume playing audio?${formatSettingRootEnd}", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true
+                input name: "modePhraseVoice1", type: "enum", title: "${formatSettingRootStart}Voice (overrides default):${formatSettingRootEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("Restrictions"){
-            input name: "modeStartTime1", type: "time", title: "Don't talk before (overrides default)", required: false, submitOnChange: true
-            input name: "modeEndTime1", type: "time", title: "Don't talk after (overrides default)", required: false//(!(settings.modeStartTime1 == null))
-            input name: "modeDays1", type: "enum", title: "Restrict to these day(s)", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
-            input name: "modeDisableSwitch1", type: "capability.switch", title: "Disable when this switch is off", required: false, multiple: false
+		//RESTRICTIONS
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+            input name: "modeStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
+            input name: "modeEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: false//(!(settings.modeStartTime1 == null))
+            input name: "modeDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "modeDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("Help"){
+		//HELP
+        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -1309,19 +1351,22 @@ def pageHelpPhraseTokens(){
        section("The following tokens can be used in your event phrases and will be replaced as listed:"){
        	   def AvailTokens = ""
            if (state.hubType == "SmartThings"){ AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n" }
-           AvailTokens += "%groupname% = Name that you gave for the event group\n\n"
-           AvailTokens += "%date% = Current date; January 01 2018\n\n"
-           AvailTokens += "%day% = Current day; Monday\n\n"
-           AvailTokens += "%devicename% = Triggering devices display name\n\n"
-           AvailTokens += "%devicetype% = Triggering device type; motion, switch, etc\n\n"
-           AvailTokens += "%devicechange% = State change that occurred; on/off, active/inactive, etc...\n\n"
-           AvailTokens += "%description% = The description of the event that is to be displayed to the user in the mobile application. \n\n"
-           AvailTokens += "%locationname% = Hub location name; home, work, etc\n\n"
-           AvailTokens += "%lastmode% = Last hub mode; home, away, etc\n\n"
-           AvailTokens += "%mode% = Current hub mode; home, away, etc\n\n"
-           AvailTokens += "%mp3(url)% = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3 \n"
-           AvailTokens += "No other tokens or phrases can be used with %mp3(url)%\n\n"
-           AvailTokens += "%time% = Current hub time; HH:mm am/pm\n\n"
+           AvailTokens += "<ul>"
+		   AvailTokens += "<li><B>%groupname%</B> = Name that you gave for the event group</li>"
+           AvailTokens += "<li><B>%date%</B> = Current date; January 01 20xx</li>"
+           AvailTokens += "<li><B>%day%</B> = Current day; Monday</li>"
+           AvailTokens += "<li><B>%devicename%</B> = Triggering devices display name</li>"
+           AvailTokens += "<li><B>%devicetype%</B> = Triggering device type; motion, switch, etc</li>"
+           AvailTokens += "<li><B>%devicechange%</B> = State change that occurred; on/off, active/inactive, etc...</li>"
+           AvailTokens += "<li><B>%description%</B> = The description of the event that is to be displayed to the user in the mobile application.</li>"
+           AvailTokens += "<li><B>%locationname%</B> = Hub location name; home, work, etc</li>"
+           AvailTokens += "<li><B>%lastmode%</B> = Last hub mode; home, away, etc</li>"
+           AvailTokens += "<li><B>%mode%</B> = Current hub mode; home, away, etc</li>"
+           AvailTokens += "<li><B>%mp3(url)%</B> = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3"
+               AvailTokens += "<ul><li><I>No other tokens or phrases can be used with %mp3(url)%</I></li></ul>"
+		   AvailTokens += "</li>"
+           AvailTokens += "<li><B>%time%</B> = Current hub time; HH:mm am/pm\n\n</B></li>"
+		   AvailTokens += "</ul>"
 		   if (state.hubType == "SmartThings"){ AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n" }
            if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n" }
            if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n" }
@@ -1355,7 +1400,7 @@ def initialize() {
 }
 def updated() {
     state.groupEnabled = settings.groupEnabled
-	setAppVersion()
+	setVersion()
 	LOGTRACE("Updating settings (Parent Version: ${parent.returnVar("version")}; Child Version: ${state.version}; Group Enabled: ${state.groupEnabled})")
     state.installed = true
     unschedule()
@@ -1368,7 +1413,7 @@ def updated() {
 }
 def installed() {
 	state.groupEnabled = settings.groupEnabled
-	setAppVersion()
+	setVersion()
 	LOGTRACE("Installed (Parent Version: ${parent.returnVar("version")}; Child Version: ${state.version}; Group Enabled: ${state.groupEnabled})")
 	state.installed = true
 	if (state.groupEnabled == true || state.groupEnabled == "true" || state.groupEnabled == null) { 
@@ -2292,7 +2337,7 @@ def LOGDEBUG(txt, send){
 	if (send == true || send == null || send == "") { def sendToParent = true } else { def sendToParent = false }
 	if (parent?.returnVar("debugMode") && sendToParent) {parent.LOGDEBUG("[CHILD:${app?.label}] ${txt}")}
     try {
-    	if (parent?.returnVar("debugMode") || sendToParent == false) { log.debug("BIGTALKER2-CHILD[${app?.label?.replace(" ","").toUpperCase()}](${state.appversion}) || ${txt}")}
+    	if (parent?.returnVar("debugMode") || sendToParent == false) { log.debug("BIGTALKER2-CHILD[${app?.label?.replace(" ","").toUpperCase()}](${state.version}) || ${txt}")}
     } catch(ex) {
 		log.error("LOGDEBUG unable to output requested data! || ${text}")
     }
@@ -2300,7 +2345,7 @@ def LOGDEBUG(txt, send){
 def LOGTRACE(txt){
 	parent.LOGTRACE("[CHILD:${app.label}] ${txt}")
     try {
-    	log.trace("BIGTALKER2-CHILD[${app.label.replace(" ","").toUpperCase()}](${state.appversion}) || ${txt}")
+    	log.trace("BIGTALKER2-CHILD[${app.label.replace(" ","").toUpperCase()}](${state.version}) || ${txt}")
     } catch(ex) {
     	log.error("LOGTRACE unable to output requested data!")
     }
@@ -2308,14 +2353,10 @@ def LOGTRACE(txt){
 def LOGERROR(txt){
 	parent.LOGERROR("[CHILD:${app.label}] ${txt}")
     try {
-    log.error("BIGTALKER2-CHILD[${app.label.replace(" ","").toUpperCase()}](${state.appversion}) || ERROR: ${txt}")
+    log.error("BIGTALKER2-CHILD[${app.label.replace(" ","").toUpperCase()}](${state.version}) || ERROR: ${txt}")
     } catch(ex) {
     	log.error("LOGERROR unable to output requested data!")
     }
-}
-
-def setAppVersion(){
-    state.appversion = "C2.0.8.5.1"
 }
 
 def version(){
@@ -2359,7 +2400,7 @@ def resetBtnName(){
 }    
 
 def displayVersionStatus(){
-	section("<HR size=3><B>Version Information</B>"){
+	section("<HR><HR><B><CENTER>Version Information<CENTER></B>"){
 	}
 	if(state.versionStatus){
 		section{paragraph "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png''</img><BR>${state.ExternalName} - Version: $state.version <BR><font face='Lucida Handwriting'>$state.Copyright </font>"}
@@ -2375,7 +2416,7 @@ def displayVersionStatus(){
 		//	pauseOrNot()   
 			//if(state.versionStatus != "Current"){
 		section{ 
-			paragraph "<b>${state.versionStatus}</b><BR>${state.updateURI}<BR>${state.UpdateInfo}<BR>"
+			paragraph "<b>${state.versionStatus}</b><BR>${state.updateURI}<BR><BR><B><I>Release Notes:</I></B>${state.UpdateInfo}<BR>"
 			//}
 		}
 		//section(" ") {
@@ -2470,7 +2511,7 @@ def updateCheckAllowed(){
 }
 
 def setVersion(){
-		state.version = "2.0.8.5.4"	 
+		state.version = "2.0.8.5.5"	 
 		state.InternalName = "BigTalker2-Child-DEV" 
 		state.ExternalName = "BigTalker2 Child-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
