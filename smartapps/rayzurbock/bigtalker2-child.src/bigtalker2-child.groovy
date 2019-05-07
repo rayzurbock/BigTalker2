@@ -2010,7 +2010,6 @@ def onModeChangeEvent(evt){
     processModeChangeEvent(1, evt)
 }
 def processModeChangeEvent(index, evt){
-	state.lastMode = location.mode
     parent.setMode(location.mode)
 	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
     def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
@@ -2055,6 +2054,7 @@ def processModeChangeEvent(index, evt){
             state.speechDevice = null
         }
     }
+	state.lastMode = location.mode
 }
 //END MODE CHANGE
 
@@ -2511,7 +2511,7 @@ def updateCheckAllowed(){
 }
 
 def setVersion(){
-		state.version = "2.0.8.5.5"	 
+		state.version = "2.0.8.5.6"	 
 		state.InternalName = "BigTalker2-Child-DEV" 
 		state.ExternalName = "BigTalker2 Child-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
