@@ -196,6 +196,8 @@ def pageConfigureSpeechDeviceType(){
 def pageConfigureDefaults(){
 	unsubscribe()
 	myRunIn(3, initSubscribe)
+	state.mode = location.mode
+	state.lastMode = state.mode
     if (state?.installed == true) { 
        state.dynPageProperties = [
             name:      "pageConfigureDefaults",
@@ -1930,14 +1932,9 @@ def setMode(mode){
   // Remove this function
 }
 
-def setLastMode() {
-	//This function will be called by onModeChangeEvent() after 10 seconds giving time for mode change processing before updating lastMode state var.
-	state.lastMode = location.mode
-	LOGDEBUG("LastMode updated to current mode (${location.mode})")
-}
-
 def onModeChangeEvent(evt){
-	myRunIn(10, setLastMode)
+	state.lastMode = state.mode
+	state.mode = location.mode
 	LOGDEBUG("LastMode=${state.lastMode} Mode=${location.mode}")
 }
 
@@ -2354,7 +2351,7 @@ def setFormatting(){
 
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
-		state.version = "2.0.8.5.9"	 
+		state.version = "2.0.8.6.0"	 
 		state.InternalName = "BigTalker2-Parent-DEV" 
 		state.ExternalName = "BigTalker2-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
