@@ -1437,7 +1437,6 @@ def initialize() {
         initSubscribe()
         if (state.hubType == "SmartThings") {sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")}
         state.lastMode = location.mode
-        parent.setMode(location.mode)
     }
     LOGTRACE("Initialized (Parent Version: ${parent.returnVar("version")}; Child Version: ${state.version}; Group Enabled: ${settings.groupEnabled})")
 //End initialize()
@@ -2054,7 +2053,6 @@ def onModeChangeEvent(evt){
     processModeChangeEvent(1, evt)
 }
 def processModeChangeEvent(index, evt){
-    parent.setMode(location.mode)
 	def resume = ""; resume = parent.returnVar("resumePlay"); if (resume == "") { resume = true }
     def personality = ""; personality = parent.returnVar("personalityMode"); if (personality == "" || personality == null) { personality = false }
     def myVolume = -1
@@ -2383,7 +2381,7 @@ def LOGDEBUG(txt, send){
     try {
     	if (parent?.returnVar("debugMode") || sendToParent == false) { log.debug("BIGTALKER2-CHILD[${app?.label?.replace(" ","").toUpperCase()}](${state.version}) || ${txt}")}
     } catch(ex) {
-		log.error("LOGDEBUG unable to output requested data! || ${text}")
+		log.error("LOGDEBUG unable to output requested data! || ${txt} || ERR(${ex})")
     }
 }
 def LOGTRACE(txt){
@@ -2555,7 +2553,7 @@ def updateCheckAllowed(){
 }
 
 def setVersion(){
-		state.version = "2.0.8.5.6"	 
+		state.version = "2.0.8.5.8"	 
 		state.InternalName = "BigTalker2-Child-DEV" 
 		state.ExternalName = "BigTalker2 Child-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
