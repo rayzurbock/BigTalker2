@@ -194,6 +194,8 @@ def pageConfigureSpeechDeviceType(){
 }
 
 def pageConfigureDefaults(){
+	unsubscribe()
+	myRunIn(3, initSubscribe)
     if (state?.installed == true) { 
        state.dynPageProperties = [
             name:      "pageConfigureDefaults",
@@ -315,7 +317,14 @@ def initialize() {
     if (state.hubType == "SmartThings") {sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")}
     state.lastMode = location.mode
     state.lastTalkNow = settings.speechTalkNow
+	initSubscribe()
 //End initialize()
+}
+
+def initSubscribe() {
+	//Subscribe Mode
+	LOGDEBUG("Subscribed")
+    subscribe(location, "mode", onModeChangeEvent) //Keep track of mode changes
 }
 
 def processPhraseVariables(appname, phrase, evt){
@@ -1918,8 +1927,18 @@ def getDesiredVolume(invol) {
 }
 
 def setMode(mode){
-	state.lastMode = state.mode
-	state.mode = mode
+  // Remove this function
+}
+
+def setLastMode() {
+	//This function will be called by onModeChangeEvent() after 10 seconds giving time for mode change processing before updating lastMode state var.
+	state.lastMode = location.mode
+	LOGDEBUG("LastMode updated to current mode (${location.mode})")
+}
+
+def onModeChangeEvent(evt){
+	myRunIn(10, setLastMode)
+	LOGDEBUG("LastMode=${state.lastMode} Mode=${location.mode}")
 }
 
 def disableDebug(){
@@ -1932,28 +1951,37 @@ def disableDebug(){
 def LOGDEBUG(txt){
 	if (state.debugMode) { 
 		def msgfrom = "[PARENT] "
+		def appLabel = (app?.label == null) ? state.InternalName : app.label //Some child calls to parent.LOGDEBUG result in app.label being null, correct
+		appLabel = appLabel.replace(" ","")
+		appLabel.toUpperCase()
 		if (txt?.contains("[CHILD:")) { msgfrom = "" }
     	try {
-    		log.debug("${app.label.replace(" ","").toUpperCase()}(${state.version}) || ${msgfrom}${txt}")
+    		log.debug("${appLabel}(${state.version}) || ${msgfrom}${txt}")
     	} catch(ex) {
-    		log.error("LOGDEBUG unable to output requested data!")
+			log.error("LOGDEBUG unable to output requested data! || err:${ex}")
     	}
 	}
 }
 def LOGTRACE(txt){
 	def msgfrom = "[PARENT] "
+	def appLabel = (app?.label == null) ? state.InternalName : app.label //Some child calls to parent.LOGTRACE result in app.label being null, correct
+	appLabel = appLabel.replace(" ","")
+	appLabel.toUpperCase()
     if (txt?.contains("[CHILD:")) { msgfrom = "" }
     try {
-    	log.trace("${app.label.replace(" ","").toUpperCase()}(${state.version}) || ${msgfrom}${txt}")
+    	log.trace("${appLabel}(${state.version}) || ${msgfrom}${txt}")
     } catch(ex) {
     	log.error("LOGTRACE unable to output requested data!")
     }
 }
 def LOGERROR(txt){
 	def msgfrom = "[PARENT] "
+	def appLabel = (app?.label == null) ? state.InternalName : app.label //Some child calls to parent.LOGERROR result in app.label being null, correct
+	appLabel = appLabel.replace(" ","")
+	appLabel.toUpperCase()
     if (txt?.contains("[CHILD:")) { msgfrom = "" }
     try {
-    log.error("${app.label.replace(" ","").toUpperCase()}(${state.version}) || ${msgfrom}ERROR: ${txt}")
+    log.error("${appLabel}(${state.version}) || ${msgfrom}ERROR: ${txt}")
     } catch(ex) {
     	log.error("LOGERROR unable to output requested data!")
     }
@@ -2326,7 +2354,7 @@ def setFormatting(){
 
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
-		state.version = "2.0.8.5.8"	 
+		state.version = "2.0.8.5.9"	 
 		state.InternalName = "BigTalker2-Parent-DEV" 
 		state.ExternalName = "BigTalker2-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
