@@ -1,17 +1,16 @@
 definition(
-    name: "BigTalker2-Dev",
+    name: "BigTalker2-Parent-DEV",
     namespace: "rayzurbock",
     author: "rayzur@rayzurbock.com",
     description: "Let's talk about mode changes, switches, motions, and so on.",
     category: "Fun & Social",
-    singleInstance: true,
-    iconUrl: "http://lowrance.cc/ST/icons/BigTalker-BetaVersion.png",
-    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png",
-    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x-BetaVersion.png")
+	//singleInstance: true,
+    iconUrl: "http://lowrance.cc/ST/icons/BigTalker.png",
+    iconX2Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png",
+    iconX3Url: "http://lowrance.cc/ST/icons/BigTalker@2x.png")
 
 preferences {
     page(name: "pageStart")
-    page(name: "pageStatus")
     page(name: "pageTalkNow")
     page(name: "pageConfigureSpeechDeviceType")
     page(name: "pageConfigureDefaults")
@@ -20,15 +19,34 @@ preferences {
 }
 
 def pageStart(){
-    state.childAppName = "BigTalker2-Child-Dev"
-    state.parentAppName = "BigTalker2-Dev"
+    state.childAppName = "BigTalker2-Child-DEV"
+    state.parentAppName = "BigTalker2-Parent-DEV"
     state.namespace = "rayzurbock"
-	setAppVersion()
-    state.supportedVoices = ["Ivy(en-us)","Joanna(en-us)","Joey(en-us)","Justin(en-us)","Kendra(en-us)","Kimberly(en-us)","Salli(en-us)","Amy(en-gb)","Brian(en-gb)","Emma(en-gb)","Miguel(es-us)","Penelope(es-us)"]
+	setVersion()
+    state.hubType = getHubType()
+    LOGDEBUG("Hub Type: ${state.hubType}")
+	setFormatting()
+    state.supportedVoices = ["Ivy(en-us)","Joanna(en-us)","Joey(en-us)","Justin(en-us)","Matthew(en-us)","Kendra(en-us)","Kimberly(en-us)","Salli(en-us)","Amy(en-gb)","Brian(en-gb)","Emma(en-gb)","Miguel(es-us)","Penelope(es-us)"]
     if (checkConfig()) { 
         // Do nothing here, but run checkConfig() 
     } 
     dynamicPage(name: "pageStart", title: "Big Talker", install: false, uninstall: (app.getInstallationState() == "COMPLETE")){
+    	def formatSettingRootStart = state.formatSettingRootStart
+		def formatSettingRootEnd = state.formatSettingRootEnd
+		def formatSettingOptionalStart = state.formatSettingOptionalStart
+		def formatSettingOptionalEnd = state.formatSettingOptionalEnd
+        def formatUlStart = state.formatUlStart
+		def formatUlEnd = state.formatUlEnd
+        def formatLiStart = state.formatLiStart
+		def formatLiEnd = state.formatLiEnd
+        def formatIStart = state.formatIStart
+		def formatIEnd = state.formatIEnd
+        def formatStrongStart = state.formatStrongStart
+		def formatStrongEnd = state.formatStrongEnd
+        def formatHr = state.formatHr
+        def formatBr = state.formatBr
+        def formatCenterStart = state.formatCenterStart
+        def formatCenterEnd = state.formatCenterEnd
         section(){
         	LOGDEBUG("install state=${app.getInstallationState()}.")
         	def mydebug_pollnow = ""
@@ -36,7 +54,7 @@ def pageStart(){
                 href "pageConfigureSpeechDeviceType", title:"Configure", description:"Tap to configure"
             } else {
                 //V1Method href "pageConfigureEvents", title: "Configure Events", description: "Tap to configure events"
-                href "pageStatus", title:"Status", description:"Tap to view status"
+                //href "pageStatus", title:"Status", description:"Tap to view status"
                 href "pageConfigureDefaults", title: "Configure Defaults", description: "Tap to configure defaults"
 				href "pageTalkNow", title:"Talk Now", description:"Tap to setup talk now" 
             }
@@ -61,1743 +79,29 @@ def pageStart(){
         }
         section("About"){
             def AboutApp = ""
-            AboutApp += 'Big Talker is a SmartApp that can make your house talk depending on various triggered events.\n\n'
-            AboutApp += 'Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the "Generic MediaRenderer" SmartApp/Device and/or AskAlexa SmartApp\n\n'
-            AboutApp += 'You can contribute to the development of this SmartApp by making a PayPal donation to rayzur@rayzurbock.com or visit http://rayzurbock.com/store\n\n'
-            if (!(state.appversion == null)){ 
-                AboutApp += "Big Talker ${state.appversion}\nhttp://www.github.com/rayzurbock\n" 
-            } else {
-                AboutApp += 'Big Talker \nhttp://www.github.com/rayzurbock\n'
-            }
+            AboutApp += "${formatHr}Big Talker is a SmartApp that can make your house talk depending on various triggered events.${formatBr}${formatBr}"
+            if (state.hubType == "Hubitat") {AboutApp += "Pair with a Hubitat compatible audio device such as Sonos, Ubi, LANnouncer, and/or VLC Thing (running on your computer or Raspberry Pi)${formatBr}"}
+            if (state.hubType == "SmartThings") {AboutApp += "Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the 'Generic MediaRenderer' SmartApp/Device and/or AskAlexa SmartApp${formatBr}"}
             paragraph(AboutApp)
+			updateCheck()
+			//checkButtons()
+			displayVersionStatus()
         }
-    }
-}
-
-def pageStatus(){
-    //dynamicPage(name: "pageStatus", title: "Big Talker is configured as follows:", nextPage: "pageConfigure"){
-    dynamicPage(name: "pageStatus", title: "Big Talker is configured as follows:", install: false, uninstall: false){
-        String enabledDevices = ""
-        
-        //BEGIN STATUS DEFAULTS
-        enabledDevices = "Speech Device Mode:\n"
-        enabledDevices += "   "
-        if (state.speechDeviceType == "capability.musicPlayer") {
-            enabledDevices += "musicPlayer (Sonos, VLCThing, Generic DLNA)"
-        }
-        if (state.speechDeviceType == "capability.speechSynthesis") {
-            enabledDevices += "speechSynthesis (Ubi, LANnouncer)"
-        }
-        enabledDevices += "\n\n"
-        enabledDevices += "Default Speech Devices:\n"
-        enabledDevices += "   "
-        settings.speechDeviceDefault?.each(){
-            enabledDevices += "${it.displayName},"
-        }
-        enabledDevices += "\n\n"
-        if (settings.speechVolume && state.speechDeviceType == "capability.musicPlayer") {
-            enabledDevices += "Adjust Volume To: ${settings.speechVolume}%"
-            enabledDevices += "\n\n"
-        }
-        if (state.speechDeviceType == "capability.musicPlayer") {
-        	enabledDevices += "Default Resume Audio: ${settings?.resumePlay}"
-            enabledDevices += "\n\n"
-        }
-        enabledDevices += "Default Modes:\n"
-        enabledDevices += "   "
-        settings.speechModesDefault.each(){
-            enabledDevices += "${it},"
-        }
-        if (settings.defaultStartTime) {
-            enabledDevices += "\n\n"
-            def defStartTime = getTimeFromDateString(settings.defaultStartTime, true)
-            def defEndTime =  getTimeFromDateString(settings.defaultEndTime, true)
-            enabledDevices += "Default Allowed Talk Time:\n ${defStartTime} - ${defEndTime}"
-        }
-        enabledDevices += "\n\n"
-        enabledDevices += "Hub ZipCode* for Weather: ${location.zipCode}\n"
-        enabledDevices += "*SmartThings uses GPS to ZipCode conversion; May not be exact"
-        
-        section ("Defaults:"){
-        	//NEEDS DEVELOPMENT
-            paragraph enabledDevices
-            //paragraph "Nothing else is viewable at this time. I'm working on the best method to expose this data from the child apps in one location, if possible."
-        }
-        enabledDevices = ""
-        //END STATUS DEFAULTS
-  		
-        
-        //BEGIN STATUS TIME SCHEDULED EVENTS GROUP 1
-        if (settings.timeSlotTime1){
-            enabledDevices += "AT: ${getTimeFromDateString(settings.timeSlotTime1, true)} \n"
-            enabledDevices += "ON: \n"
-            enabledDevices += "   "
-            def i = 0
-            timeSlotDays1.each() {
-                enabledDevices += "${it},"
-                i += 1
-                if (i == 3) { enabledDevices += "\n   " }
-            }
-            enabledDevices += "\n"
-            enabledDevices += "SAY: \n"
-            enabledDevices += "   ${timeSlotOnTime1}\n"
-            if (settings.timeSlotSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.timeSlotSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                    enabledDevices += "\n\n"
-                }
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.timeSlotResumePlay1 == null)) ? settings.timeSlotResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.timeSlotModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.timeSlotModes1.each() {
-                    enabledDevices += "${it},"
-                }
-            }
-            if (!(enabledDevices == "")) {
-                section ("Time Schedule 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS TIME SCHEDULED EVENTS GROUP 1
-        //BEGIN STATUS TIME SCHEDULED EVENTS GROUP 2
-        if (settings.timeSlotTime2){
-            enabledDevices += "AT: ${getTimeFromDateString(settings.timeSlotTime2, true)} \n"
-            enabledDevices += "ON: \n"
-            enabledDevices += "   "
-            def i = 0
-            timeSlotDays2.each() {
-                enabledDevices += "${it},"
-                i += 1
-                if (i == 3) { enabledDevices += "\n   " }
-            }
-            enabledDevices += "\n"
-            enabledDevices += "SAY: \n"
-            enabledDevices += "   ${timeSlotOnTime2}\n"
-            if (settings.timeSlotSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.timeSlotSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                    enabledDevices += "\n\n"
-                }
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.timeSlotResumePlay2 == null)) ? settings.timeSlotResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.timeSlotModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.timeSlotModes2.each() {
-                    enabledDevices += "${it},"
-                }
-            }
-            if (!(enabledDevices == "")) {
-                section ("Time Schedule 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS TIME SCHEDULED EVENTS GROUP 2
-        //BEGIN STATUS TIME SCHEDULED EVENTS GROUP 3
-        if (settings.timeSlotTime3){
-            enabledDevices += "AT: ${getTimeFromDateString(settings.timeSlotTime3, true)} \n"
-            enabledDevices += "ON: \n"
-            enabledDevices += "   "
-            def i = 0
-            timeSlotDays3.each() {
-                enabledDevices += "${it},"
-                i += 1
-                if (i == 3) { enabledDevices += "\n   " }
-            }
-            enabledDevices += "\n"
-            enabledDevices += "SAY: \n"
-            enabledDevices += "   ${timeSlotOnTime3}\n"
-            if (settings.timeSlotSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.timeSlotSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                    enabledDevices += "\n\n"
-                }
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.timeSlotResumePlay3 == null)) ? settings.timeSlotResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.timeSlotModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.timeSlotModes3.each() {
-                    enabledDevices += "${it},"
-                }
-            }
-            if (!(enabledDevices == "")) {
-                section ("Time Schedule 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS TIME SCHEDULED EVENTS GROUP 3
-  
-        //BEGIN STATUS CONFIG MOTION GROUP 1
-        if (settings.motionDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.motionDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n"
-            if (settings.motionTalkActive1) {
-                enabledDevices += "Say on active:\n ${settings.motionTalkActive1}\n\n"
-            }
-            if (settings.motionTalkInactive1) {
-                enabledDevices += "Say on inactive:\n ${settings.motionTalkInactive1}\n\n"
-            }
-            if (settings.motionSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.motionSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.motionResumePlay1 == null)) ? settings.motionResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.motionModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.motionModes1.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.motionStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.motionStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.motionEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Motion Sensor Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG MOTION GROUP 1
-        //BEGIN STATUS CONFIG MOTION GROUP 2
-        if (settings.motionDeviceGroup2) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.motionDeviceGroup2.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n"
-            if (settings.motionTalkActive2) {
-                enabledDevices += "Say on active:\n ${settings.motionTalkActive2}\n\n"
-            }
-            if (settings.motionTalkInactive2) {
-                enabledDevices += "Say on inactive:\n ${settings.motionTalkInactive2}\n\n"
-            }
-            if (settings.motionSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.motionSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.motionResumePlay2 == null)) ? settings.motionResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.motionModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.motionModes2.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.motionStartTime2) {
-                def customStartTime = getTimeFromDateString(settings.motionStartTime2, true)
-                def customEndTime = getTimeFromDateString(settings.motionEndTime2, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Motion Sensor Group 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG MOTION GROUP 2
-        //BEGIN STATUS CONFIG MOTION GROUP 3
-        if (settings.motionDeviceGroup3) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.motionDeviceGroup3.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n"
-            if (settings.motionTalkActive3) {
-                enabledDevices += "Say on active:\n ${settings.motionTalkActive3}\n\n"
-            }
-            if (settings.motionTalkInactive3) {
-                enabledDevices += "Say on inactive:\n ${settings.motionTalkInactive3}\n\n"
-            }
-            if (settings.motionSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.motionSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.motionResumePlay3 == null)) ? settings.motionResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.motionModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.motionModes3.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.motionStartTime3) {
-                def customStartTime = getTimeFromDateString(settings.motionStartTime3, true)
-                def customEndTime = getTimeFromDateString(settings.motionEndTime3, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Motion Sensor Group 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG MOTION GROUP 3
-        
-        //BEGIN STATUS CONFIG SWITCH GROUP 1
-        if (settings.switchDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.switchDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.switchTalkOn1) {
-                enabledDevices += "Say when switched ON:\n ${settings.switchTalkOn1}\n\n"
-            }
-            if (settings.switchTalkOff1) {
-                enabledDevices += "Say when switched OFF:\n ${settings.switchTalkOff1}\n\n"
-            }
-            if (settings.switchSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.switchSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.switchResumePlay1 == null)) ? settings.switchResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.switchModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.switchModes1.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.switchStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.switchStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.switchEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Switch Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG SWITCH GROUP 1
-        //BEGIN STATUS CONFIG SWITCH GROUP 2
-        if (settings.switchDeviceGroup2) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.switchDeviceGroup2.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.switchTalkOn2) {
-                enabledDevices += "Say when switched ON:\n ${settings.switchTalkOn2}\n\n"
-            }
-            if (settings.switchTalkOff1) {
-                enabledDevices += "Say when switched OFF:\n ${settings.switchTalkOff2}\n\n"
-            }
-            if (settings.switchSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.switchSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.switchResumePlay2 == null)) ? settings.switchResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.switchModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.switchModes2.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.switchStartTime2) {
-                def customStartTime = getTimeFromDateString(settings.switchStartTime2, true)
-                def customEndTime = getTimeFromDateString(settings.switchEndTime2, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Switch Group 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG SWITCH GROUP 2
-        //BEGIN STATUS CONFIG SWITCH GROUP 3
-        if (settings.switchDeviceGroup3) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.switchDeviceGroup3.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.switchTalkOn3) {
-                enabledDevices += "Say when switched ON:\n ${settings.switchTalkOn3}\n\n"
-            }
-            if (settings.switchTalkOff3) {
-                enabledDevices += "Say when switched OFF:\n ${settings.switchTalkOff3}\n\n"
-            }
-            if (settings.switchSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.switchSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.switchResumePlay3 == null)) ? settings.switchResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.switchModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.switchModes3.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.switchStartTime3) {
-                def customStartTime = getTimeFromDateString(settings.switchStartTime3, true)
-                def customEndTime = getTimeFromDateString(settings.switchEndTime3, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Switch Group 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG SWITCH GROUP 3
-        
-        //BEGIN STATUS CONFIG PRESENCE GROUP 1
-        if (settings.presDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.presDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.presTalkOnArrive1) {
-                enabledDevices += "Say on arrive:\n ${settings.presTalkOnArrive1}\n\n"
-            }
-            if (settings.presTalkOnLeave1) {
-                enabledDevices += "Say on leave:\n ${settings.presTalkOnLeave1}\n\n"
-            }
-            if (settings.presSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.presSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.presResumePlay1 == null)) ? settings.presResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.presModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.presModes1.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.presStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.presStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.presEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Presence Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG PRESENCE GROUP 1
-        //BEGIN STATUS CONFIG PRESENCE GROUP 2
-        if (settings.presDeviceGroup2) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.presDeviceGroup2.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.presTalkOnArrive2) {
-                enabledDevices += "Say on arrive:\n ${settings.presTalkOnArrive2}\n\n"
-            }
-            if (settings.presTalkOnLeave2) {
-                enabledDevices += "Say on leave:\n ${settings.presTalkOnLeave2}\n\n"
-            }
-            if (settings.presSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.presSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.presResumePlay2 == null)) ? settings.presResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.presModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.presModes2.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.presStartTime2) {
-                def customStartTime = getTimeFromDateString(settings.presStartTime2, true)
-                def customEndTime = getTimeFromDateString(settings.presEndTime2, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Presence Group 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG PRESENCE GROUP 2
-        //BEGIN STATUS CONFIG PRESENCE GROUP 3
-        if (settings.presDeviceGroup3) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.presDeviceGroup3.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.presTalkOnArrive3) {
-                enabledDevices += "Say on arrive:\n ${settings.presTalkOnArrive3}\n\n"
-            }
-            if (settings.presTalkOnLeave3) {
-                enabledDevices += "Say on leave:\n ${settings.presTalkOnLeave3}\n\n"
-            }
-            if (settings.presSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.presSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.presResumePlay3 == null)) ? settings.presResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.presModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.presModes3.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.presStartTime3) {
-                def customStartTime = getTimeFromDateString(settings.presStartTime3, true)
-                def customEndTime = getTimeFromDateString(settings.presEndTime3, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Presence Group 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG PRESENCE GROUP 3
-        
-        //BEGIN STATUS CONFIG LOCK GROUP 1
-        if (settings.lockDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.lockDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.lockTalkOnLock1) {
-                enabledDevices += "Say when locked:\n ${settings.lockTalkOnLock1}\n\n"
-            }
-            if (settings.lockTalkOnUnlock1) {
-                enabledDevices += "Say when unlocked:\n ${settings.lockTalkOnUnlock1}\n\n"
-            }
-            if (settings.lockSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.lockSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.lockResumePlay1 == null)) ? settings.lockResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.lockModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.lockModes1.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.lockStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.lockStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.lockEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Lock Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG LOCK GROUP 1
-        //BEGIN STATUS CONFIG LOCK GROUP 2
-        if (settings.lockDeviceGroup2) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.lockDeviceGroup2.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.lockTalkOnLock2) {
-                enabledDevices += "Say when locked:\n ${settings.lockTalkOnLock2}\n\n"
-            }
-            if (settings.lockTalkOnUnlock2) {
-                enabledDevices += "Say when unlocked:\n ${settings.lockTalkOnUnlock2}\n\n"
-            }
-            if (settings.lockSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.lockSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.lockResumePlay2 == null)) ? settings.lockResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.lockModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.lockModes2.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.lockStartTime2) {
-                def customStartTime = getTimeFromDateString(settings.lockStartTime2, true)
-                def customEndTime = getTimeFromDateString(settings.lockEndTime2, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Lock Group 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG LOCK GROUP 2
-        //BEGIN STATUS CONFIG LOCK GROUP 3
-        if (settings.lockDeviceGroup3) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.lockDeviceGroup3.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.lockTalkOnLock3) {
-                enabledDevices += "Say when locked:\n ${settings.lockTalkOnLock1}\n\n"
-            }
-            if (settings.lockTalkOnUnlock3) {
-                enabledDevices += "Say when unlocked:\n ${settings.lockTalkOnUnlock1}\n\n"
-            }
-            if (settings.lockSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.lockSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.lockResumePlay3 == null)) ? settings.lockResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.lockModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.lockModes3.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.lockStartTime3) {
-                def customStartTime = getTimeFromDateString(settings.lockStartTime3, true)
-                def customEndTime = getTimeFromDateString(settings.lockEndTime3, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Lock Group 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG LOCK GROUP 3
-        
-        //BEGIN STATUS CONFIG CONTACT GROUP 1
-        if (settings.contactDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.contactDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.contactTalkOnOpen1) {
-                enabledDevices += "Say when opened:\n ${settings.contactTalkOnOpen1}\n\n"
-            }
-            if (settings.contactTalkOnClose1) {
-                enabledDevices += "Say when closed:\n ${settings.contactTalkOnClose1}\n\n"
-            }
-            if (settings.contactSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.contactSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.contactResumePlay1 == null)) ? settings.contactResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.contactModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.contactModes1.each() {
-                    enabledDevices += "${it},"
-                }
-            }
-            if (settings.contactStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.contactStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.contactEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Contact Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG CONTACT GROUP 1
-        //BEGIN STATUS CONFIG CONTACT GROUP 2
-        if (settings.contactDeviceGroup2) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.contactDeviceGroup2.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.contactTalkOnOpen2) {
-                enabledDevices += "Say when opened:\n ${settings.contactTalkOnOpen2}\n\n"
-            }
-            if (settings.contactTalkOnClose2) {
-                enabledDevices += "Say when closed:\n ${settings.contactTalkOnClose2}\n\n"
-            }
-            if (settings.contactSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.contactSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.contactResumePlay2 == null)) ? settings.contactResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.contactModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.contactModes2.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.contactStartTime2) {
-                def customStartTime = getTimeFromDateString(settings.contactStartTime2, true)
-                def customEndTime = getTimeFromDateString(settings.contactEndTime2, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Contact Group 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG CONTACT GROUP 2
-        //BEGIN STATUS CONFIG CONTACT GROUP 3
-        if (settings.contactDeviceGroup3) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.contactDeviceGroup3.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.contactTalkOnOpen3) {
-                enabledDevices += "Say when opened:\n ${settings.contactTalkOnOpen3}\n\n"
-            }
-            if (settings.contactTalkOnClose3) {
-                enabledDevices += "Say when closed:\n ${settings.contactTalkOnClose3}\n\n"
-            }
-            if (settings.contactSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.contactSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.contactResumePlay3 == null)) ? settings.contactResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.contactModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.contactModes3.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.contactStartTime3) {
-                def customStartTime = getTimeFromDateString(settings.contactStartTime3, true)
-                def customEndTime = getTimeFromDateString(settings.contactEndTime3, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Contact Group 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG CONTACT GROUP 3
-        
-        //BEGIN STATUS CONFIG MODE CHANGE GROUP 1
-        if (settings.modePhraseGroup1) {
-            enabledDevices += "Modes:  \n"
-            enabledDevices += "   "
-            settings.modePhraseGroup1.each() {
-                enabledDevices += "${it},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.modeExcludePhraseGroup1) {
-                enabledDevices += "Remain silent if mode is changed from:\n "
-                enabledDevices += "   "
-                settings.modeExcludePhraseGroup1.each(){
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }            
-            if (settings.contactTalkOnOpen1) {
-                enabledDevices += "Say when changed:\n ${settings.TalkOnModeChange1}\n\n"
-            }
-            if (settings.modeSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.contactSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.modePhraseResumePlay1 == null)) ? settings.modePhraseResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.modeStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.modeStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.modeEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Mode Change:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG MODE CHANGE GROUP 1
-        
-        //BEGIN STATUS CONFIG THERMOSTAT GROUP 1
-        if (settings.thermostatDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.thermostatDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.thermostatTalkOnIdle1) {
-                enabledDevices += "Say when Idle:\n ${settings.thermostatTalkOnIdle1}\n\n"
-            }
-            if (settings.thermostatTalkOnHeating1) {
-                enabledDevices += "Say when Heating:\n ${settings.thermostatTalkOnHeating1}\n\n"
-            }
-            if (settings.thermostatTalkOnCooling1) {
-                enabledDevices += "Say when Cooling:\n ${settings.thermostatTalkOnCooling1}\n\n"
-            }
-            if (settings.thermostatTalkOnFan1) {
-                enabledDevices += "Say when Fan:\n ${settings.thermostatTalkOnFan1}\n\n"
-            }
-            if (settings.thermostatSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.thermostatSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.thermostatResumePlay1 == null)) ? settings.thermostatResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.thermostatModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.thermostatModes1.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.thermostatStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.thermostatStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.thermostatEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Thermostat Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG THERMOSTAT GROUP 1
-        
-        //BEGIN STATUS CONFIG ACCELERATION GROUP 1
-        if (settings.accelerationDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.accelerationDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.accelerationTalkOnActive1) {
-                enabledDevices += "Say when acceleration activated:\n ${settings.accelerationTalkOnActive1}\n\n"
-            }
-            if (settings.accelerationTalkOnInactive1) {
-                enabledDevices += "Say when acceleration stops:\n ${settings.accelerationTalkOnInactive1}\n\n"
-            }
-            if (settings.accelerationSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.accelerationSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.accelerationResumePlay1 == null)) ? settings.accelerationResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.accelerationModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.accelerationModes1.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.accelerationStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.accelerationStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.accelerationEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Acceleration Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG ACCELERATION GROUP 1
-        //BEGIN STATUS CONFIG ACCELERATION GROUP 2
-        if (settings.accelerationDeviceGroup2) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.accelerationDeviceGroup2.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.accelerationTalkOnActive2) {
-                enabledDevices += "Say when acceleration activated:\n ${settings.accelerationTalkOnActive2}\n\n"
-            }
-            if (settings.accelerationTalkOnInactive2) {
-                enabledDevices += "Say when acceleration stops:\n ${settings.accelerationTalkOnInactive2}\n\n"
-            }
-            if (settings.accelerationSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.accelerationSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.accelerationResumePlay2 == null)) ? settings.accelerationResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.accelerationModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.accelerationModes2.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.accelerationStartTime2) {
-                def customStartTime = getTimeFromDateString(settings.accelerationStartTime2, true)
-                def customEndTime = getTimeFromDateString(settings.accelerationEndTime2, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Acceleration Group 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG ACCELERATION GROUP 2
-        //BEGIN STATUS CONFIG ACCELERATION GROUP 3
-        if (settings.accelerationDeviceGroup3) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.accelerationDeviceGroup3.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.accelerationTalkOnActive3) {
-                enabledDevices += "Say when acceleration activated:\n ${settings.accelerationTalkOnActive3}\n\n"
-            }
-            if (settings.accelerationTalkOnInactive3) {
-                enabledDevices += "Say when acceleration stops:\n ${settings.accelerationTalkOnInactive3}\n\n"
-            }
-            if (settings.accelerationSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.accelerationSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.accelerationResumePlay3 == null)) ? settings.accelerationResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.accelerationModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.accelerationModes3.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.accelerationStartTime3) {
-                def customStartTime = getTimeFromDateString(settings.accelerationStartTime3, true)
-                def customEndTime = getTimeFromDateString(settings.accelerationEndTime3, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Acceleration Group 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG ACCELERATION GROUP 3
-        
-        //BEGIN STATUS CONFIG WATER GROUP 1
-        if (settings.waterDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.waterDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.waterTalkOnWet1) {
-                enabledDevices += "Say this when wet:\n ${settings.waterTalkOnWet1}\n\n"
-            }
-            if (settings.waterTalkOnWet1) {
-                enabledDevices += "Say this when dry:\n ${settings.waterTalkOnDry1}\n\n"
-            }
-            if (settings.waterSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.waterSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.waterResumePlay1 == null)) ? settings.waterResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.waterModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.waterModes1.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.waterStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.waterStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.waterEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Water Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG WATER GROUP 1
-        //BEGIN STATUS CONFIG WATER GrOUP 2
-        if (settings.waterDeviceGroup2) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.waterDeviceGroup2.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.waterTalkOnWet2) {
-                enabledDevices += "Say this when wet:\n ${settings.waterTalkOnWet2}\n\n"
-            }
-            if (settings.waterTalkOnWet2) {
-                enabledDevices += "Say this when dry:\n ${settings.waterTalkOnDry2}\n\n"
-            }
-            if (settings.waterSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.waterSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.waterResumePlay2 == null)) ? settings.waterResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.waterModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.waterModes2.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.waterStartTime2) {
-                def customStartTime = getTimeFromDateString(settings.waterStartTime2, true)
-                def customEndTime = getTimeFromDateString(settings.waterEndTime2, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Water Group 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG WATER GROUP 2
-        //BEGIN STATUS CONFIG WATER GROUP 3
-        if (settings.waterDeviceGroup3) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.waterDeviceGroup3.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.waterTalkOnWet3) {
-                enabledDevices += "Say this when wet:\n ${settings.waterTalkOnWet3}\n\n"
-            }
-            if (settings.waterTalkOnWet3) {
-                enabledDevices += "Say this when dry:\n ${settings.waterTalkOnDry3}\n\n"
-            }
-            if (settings.waterSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.waterSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.waterResumePlay3 == null)) ? settings.waterResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.waterModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.waterModes3.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.waterStartTime3) {
-                def customStartTime = getTimeFromDateString(settings.waterStartTime3, true)
-                def customEndTime = getTimeFromDateString(settings.waterEndTime3, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Water Group 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG WATER GROUP 3
-        
-        //BEGIN STATUS CONFIG SMOKE GROUP 1
-        if (settings.smokeDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.smokeDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.smokeTalkOnDetect1) {
-                enabledDevices += "Say this when smoke detected:\n ${settings.smokeTalkOnDetect1}\n\n"
-            }
-            if (settings.smokeTalkOnClear1) {
-                enabledDevices += "Say this when smoke cleared:\n ${settings.smokeTalkOnClear1}\n\n"
-            }
-            if (settings.smokeTalkOnTest1) {
-                enabledDevices += "Say this when smoke tested:\n ${settings.smokeTalkOnTest1}\n\n"
-            }
-            if (settings.smokeSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.smokeSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.smokeResumePlay1 == null)) ? settings.smokeResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.smokeModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.smokeModes1.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.smokeStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.smokeStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.smokeEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Smoke Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG SMOKE GROUP 1
-        //BEGIN STATUS CONFIG SMOKE GROUP 2
-        if (settings.smokeDeviceGroup2) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.smokeDeviceGroup2.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.smokeTalkOnDetect2) {
-                enabledDevices += "Say this when smoke detected:\n ${settings.smokeTalkOnDetect2}\n\n"
-            }
-            if (settings.smokeTalkOnClear2) {
-                enabledDevices += "Say this when smoke cleared:\n ${settings.smokeTalkOnClear2}\n\n"
-            }
-            if (settings.smokeTalkOnTest2) {
-                enabledDevices += "Say this when smoke tested:\n ${settings.smokeTalkOnTest2}\n\n"
-            }
-            if (settings.smokeSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.smokeSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.smokeResumePlay2 == null)) ? settings.smokeResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.smokeModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.smokeModes2.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.smokeStartTime2) {
-                def customStartTime = getTimeFromDateString(settings.smokeStartTime2, true)
-                def customEndTime = getTimeFromDateString(settings.smokeEndTime2, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Smoke Group 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG SMOKE GROUP 2
-        //BEGIN STATUS CONFIG SMOKE GROUP 3
-        if (settings.smokeDeviceGroup3) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.smokeDeviceGroup3.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.smokeTalkOnDetect3) {
-                enabledDevices += "Say this when smoke detected:\n ${settings.smokeTalkOnDetect3}\n\n"
-            }
-            if (settings.smokeTalkOnClear3) {
-                enabledDevices += "Say this when smoke cleared:\n ${settings.smokeTalkOnClear3}\n\n"
-            }
-            if (settings.smokeTalkOnTest3) {
-                enabledDevices += "Say this when smoke tested:\n ${settings.smokeTalkOnTest3}\n\n"
-            }
-            if (settings.smokeSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n"
-                enabledDevices += "   "
-                settings.smokeSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.smokeResumePlay3 == null)) ? settings.smokeResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.smokeModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.smokeModes3.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.smokeStartTime3) {
-                def customStartTime = getTimeFromDateString(settings.smokeStartTime3, true)
-                def customEndTime = getTimeFromDateString(settings.smokeEndTime3, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Smoke Group 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG SMOKE GROUP 3
-        
-        //BEGIN STATUS CONFIG BUTTON GROUP 1
-        if (settings.buttonDeviceGroup1) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.buttonDeviceGroup1.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.buttonTalkOnDetect1) {
-                enabledDevices += "Say this when button pressed:\n ${settings.buttonTalkOnPress1}\n\n"
-            }
-            if (settings.buttonSpeechDevice1) {
-                enabledDevices += "Custom Speech Device(s):\n\n"
-                enabledDevices += "   "
-                settings.buttonSpeechDevice1.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.buttonResumePlay1 == null)) ? settings.buttonResumePlay1 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.buttonModes1) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.buttonModes1.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.buttonStartTime1) {
-                def customStartTime = getTimeFromDateString(settings.buttonStartTime1, true)
-                def customEndTime = getTimeFromDateString(settings.buttonEndTime1, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Button Group 1:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG BUTTON GROUP 1
-        //BEGIN STATUS CONFIG BUTTON GROUP 2
-        if (settings.buttonDeviceGroup2) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.buttonDeviceGroup2.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.buttonTalkOnDetect2) {
-                enabledDevices += "Say this when button pressed:\n ${settings.buttonTalkOnPress2}\n\n"
-            }
-            if (settings.buttonSpeechDevice2) {
-                enabledDevices += "Custom Speech Device(s):\n\n"
-                enabledDevices += "   "
-                settings.buttonSpeechDevice2.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.buttonResumePlay2 == null)) ? settings.buttonResumePlay2 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.buttonModes2) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.buttonModes2.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.buttonStartTime2) {
-                def customStartTime = getTimeFromDateString(settings.buttonStartTime2, true)
-                def customEndTime = getTimeFromDateString(settings.buttonEndTime2, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Button Group 2:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG BUTTON GROUP 2
-        //BEGIN STATUS CONFIG BUTTON GROUP 3
-        if (settings.buttonDeviceGroup3) {
-            enabledDevices += "Devices:  \n"
-            enabledDevices += "   "
-            settings.buttonDeviceGroup3.each() {
-                enabledDevices += "${it.displayName},"
-            }
-            enabledDevices += "\n\n"
-            if (settings.buttonTalkOnDetect3) {
-                enabledDevices += "Say this when button pressed:\n ${settings.buttonTalkOnPress3}\n\n"
-            }
-            if (settings.buttonSpeechDevice3) {
-                enabledDevices += "Custom Speech Device(s):\n\n"
-                enabledDevices += "   "
-                settings.buttonSpeechDevice3.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.buttonResumePlay3 == null)) ? settings.buttonResumePlay3 : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.buttonModes3) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.buttonModes3.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.buttonStartTime3) {
-                def customStartTime = getTimeFromDateString(settings.buttonStartTime3, true)
-                def customEndTime = getTimeFromDateString(settings.buttonEndTime3, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Button Group 3:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG BUTTON GROUP 3
-        //BEGIN STATUS CONFIG SMART HOME MONITOR
-        if (settings.SHMDeviceGroup1) {
-            enabledDevices += "Smart Home Monitor Status Change:  "
-            enabledDevices += "\n\n"
-            if (settings.SHMTalkOnAway) {
-                enabledDevices += "Say this when armed in Away mode:\n ${settings.SHMTalkOnAway}\n\n"
-            }
-			if (settings.SHMSpeechDeviceAway) {
-                enabledDevices += "Custom Speech Device(s):\n\n"
-                enabledDevices += "   "
-                settings.SHAMSpeechDeviceAway.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.SHMResumePlayAway == null)) ? settings.SHMResumePlayAway : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.SHMModesAway) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.SHMModesAway.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.SHMStartTimeAway) {
-                def customStartTime = getTimeFromDateString(settings.SHMStartTimeAway, true)
-                def customEndTime = getTimeFromDateString(settings.SHMEndTimeAway, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Armed - Away:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-            if (settings.SHMTalkOnHome) {
-                enabledDevices += "Say this when armed in Home mode:\n ${settings.SHMTalkOnHome}\n\n"
-            }
-			if (settings.SHMSpeechDeviceHome) {
-                enabledDevices += "Custom Speech Device(s):\n\n"
-                enabledDevices += "   "
-                settings.SHAMSpeechDeviceHome.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.SHMResumePlayHome == null)) ? settings.SHMResumePlayHome : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.SHMModesHome) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.SHMModesHome.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.SHMStartTimeHome) {
-                def customStartTime = getTimeFromDateString(settings.SHMStartTimeHome, true)
-                def customEndTime = getTimeFromDateString(settings.SHMEndTimeHome, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Armed - Home:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-            if (settings.SHMTalkOnDisarm) {
-                enabledDevices += "Say this when disarmed:\n ${settings.SHMTalkOnDisarm}\n\n"
-            }
-			if (settings.SHMSpeechDeviceDisarm) {
-                enabledDevices += "Custom Speech Device(s):\n\n"
-                enabledDevices += "   "
-                settings.SHMSpeechDeviceDisarm.each() {
-                    enabledDevices += "${it.displayName},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (state.speechDeviceType == "capability.musicPlayer") {
-        		enabledDevices += "Resume Audio: ${(!(settings.SHMResumePlayDisarm == null)) ? settings.SHMResumePlayDisarm : settings.resumePlay}"
-            	enabledDevices += "\n\n"
-        	}
-            if (settings.SHMModesDisarm) {
-                enabledDevices += "Custom mode(s):\n"
-                enabledDevices += "   "
-                settings.SHMModesDisarm.each() {
-                    enabledDevices += "${it},"
-                }
-                enabledDevices += "\n\n"
-            }
-            if (settings.SHMStartTimeDisarm) {
-                def customStartTime = getTimeFromDateString(settings.SHMStartTimeDisarm, true)
-                def customEndTime = getTimeFromDateString(settings.SHMEndTimeDisarm, true)
-                enabledDevices += "Custom Allowed Talk Time:\n ${customStartTime} - ${customEndTime}"
-                customStartTime = ""
-                customEndTime = ""
-            }
-            if (!(enabledDevices == "")) {
-                section ("Disarmed:"){
-                    paragraph enabledDevices
-                }
-            }
-            enabledDevices = ""
-        }
-        //END STATUS CONFIG SMART HOME MONITOR
+		section("${formatHr}${formatHr}${formatStrongStart}${formatCenterStart}Donations${formatCenterEnd}${formatStrongEnd}"){
+				def DonateOptions = ""
+				DonateOptions += "Big Talker is provided to the community for free.  It takes a lot of time to build and support any complex app.  If you wish to support the time and effort put into development you may submit a donation with one of the following:${formatBr}"
+				DonateOptions += "${formatUlStart}"
+                if (state.hubType == "Hubitat"){
+					DonateOptions += "${formatLiStart}${formatStrongStart}Cash.me${formatStrongEnd} = <a target='_blank' href='https://cash.me/$Lowrance'>https://cash.me/$Lowrance</a> (use a debit card, it\'s free for both of us)${formatLiEnd}"
+					DonateOptions += "${formatLiStart}${formatStrongStart}Venmo${formatStrongEnd} = <a target='_blank' href='https://venmo.com/code?user_id=2603208862072832399'>@BrianLowrance</a>${formatLiEnd}"
+					DonateOptions += "${formatLiStart}${formatStrongStart}Paypal.me${formatStrongEnd} = <a target='_blank' href='https://paypal.me/brianlowrance'>https://paypal.me/brianlowrance</a> (They take a little since I setup my account as a business account)${formatLiEnd}"
+                } else {
+                	DonateOptions += "${formatLiStart}${formatStrongStart}Cash.me${formatStrongEnd} = https://cash.me/\$Lowrance (use a debit card, it\'s free for both of us)${formatLiEnd}"
+					DonateOptions += "${formatLiStart}${formatStrongStart}Venmo${formatStrongEnd} @BrianLowrance${formatLiEnd}"
+					DonateOptions += "${formatLiStart}${formatStrongStart}Paypal.me${formatStrongEnd} = https://paypal.me/brianlowrance${formatLiEnd}"
+                }
+				paragraph(DonateOptions)					
+		}
     }
 }
 
@@ -1812,7 +116,7 @@ def pageTalkNow(){
                 input name: "talkNowVoice", type: "enum", title: "Select custom voice:", options: state.supportedVoices, required: false, submitOnChange: true
                 myTalkNowResume = settings.talkNowResume
             }
-            input name: "speechTalkNow", type: text, title: "Speak phrase", required: false, submitOnChange: true
+            input name: "speechTalkNow", type: "text", title: "Speak phrase", required: false, submitOnChange: true
             input name: "talkNowSpeechDevice", type: state.speechDeviceType, title: "Talk with these text-to-speech devices", multiple: true, required: false, submitOnChange: true
             //LOGDEBUG("previoustext=${state.lastTalkNow} New=${settings.speechTalkNow}")
             if (((!(state.lastTalkNow == settings.speechTalkNow)) && (settings.talkNowSpeechDevice)) || (settings.speechTalkNow?.contains("%askalexa%"))){
@@ -1820,7 +124,13 @@ def pageTalkNow(){
                 if (state.speechDeviceType == "capability.musicPlayer") {
                 	myTalkNowResume = (myTalkNowResume == "") ? settings.resumeAudio : true //use global setting if TalkNow is not set
                 	if (settings?.talkNowResume == null) {mytalkNowResume = true}  //default to true if not set.
-                }
+				} else {
+					//speechSynthesis does not use the following settings; make sure they are not null though
+					myVolume = "100"
+					myTalkNowResume = false
+					personality = false
+					myVoice = ""
+				}
                 def customevent = [displayName: 'BigTalker:TalkNow', name: 'TalkNow', value: 'TalkNow', descriptionText: "Talk Now"]
                 def myVolume = getDesiredVolume(settings?.talkNowVolume)
                 def myVoice = getMyVoice(settings.talkNowVoice)
@@ -1849,47 +159,66 @@ def getMyVoice(deviceVoice){
 
 def pageHelpPhraseTokens(){
 	//KEEP IN SYNC WITH CHILD!
-    dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
+        dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
+    	def formatSettingRootStart = state.formatSettingRootStart
+		def formatSettingRootEnd = state.formatSettingRootEnd
+		def formatSettingOptionalStart = state.formatSettingOptionalStart
+		def formatSettingOptionalEnd = state.formatSettingOptionalEnd
+        def formatUlStart = state.formatUlStart
+		def formatUlEnd = state.formatUlEnd
+        def formatLiStart = state.formatLiStart
+		def formatLiEnd = state.formatLiEnd
+        def formatIStart = state.formatIStart
+		def formatIEnd = state.formatIEnd
+        def formatStrongStart = state.formatStrongStart
+		def formatStrongEnd = state.formatStrongEnd
        section("The following tokens can be used in your event phrases and will be replaced as listed:"){
        	   def AvailTokens = ""
-           AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n"
-           AvailTokens += "%groupname% = Name that you gave for the event group\n\n"
-           AvailTokens += "%date% = Current date; January 01\n\n"
-           AvailTokens += "%day% = Current day; Monday\n\n"
-           AvailTokens += "%devicename% = Triggering devices display name\n\n"
-           AvailTokens += "%devicetype% = Triggering device type; motion, switch, etc\n\n"
-           AvailTokens += "%devicechange% = State change that occurred; on/off, active/inactive, etc...\n\n"
-           AvailTokens += "%description% = The description of the event that is to be displayed to the user in the mobile application. \n\n"
-           AvailTokens += "%locationname% = Hub location name; home, work, etc\n\n"
-           AvailTokens += "%lastmode% = Last hub mode; home, away, etc\n\n"
-           AvailTokens += "%mode% = Current hub mode; home, away, etc\n\n"
-           AvailTokens += "%mp3(url)% = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3 \n"
-           AvailTokens += "No other tokens or phrases can be used with %mp3(url)%\n\n"
-           AvailTokens += "%time% = Current hub time; HH:mm am/pm\n\n"
-           AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n"
-           AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n"
-           AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n"
-           AvailTokens += "%weathertoday(00000)% = Today's weather forecast* based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n"
-           AvailTokens += "%weathertonight(00000)% = Tonight's weather* forecast based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n"
-           AvailTokens += "%weathertomorrow(00000)% = Tomorrow's weather forecast* based on custom zipcode (replace 00000)\n\n"
-           AvailTokens += "\n*Weather forecasts provided by Weather Underground"
+           AvailTokens += "${formatUlStart}"
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%askalexa%{formatStrongEnd} = Send phrase to AskAlexa SmartApp's message queue${formatLiEnd}" }
+		   AvailTokens += "${formatLiStart}${formatStrongStart}%groupname%${formatStrongEnd} = Name that you gave for the event group${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%date%${formatStrongEnd} = Current date; January 01 20xx${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%day%${formatStrongEnd} = Current day; Monday${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%devicename%${formatStrongEnd} = Triggering devices display name${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%devicetype%${formatStrongEnd} = Triggering device type; motion, switch, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%devicechange%${formatStrongEnd} = State change that occurred; on/off, active/inactive, etc...${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%description%${formatStrongEnd} = The description of the event that is to be displayed to the user in the mobile application.${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%locationname%${formatStrongEnd} = Hub location name; home, work, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%lastmode%${formatStrongEnd} = Last hub mode; home, away, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%mode%${formatStrongEnd} = Current hub mode; home, away, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%mp3(url)%${formatStrongEnd} = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3"
+           AvailTokens += "${formatUlStart}${formatLiStart}${formatIStart}No other tokens or phrases can be used with %mp3(url)%${formatIEnd}${formatLiEnd}${formatUlEnd}"
+		   AvailTokens += "${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%time%${formatStrongEnd} = Current hub time; HH:mm am/pm${formatStrongEnd}${formatLiEnd}"
+		   AvailTokens += "${formatUlEnd}"
+		   if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%shmstatus%${formatStrongEnd} = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)${formatLiEnd}" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%weathercurrent%${formatStrongEnd} = Current weather based on hub location${formatLiEnd}" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%weathercurrent(00000)%${formatStrongEnd} = Current weather* based on custom zipcode (replace 00000)${formatLiEnd}" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%weathertoday%${formatStrongEnd} = Today's weather forecast* based on hub location${formatLiEnd}" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%weathertoday(00000)%${formatStrongEnd} = Today's weather forecast* based on custom zipcode (replace 00000)${formatLiEnd}" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%weathertonight%${formatStrongEnd} = Tonight's weather forecast* based on hub location${formatLiEnd}" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%weathertonight(00000)%${formatStrongEnd} = Tonight's weather* forecast based on custom zipcode (replace 00000)${formatLiEnd}" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%weathertomorrow%${formatStrongEnd} = Tomorrow's weather forecast* based on hub location${formatLiEnd}" }
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%weathertomorrow(00000)%${formatStrongEnd} = Tomorrow's weather forecast* based on custom zipcode (replace 00000)${formatLiEnd}" }
            paragraph(AvailTokens)
        }
    }
 }
 
 def pageConfigureSpeechDeviceType(){
-    if (!(state.installed == true)) { state.installed = false; state.speechDeviceType = "capability.musicPlayer"}
-    dynamicPage(name: "pageConfigureSpeechDeviceType", title: "Configure", nextPage: "pageConfigureDefaults", install: false, uninstall: false) {
+	def myNextPage = ""
+    if (!(state?.installed == true)) { state.installed = false; state.speechDeviceType = "capability.musicPlayer"; myNextPage = "pageConfigureDefaults"}
+    dynamicPage(name: "pageConfigureSpeechDeviceType", title: "Configure", nextPage: myNextPage, install: false, uninstall: false) {
         //section ("Speech Device Type Support"){
         section (){
+			if (state.installed == true) { 
+				paragraph "<font color=red><strong>PROCEED WITH CAUTION!</strong></font>\n<font color=red><strong>WARNING!</strong></font> If you change this setting after the app has been configured, you will need to update your selected default and custom speech devices!\n <strong>To Cancel:</strong> Don't move the switch and press Next (or Done)\n<font color=red><strong>PROCEED WITH CAUTION!</strong></font>"
+			}
             paragraph "${app.label} can support either 'Music Player' or 'Speech Synthesis' devices."
-            paragraph "'Music Player' typically supports devices such as Sonos, VLCThing, Generic Media Renderer.\n\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nIf only using with AskAlexa this setting can be ignored.\n\nThis setting cannot be changed without reinstalling ${app.label}."
+            if (state.hubType == "SmartThings") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing, Generic Media Renderer.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nIf only using with AskAlexa this setting can be ignored.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
+            if (state.hubType == "Hubitat") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer."}
             input "speechDeviceType", "bool", title: "ON=Music Player\nOFF=Speech Synthesis", required: true, defaultValue: true, submitOnChange: true
-            paragraph "Click Next (top right) to continue configuration...\n"
+            //paragraph "Click Next to continue configuration...\n"
             if (speechDeviceType == true) {state.speechDeviceType = "capability.musicPlayer"}
             if (speechDeviceType == false) {state.speechDeviceType = "capability.speechSynthesis"}
         }
@@ -1898,6 +227,10 @@ def pageConfigureSpeechDeviceType(){
 }
 
 def pageConfigureDefaults(){
+	unsubscribe()
+	myRunIn(3, initSubscribe)
+	state.mode = location.mode
+	state.lastMode = state.mode
     if (state?.installed == true) { 
        state.dynPageProperties = [
             name:      "pageConfigureDefaults",
@@ -1916,39 +249,49 @@ def pageConfigureDefaults(){
     }
     return dynamicPage(state.dynPageProperties) {
     //dynamicPage(name: "pageConfigureDefaults", title: "Configure Defaults", nextPage: "${myNextPage}", install: false, uninstall: false) {
-        section("Talk with:"){
+		section("${state.formatSettingRootStart}Talk with:${state.formatSettingRootEnd}"){
            if (state.speechDeviceType == null || state.speechDeviceType == "") { state.speechDeviceType = "capability.musicPlayer" }
            input "speechDeviceDefault", state.speechDeviceType, title: "Talk with these text-to-speech devices (default)", multiple: true, required: false, submitOnChange: false
         }
         if (state.speechDeviceType == "capability.musicPlayer") {
-            section ("Adjust volume during announcement (optional; Supports: Sonos, VLC-Thing):"){
+            section ("${state.formatSettingRootStart}Adjust volume during announcement <I>(optional; Supports: Sonos, VLC-Thing):${state.formatSettingRootEnd}"){
             	input "speechMinimumVolume", "number", title: "Minimum volume for announcement (0-100%, Default: 50%):", required: false
                 input "speechVolume", "number", title: "Set volume during announcement (0-100%):", required: false
                 input "speechVoice", "enum", title: "Select voice:", options: state.supportedVoices, required: true, defaultValue: "Salli(en-us)"
             }
-            section ("Attempt to resume playing audio (optional; Supports: Sonos, VLC-Thing):"){
+            section ("${state.formatSettingRootStart}Attempt to resume playing audio <I>(optional; Supports: Sonos, VLC-Thing):${state.formatSettingRootEnd}"){
             	input "resumePlay", "bool", title: "Resume Play:", required: true, defaultValue: true
                 input "allowScheduledPoll", "bool", title: "Enable polling device status (recommended)", required: true, defaultValue: true
             }
         }
-        section ("Talk only while in these modes:"){
-            input "speechModesDefault", "mode", title: "Talk only while in these modes (default)", multiple: true, required: true, submitOnChange: false
+        section (""){
+            input "speechModesDefault", "mode", title: "${state.formatSettingRootStart}Talk only while in these modes (default)${state.formatSettingRootEnd}", multiple: true, required: true, submitOnChange: false
         }
-        section ("Only between these times:"){
+        section ("${state.formatSettingRootStart}Only between these times:${state.formatSettingRootEnd}"){
             input "defaultStartTime", "time", title: "Don't talk before: ", required: false, submitOnChange: true
             input "defaultEndTime", "time", title: "Don't talk after: ", required: (!(settings.defaultStartTime == null)), submitOnChange: true
         }
         section(){
-            input "personalityMode", "bool", title: "Allow Personality?", required: true, defaultValue: false
-            input "debugmode", "bool", title: "Enable debug logging", required: true, defaultValue: false
+            input "personalityMode", "bool", title: "${state.formatSettingRootStart}Allow Personality?${state.formatSettingRootEnd}", required: true, defaultValue: false
+            input "debugmode", "bool", title: "${state.formatSettingRootStart}Enable debug logging${state.formatSettingRootEnd}", required: true, defaultValue: false, submitOnChange: true
+			if (debugmode) { 
+				if (state.debugMode == false || state?.debugMode == null){
+					state.debugMode = true; myRunIn(1800, disableDebug); LOGTRACE("Debug logging has been enabled.  Will auto-disable in 30 minutes.")
+				}
+			} else {
+				state.debugMode = false; unschedule("disableDebug");  LOGTRACE("Debug logging is not enabled.")
+			}
         }
+		section("Advanced"){
+				href "pageConfigureSpeechDeviceType", title:"Change Speech Mode", description:"Tap to change speech mode (musicPlayer <> speechSynthesis)"
+		}
     }
 }
 
 def installed() {
 	state.installed = true
     //LOGTRACE("Installed with settings: ${settings}")
-    LOGTRACE("Installed (Parent Version: ${state.appVersion})")
+    LOGTRACE("Installed (Parent Version: ${state.version})")
 	initialize()
     if (((settings?.allowScheduledPoll == true || state?.allowScheduledPoll == true)) || ((settings?.allowScheduledPoll == null) || (state?.allowScheduledPoll == null))){ 
     	myRunIn(60, poll) 
@@ -1960,7 +303,7 @@ def updated() {
     unschedule()
     state.installed = true
 	//LOGTRACE("Updated with settings: ${settings}")
-    LOGTRACE("Updated settings (Parent Version: ${state.appVersion})")
+    LOGTRACE("Updated settings (Parent Version: ${state.version})")
     unsubscribe()
     initialize()
     if (((settings?.allowScheduledPoll == true || state?.allowScheduledPoll == true)) || ((settings?.allowScheduledPoll == null) || (state?.allowScheduledPoll == null))){ 
@@ -2000,15 +343,23 @@ def initialize() {
         msg = "ERROR: App not properly configured!  Can't start.\n"
         msg += "ERRORs:\n${state.configErrorList}"
         LOGTRACE(msg)
-        sendNotificationEvent(msg)
+        if (state.hubType == "SmartThings") {sendNotificationEvent(msg)}
         state.polledDevices = ""
         return //App not properly configured, exit, don't subscribe
     }
-    LOGTRACE("Initialized (Parent Version: ${state.appVersion})")
-    sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")
+	version()
+	LOGTRACE("Initialized (Parent Version: ${state.version})")
+    if (state.hubType == "SmartThings") {sendNotificationEvent("${app.label.replace(" ","").toUpperCase()}: Settings activated")}
     state.lastMode = location.mode
     state.lastTalkNow = settings.speechTalkNow
+	initSubscribe()
 //End initialize()
+}
+
+def initSubscribe() {
+	//Subscribe Mode
+	LOGDEBUG("Subscribed")
+    subscribe(location, "mode", onModeChangeEvent) //Keep track of mode changes
 }
 
 def processPhraseVariables(appname, phrase, evt){
@@ -2190,7 +541,7 @@ def addPersonalityToPhrase(phrase, evt){
             response[7] = "{POST}the same old thing everyday."
             response[8] = "{POST}It is about time it was awfully dark!"
             response[9] = "{POST}Glad you are here, I was lonely"
-            response[10] = "{POST}It it time for us to play?"
+            response[10] = "{POST}Is it time for us to play?"
             response[11] = "{PRE}Oh, Hi"
             response[12] = "{PRE}Oh, Hi there"
         } else {
@@ -2311,7 +662,7 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 	}
 	if (phrase == null || phrase == "") {
    		LOGERROR(processPhraseVariables(appname, "BigTalker - Check configuration. Phrase is empty for %devicename%", evt))
-    	sendNotification(processPhraseVariables(appname, "BigTalker - Check configuration. Phrase is empty for %devicename%", evt))
+    	if (state.hubType == "SmartThings") {sendNotification(processPhraseVariables(appname, "BigTalker - Check configuration. Phrase is empty for %devicename%", evt))}
 	}
 	if (resume == null) { resume = true }
 	if ((state.speechDeviceType == "capability.musicPlayer") && (!( phrase==null ) && !(phrase==""))){
@@ -2332,9 +683,9 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 					state.sound = textToSpeech(phrase instanceof List ? phrase[0] : phrase, myVoice)
 					state.ableToTalk = true
 					} catch(ex) {
-						LOGERROR("TALK(${appname}.${evt.name})|mP| ST Platform issue (textToSpeech)? I tried textToSpeech() twice, SmartThings wouldn't convert/process.  I give up, Sorry..")
-						sendNotificationEvent("ST Platform issue? textToSpeech() failed.")
-						sendNotification("BigTalker couldn't announce: ${phrase}")
+						LOGERROR("TALK(${appname}.${evt.name})|mP| ST Platform issue (textToSpeech)? I tried textToSpeech() twice, ${state.hubType} wouldn't convert/process.  I give up, Sorry..")
+						if (state.hubType == "SmartThings") {sendNotificationEvent("ST Platform issue? textToSpeech() failed.")}
+						if (state.hubType == "SmartThings") {sendNotification("BigTalker couldn't announce: ${phrase}")}
 					} //try again before final error(ableToTalk)
 				} //try (ableToTalk)
             } else {
@@ -2371,10 +722,10 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
            	        try {
               	    	currentTrack = it?.latestState("trackData")?.jsonValue
                    	} catch (ex) { LOGDEBUG("ERROR getting device currentTrack") }
-					def currentVolume = 0 
-                   	try {
-                   		currentVolume = it?.latestState("level")?.integerValue ? it.latestState("level")?.integerValue : 0
-                   	} catch (ex) { LOGDEBUG("ERROR getting device currentVolume") }
+					def currentVolume = 0
+					if (it.hasAttribute("level")) { currentVolume = it.latestValue("level") }
+					if (it.hasAttribute("volume")) { currentVolume = it.latestValue("volume") }
+					if (currentVolume == 0) { LOGDEBUG("ERROR getting device currentVolume") }
                    	def minimumVolume = 50
                    	if (settings?.speechMinimumVolume >= 0) {minimumVolume = settings.speechMinimumVolume}
                    	if (minimumVolume > 100) {minimumVolume = 100}
@@ -2405,12 +756,14 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
                             	LOGTRACE ("Sending playTrackandResume() 1")
 								LOGTRACE("TALK(${appname}.${evt.name})|mP| ${it?.displayName} | cT<>null | cS/cT=playing | Sending playTrackAndResume() | CVol=${currentVolume} | SVol=${desiredVolume}")
 								if (desiredVolume > -1) { 
-									if (desiredVolume == currentVolume){it.playTrackAndResume(state.sound.uri, state.sound.duration, [delay: myDelay])}
-									if (!(desiredVolume == currentVolume)){it.playTrackAndResume(state.sound.uri, state.sound.duration, desiredVolume, [delay: myDelay])}
+									//if (desiredVolume == currentVolume){playTrackAndResume(it, state.sound.uri, state.sound.duration, myDelay)}
+									//if (!(desiredVolume == currentVolume)){playTrackAndResume(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)}
+									playTrackAndResume(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)
 									spoke = true
 								} else { 
-									if (currentVolume >= minimumVolume) { it.playTrackAndResume(state.sound.uri, state.sound.duration, [delay: myDelay]) }
-									if (currentVolume < minimumVolume) { it.playTrackAndResume(state.sound.uri, state.sound.duration, minimumVolume, [delay: myDelay]) }
+									//if (currentVolume >= minimumVolume) { playTrackAndResume(it, state.sound.uri, state.sound.duration, myDelay) }
+									if (currentVolume >= minimumVolume) { playTrackAndResume(it, state.sound.uri, state.sound.duration, currentVolume, myDelay, phrase) }
+									if (currentVolume < minimumVolume) { playTrackAndResume(it, state.sound.uri, state.sound.duration, minimumVolume, myDelay, phrase) }
 									spoke = true
 								} //if (desiredVolume)
 							} else {
@@ -2418,12 +771,14 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 								LOGTRACE ("Sending playTrackandRestore() 2 - ${it?.displayName} - cVol = ${currentVolume}")
                                	LOGTRACE("TALK(${appname}.${evt.name})|mP| ${it?.displayName} | cT<>null | cS/cT=playing | NoResume! | Sending playTrackAndRestore() | CVol=${currentVolume} | SVol=${desiredVolume}")
 								if (desiredVolume > -1) { 
-									if (desiredVolume == currentVolume){it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay])}
-									if (!(desiredVolume == currentVolume)){it.playTrackAndRestore(state.sound.uri, state.sound.duration, desiredVolume, [delay: myDelay])}
+									//if (desiredVolume == currentVolume){playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay)}
+									//if (!(desiredVolume == currentVolume)){playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)}
+									playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)
 									spoke = true
 								} else { 
-									if (currentVolume >= minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay]) }
-									if (currentVolume < minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, minimumVolume, [delay: myDelay]) }
+									//if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay) }
+									if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, currentVolume, myDelay, phrase) }
+									if (currentVolume < minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, minimumVolume, myDelay, phrase) }
 									spoke = true
 								} // if (desiredVolume)
 							} // if (resume)	
@@ -2434,12 +789,14 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 							LOGTRACE ("Sending playTrackandRestore() 3 - to ${it?.displayName} - cVol = ${currentVolume}")
                            	LOGTRACE("TALK(${appname}.${evt.name})|mP| ${it?.displayName} | cT<>null | cS/cT<>playing | Sending playTrackAndRestore() | CVol=${currentVolume} | SVol=${desiredVolume}")
 							if (desiredVolume > -1) { 
-								if (desiredVolume == currentVolume){it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay])}
-								if (!(desiredVolume == currentVolume)){it.playTrackAndRestore(state.sound.uri, state.sound.duration, desiredVolume, [delay: myDelay])}
+								//if (desiredVolume == currentVolume){playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay)}
+								//if (!(desiredVolume == currentVolume)){playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)}
+								playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)
 								spoke = true
 							} else { 
-								if (currentVolume >= minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay]) }
-								if (currentVolume < minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, minimumVolume, [delay: myDelay]) }
+								//if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay) }
+								if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, currentVolume, myDelay, phrase) }
+								if (currentVolume < minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, minimumVolume, myDelay, phrase) }
 								spoke = true
 							}// if (desiredVolume)
 						}// if ((currentStatus == 'playing' || currentTrack?.status == 'playing') && (!((currentTrack?.status == 'stopped') || (currentTrack?.status == 'paused'))))
@@ -2453,12 +810,14 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 									LOGTRACE ("Sending playTrackandResume() 4")
                    	                LOGTRACE("TALK(${appname}.${evt.name})|mP| ${it?.displayName} | cT=null | cS=disconnected | Sending playTrackAndResume() | CVol=${currentVolume} | SVol=${desiredVolume}")
 									if (desiredVolume > -1) { 
-										if (desiredVolume == currentVolume){it.playTrackAndResume(state.sound.uri, state.sound.duration, [delay: myDelay])}
-										if (!(desiredVolume == currentVolume)){it.playTrackAndResume(state.sound.uri, state.sound.duration, desiredVolume, [delay: myDelay])}
+										//if (desiredVolume == currentVolume){playTrackAndResume(it, state.sound.uri, state.sound.duration, myDelay)}
+										//if (!(desiredVolume == currentVolume)){playTrackAndResume(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)}
+										playTrackAndResume(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)
 										spoke = true
 									} else { 
-										if (currentVolume >= minimumVolume) { it.playTrackAndResume(state.sound.uri, state.sound.duration, [delay: myDelay]) }
-										if (currentVolume < minimumVolume) { it.playTrackAndResume(state.sound.uri, state.sound.duration, minimumVolume, [delay: myDelay]) }
+										//if (currentVolume >= minimumVolume) { playTrackAndResume(it, state.sound.uri, state.sound.duration, myDelay) }
+										if (currentVolume >= minimumVolume) { playTrackAndResume(it, state.sound.uri, state.sound.duration, currentVolume, myDelay, phrase) }
+										if (currentVolume < minimumVolume) { playTrackAndResume(it, state.sound.uri, state.sound.duration, minimumVolume, myDelay, phrase) }
 										spoke = true
 									}
 								} else {
@@ -2466,12 +825,14 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
                        	            LOGTRACE ("Sending playTrackandRestore() 5")
 									LOGTRACE("TALK(${appname}.${evt.name})|mP| ${it?.displayName} | cT=null | cS=disconnected | No Resume! | Sending playTrackAndRestore() | CVol=${currentVolume} | SVol=${desiredVolume}")
 									if (desiredVolume > -1) { 
-										if (desiredVolume == currentVolume){it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay])}
-										if (!(desiredVolume == currentVolume)){it.playTrackAndRestore(state.sound.uri, state.sound.duration, desiredVolume, [delay: myDelay])}
+										//if (desiredVolume == currentVolume){playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay)}
+										//if (!(desiredVolume == currentVolume)){playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)}
+										playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)
 										spoke = true
 									} else { 
-										if (currentVolume >= minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay]) }
-										if (currentVolume < minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, minimumVolume, [delay: myDelay]) }
+										//if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay) }
+										if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, currentVolume, myDelay, phrase) }
+										if (currentVolume < minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, minimumVolume, myDelay, phrase) }
 										spoke = true
 									}// if (desiredVolume)
 								}// if (resume)
@@ -2481,12 +842,14 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
                                     	LOGTRACE ("Sending playTrackandResume() 6")
 										LOGTRACE("TALK(${appname}.${evt.name})|mP| ${it?.displayName} | cT=null | cS=playing | Sending playTrackAndResume() | CVol=${currentVolume} | SVol=${desiredVolume}")
 										if (desiredVolume > -1) { 
-											if (desiredVolume == currentVolume){it.playTrackAndResume(state.sound.uri, state.sound.duration, [delay: myDelay])}
-											if (!(desiredVolume == currentVolume)){it.playTrackAndResume(state.sound.uri, state.sound.duration, desiredVolume, [delay: myDelay])}
+											//if (desiredVolume == currentVolume){playTrackAndResume(it, state.sound.uri, state.sound.duration, myDelay)}
+											//if (!(desiredVolume == currentVolume)){playTrackAndResume(it,state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)}
+											playTrackAndResume(it,state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)
 											spoke = true
 										} else { 
-											if (currentVolume >= minimumVolume) { it.playTrackAndResume(state.sound.uri, state.sound.duration, [delay: myDelay]) }
-											if (currentVolume < minimumVolume) { it.playTrackAndResume(state.sound.uri, state.sound.duration, minimumVolume, [delay: myDelay]) }
+											//if (currentVolume >= minimumVolume) { playTrackAndResume(it, state.sound.uri, state.sound.duration, myDelay) }
+											if (currentVolume >= minimumVolume) { playTrackAndResume(it, state.sound.uri, state.sound.duration, currentVolume, myDelay, phrase) }
+											if (currentVolume < minimumVolume) { playTrackAndResume(it, state.sound.uri, state.sound.duration, minimumVolume, myDelay, phrase) }
 											spoke = true
 										}// if (desiredVolume)
 									} else {
@@ -2494,12 +857,14 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 										LOGTRACE ("Sending playTrackandRestore() 7")
            	                            LOGTRACE("TALK(${appname}.${evt.name})|mP| ${it?.displayName} | cT=null | cS=playing | No Resume! | Sending playTrackAndRestore() | CVol=${currentVolume} | SVol=${desiredVolume}")
 										if (desiredVolume > -1) { 
-											if (desiredVolume == currentVolume){it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay])}
-											if (!(desiredVolume == currentVolume)){it.playTrackAndRestore(state.sound.uri, state.sound.duration, desiredVolume, [delay: myDelay])}
+											//if (desiredVolume == currentVolume){playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay)}
+											//if (!(desiredVolume == currentVolume)){playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)}
+											playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)
 											spoke = true
 										} else { 
-											if (currentVolume >= minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay]) }
-											if (currentVolume < minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, minimumVolume, [delay: myDelay]) }
+											//if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay) }
+											if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, currentVolume, myDelay, phrase) }
+											if (currentVolume < minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, minimumVolume, myDelay, phrase) }
 											spoke = true
 										}// if (desiredVolume)
 									}// if (resume)
@@ -2508,12 +873,14 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
                                     LOGTRACE ("Sending playTrackandRestore() 8")
 									LOGTRACE("TALK(${appname}.${evt.name})|mP| ${it?.displayName} | cT=null | cS<>playing | Sending playTrackAndRestore() | CVol=${currentVolume} | SVol=${desiredVolume}")
 									if (desiredVolume > -1) { 
-										if (desiredVolume == currentVolume){it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay])}
-										if (!(desiredVolume == currentVolume)){it.playTrackAndRestore(state.sound.uri, state.sound.duration, desiredVolume, [delay: myDelay])}
+										//if (desiredVolume == currentVolume){playTrackAndRestore(it,state.sound.uri, state.sound.duration, myDelay)}
+										//if (!(desiredVolume == currentVolume)){playTrackAndRestore(it,state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)}
+										playTrackAndRestore(it,state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)
 										spoke = true
 									} else { 
-										if (currentVolume >= minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay]) }
-										if (currentVolume < minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, minimumVolume, [delay: myDelay]) }
+										//if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay) }
+										if (currentVolume >= minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, currentVolume, myDelay, phrase) }
+										if (currentVolume < minimumVolume) { playTrackAndRestore(it, state.sound.uri, state.sound.duration, minimumVolume, myDelay, phrase) }
 										spoke = true
 									}// if (desiredVolume)
 								}// if (currentStatus == "playing")
@@ -2523,12 +890,14 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 							LOGTRACE ("Sending playTrackandRestore() 9")
        	                    LOGTRACE("TALK(${appname}.${evt.name})|mP| ${it.displayName} | (3) cT=null | cS=null | Sending playTrackAndRestore() | CVol=${currentVolume} | SVol=${desiredVolume}")
 							if (desiredVolume > -1) { 
-								if (desiredVolume == currentVolume){it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay])}
-								if (!(desiredVolume == currentVolume)){it.playTrackAndRestore(state.sound.uri, state.sound.duration, desiredVolume, [delay: myDelay])}
+                                //if (desiredVolume == currentVolume){playTrackAndRestore(it, state.sound.uri, state.sound.duration, myDelay)}
+								//if (!(desiredVolume == currentVolume)){playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)}
+								playTrackAndRestore(it, state.sound.uri, state.sound.duration, desiredVolume, myDelay, phrase)
 								spoke = true
 							} else { 
-								if (currentVolume >= minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, [delay: myDelay]) }
-								if (currentVolume < minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, minimumVolume, [delay: myDelay]) }
+								//if (currentVolume >= minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, myDelay) }
+								if (currentVolume >= minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, currentVolume, myDelay, phrase) }
+								if (currentVolume < minimumVolume) { it.playTrackAndRestore(state.sound.uri, state.sound.duration, minimumVolume, myDelay, phrase) }
 								spoke = true
 							} //if (desiredVolume)
 						} //currentStatus == null
@@ -2551,6 +920,7 @@ def Talk(appname, phrase, customSpeechDevice, volume, resume, personality, voice
 			def attrs = currentSpeechDevices.supportedAttributes
 			currentSpeechDevices.each(){
 				// Determine device name either by it.displayName or it.device.displayName (whichever works)
+				LOGDEBUG("FINGERPRINT ${it.displayName} cap:${it.getSupportedCapabilities} comm:${it.getSupportedCommands()} att:${it.getSupportedAttributes()}")
 				try {
 					LOGTRACE("TALK(${appname}.${evt.name}) |sS| ${it.displayName} | Sending speak().")
 				}
@@ -3327,6 +1697,71 @@ def TalkQueue(appname, phrase, customSpeechDevice, volume, resume, personality, 
 }
 
 def getWeather(mode, zipCode) {
+	// Uses Weather.gov for data retrieval
+	def msg = ""
+	//zipCode is not used.  Data only works with US GPS coordinates due to data source (weather.gov)
+	if ((state?.latitude == null || state?.latitude == "") && settings?.latitude == null) { state.latitude = "${location.latitude}" }
+	if ((state?.longitude == null || state?.longitude == "") && settings?.latitude == null) { state.longitude = "${location.longitude}" }
+	//Get weather info by hub lat/long GPS coordinates.
+	wxURI1 = "https://api.weather.gov/points/${state.latitude}%2C${state.longitude}"
+	LOGTRACE("DEBUG wxURI1: ${wxURI1}")
+	def requestParams1 =
+		[
+			uri:  wxURI1,
+			requestContentType: "application/json",
+			contentType: "application/json"
+		]
+	httpGet(requestParams1)	{	  response1 ->
+		LOGTRACE("DEBUG response1.status: ${response1?.status}")
+		if (response1?.status == 200){
+			LOGTRACE ("response1=${response1.data}")
+			if(response1.data.properties){
+				def wxURI2 = response1.data.properties.forecast
+				def requestParams2 =
+					[
+						uri:  wxURI2,
+						requestContentType: "application/json",
+						contentType: "application/json"
+					]
+				LOGTRACE("DEBUG wxURI2: ${wxURI2}")
+				httpGet(requestParams2)	{	  response2 ->
+					LOGTRACE("DEBUG response2.status: ${response1?.status}")
+					if (response2?.status == 200){
+						if(response2.data.properties.periods){
+							period0Name = response2.data.properties.periods[0].name
+							period0DetailedForecast = response2.data.properties.periods[0].detailedForecast
+							period1Name = response2.data.properties.periods[1].name
+							period1DetailedForecast = response2.data.properties.periods[1].detailedForecast
+							period2Name = response2.data.properties.periods[2].name
+							period2DetailedForecast = response2.data.properties.periods[2].detailedForecast
+							LOGDEBUG("Weather periodNames: [0:${period0Name},1:${period1Name},2:${period2Name}]; mode=${mode}")
+							if (mode == "current" || mode == "today") {
+								msg = "The forecast for ${period0Name} is ${period0DetailedForecast}"
+							}
+							if (mode == "tonight") {
+								if (period0Name == "Tonight") {msg = "The forecast for ${period0Name} is ${period0DetailedForecast}"}
+								if (period1Name == "Tonight") {msg = "The forecast for ${period1Name} is ${period1DetailedForecast}"}
+							}
+							if (mode == "tomorrow") {
+								if (period0Name == "Tonight") {msg = "The forecast for ${period1Name} is ${period1DetailedForecast}"}
+								if (period1Name == "Tonight") {msg = "The forecast for ${period2Name} is ${period2DetailedForecast}"}
+							}
+							msg = msg.replaceAll(/([0-9]+)C/,'$1 degrees celsius')
+    						msg = msg.replaceAll(/([0-9]+)F/,'$1 degrees fahrenheit')
+							LOGTRACE("returning msg=${msg}")
+							LOGDEBUG("msg = ${msg}")
+							return(msg)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+/*
+OLD SmartThings - WeatherUnderground backed code
+def getWeather(mode, zipCode) {
     //Function derived from "Sonos Weather Forecast" SmartApp by Smartthings (modified)
     LOGDEBUG("Processing: getWeather(${mode},${zipCode})")
 	def weather = getWeatherFeature("forecast", zipCode)
@@ -3382,6 +1817,7 @@ def getWeather(mode, zipCode) {
     LOGDEBUG("msg = ${msg}")
 	return(msg)
 }
+*/
 
 def poll(){
     if (settings?.resumePlay == true || settings?.resumePlay == null) {
@@ -3434,6 +1870,7 @@ def poll(){
             	if (!(settings?.timeslotSpeechDevice3 == null)) {dopoll(settings.timeslotSpeechDevice3)}
         	} catch(e) {
 	            LOGERROR("One of your speech devices is not responding.  Poll failed.")
+                LOGDEBUG("BT_poll() Error: ${e}")
     	    }
         	state.lastPoll = getTimeFromCalendar(true,true)
         	//LOGDEBUG("poll: state.polledDevices == ${state?.polledDevices}")
@@ -3477,7 +1914,8 @@ def dopoll(pollSpeechDevice){
                 LOGDEBUG("ERROR(informational): it.refresh: ${ex}")
                 state.refresh = false
             }
-            if (!state.refresh) {
+            //LOGDEBUG("dopoll(${devicename}) after refresh() ")
+            if (!(state.refresh)) {
                 try {
                     //LOGTRACE("poll()")
                     it.poll()
@@ -3486,10 +1924,13 @@ def dopoll(pollSpeechDevice){
                 }
                 catch (ex) {
                     LOGDEBUG ("ERROR(informational): it.poll: ${ex}")
+                    state.poll = false
                     state.refresh = false
                 }
             }
-    	    LOGDEBUG("dopoll(${it.displayName})cS=${it?.latestValue('status')},cT=${it?.latestState("trackData")?.jsonValue?.status},cV=${it?.latestState("level")?.integerValue ? it?.latestState("level")?.integerValue : 0}")
+            //LOGDEBUG("dopoll(${devicename}) after poll()")
+            //LOGDEBUG("dopoll(${devicename}) refresh=${state.refresh} poll=${state.poll}")
+    	    //LOGDEBUG("dopoll(${it.displayName})cS=${it?.latestValue('status')},cT=${it?.latestState("trackData")?.jsonValue?.status},cV=${it?.latestState("level")?.integerValue ? it?.latestState("level")?.integerValue : 0}")
             if (it?.latestValue('status') == "no_device_present") { LOGTRACE("During polling, the handler for ${devicename} indicated the device was not found.") } //VLCThing
         }
         LOGDEBUG("dopoll - polled devices: ${state?.polledDevices}")
@@ -3520,38 +1961,509 @@ def getDesiredVolume(invol) {
     return finalVolume
 }
 
-def setLastMode(mode){
-	state.lastMode = mode
+def setMode(mode){
+  // Remove this function
+}
+
+def onModeChangeEvent(evt){
+	state.lastMode = state.mode
+	state.mode = location.mode
+	LOGDEBUG("LastMode=${state.lastMode} Mode=${location.mode}")
+}
+
+def disableDebug(){
+	LOGTRACE("Debug timer has expired. Disabling debugging")
+	state.debugMode = false
+	unschedule("disableDebug")
+	settings.debugmode = false
 }
 
 def LOGDEBUG(txt){
-	def msgfrom = "[PARENT] "
-	if (txt?.contains("[CHILD:")) { msgfrom = "" }
-    try {
-    	if (settings.debugmode) { log.debug("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${msgfrom}${txt}") }
-    } catch(ex) {
-    	log.error("LOGDEBUG unable to output requested data!")
-    }
+	if (state.debugMode) { 
+		def msgfrom = "[PARENT] "
+		def appLabel = (app?.label == null) ? state.InternalName : app.label //Some child calls to parent.LOGDEBUG result in app.label being null, correct
+		appLabel = appLabel.replace(" ","")
+		appLabel.toUpperCase()
+		if (txt?.contains("[CHILD:")) { msgfrom = "" }
+    	try {
+    		log.debug("${appLabel}(${state.version}) || ${msgfrom}${txt}")
+    	} catch(ex) {
+			log.error("LOGDEBUG unable to output requested data! || err:${ex}")
+    	}
+	}
 }
 def LOGTRACE(txt){
 	def msgfrom = "[PARENT] "
+	def appLabel = (app?.label == null) ? state.InternalName : app.label //Some child calls to parent.LOGTRACE result in app.label being null, correct
+	appLabel = appLabel.replace(" ","")
+	appLabel.toUpperCase()
     if (txt?.contains("[CHILD:")) { msgfrom = "" }
     try {
-    	log.trace("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${msgfrom}${txt}")
+    	log.trace("${appLabel}(${state.version}) || ${msgfrom}${txt}")
     } catch(ex) {
     	log.error("LOGTRACE unable to output requested data!")
     }
 }
 def LOGERROR(txt){
 	def msgfrom = "[PARENT] "
+	def appLabel = (app?.label == null) ? state.InternalName : app.label //Some child calls to parent.LOGERROR result in app.label being null, correct
+	appLabel = appLabel.replace(" ","")
+	appLabel.toUpperCase()
     if (txt?.contains("[CHILD:")) { msgfrom = "" }
     try {
-    log.error("${app.label.replace(" ","").toUpperCase()}(${state.appversion}) || ${msgfrom}ERROR: ${txt}")
+    log.error("${appLabel}(${state.version}) || ${msgfrom}ERROR: ${txt}")
     } catch(ex) {
     	log.error("LOGERROR unable to output requested data!")
     }
 }
 
-def setAppVersion(){
-    state.appversion = "P2.0.6-DEV-1"
+def getHubType(){
+    if (location.hubs[0].id.toString().length() > 5) { return "SmartThings" } else { return "Hubitat" }
+}
+
+def returnVar(var) {
+    def dataType = "String"
+    def returnValue
+    if (!(settings."${var}" == null)) { returnValue = settings."${var}" }
+    if (!(state."${var}" == null)) { returnValue = state."${var}" }
+	if (!(atomicState."${var}" == null)) { returnValue = atomicState."${var}" }
+    def dateTest = returnValue =~ /\d\d\d\d-\d\d-\d\dT\d\d:/
+    if (dateTest) { dataType = "Date" }
+    if (returnValue == "true") { dataType = "Boolean" }
+    if (returnValue == "false") { dataType = "Boolean" }
+    if (returnValue == true) { dataType = "Boolean" }
+    if (returnValue == false) { dataType = "Boolean" }
+    if (dataType == "Date") {returnValue = Date.parse("yyyy-MM-dd'T'HH:mm:ss.SSSZ", returnValue)}
+    //LOGDEBUG ("returnVar(${var}), DataType:${dataType}, Value: ${returnValue}")
+    if (returnValue == null || returnValue == "") {}
+    return returnValue
+}
+
+def playTrackAndRestore(device, uri, duration, volume, myDelay, phrase) {
+    LOGDEBUG("playTrackAndRestore(${device.displayName},${uri},${duration},${volume},${myDelay})")
+    if (state.hubType == "SmartThings") {
+    	device.playTrackAndRestore("uri": uri, "duration":duration, volume, [delay: myDelay])
+		//device.playTrackAndRestore(uri, duration, volume, [delay: myDelay])
+    }
+    if (state.hubType == "Hubitat") {
+		def isEchoSpeaksLike = device.hasCommand("setVolumeAndSpeak")
+		def isSonosLike = device.hasCommand("playTrackAndRestore") //Hubitat only supports playTrackAndRestore(uri,volume) for Sonos
+		def supportsPlayTrack = device.hasCommand("playTrack")
+		def supportsSetLevel = device.hasCommand("setLevel")
+		def supportsSetVolume = device.hasCommand("setVolume")
+		def supportsUnmute = device.hasCommand("unmute")
+		def supportsATTRLevel = device.hasAttribute("level")
+		def supportsATTRVolume = device.hasAttribute("volume")
+		def curVol = -100
+		if (supportsATTRLevel){ curVol = device.latestValue("level") }
+		if (supportsATTRVolume){ curVol = device.latestValue("volume") }
+		LOGDEBUG("FINGERPRINT ${device.displayName} cap:${device.getSupportedCapabilities} comm:${device.getSupportedCommands()} att:${device.getSupportedAttributes()}")
+		if (isSonosLike){ //NEED ADDITIONAL SUPPORTED COMMANDS/ATTRIBUTES TO FINGERPRINT!
+			// SONOS SUPPORT
+			LOGDEBUG("playTrackAndRestore: Sonos like device detected, Please send previous debug log entry to Rayzurbock for Fingerprinting.")
+			//LOGDEBUG("playTrackAndRestore: Sonos like device detected, calling playTrackAndRestore(uri,vol)")
+			//device.playTrackAndRestore(uri, volume)  //Hubitat only supports playTrackAndRestore(uri,volume) for Sonos
+			//return
+		}
+		if (isEchoSpeaksLike) {
+			// ECHOSPEAKS SUPPORT
+			// setVolumeSpeakAndRestore - Sets volume, plays message, restores volume
+			LOGDEBUG("playTrackAndRestore: EchoSpeaks like device detected, calling setVolumeSpeakAndRestore(volume, message)")
+			setVolumeSpeakAndRestore(volume, phrase)
+			return
+		}
+		if (supportsPlayTrack) {
+			def curTrack = device.trackData
+			if (supportsUnmute){
+				LOGDEBUG("playTrackAndRestore[playTrack]: unmute()")
+				device.unmute()
+				pauseExecution(250)
+			} else {
+				LOGDEBUG("playTrackAndRestore[playTrack]: unmute() is not supported by this device (${device.displayName})")
+			}
+			if (supportsSetLevel || supportsSetVolume){
+				if (supportsSetLevel){
+					LOGDEBUG("playTrackAndRestore[playTrack]: setLevel(${volume})")
+					device.setLevel(volume)
+					pauseExecution(250)
+				}
+				if (supportsSetVolume && !supportsSetLevel){
+					LOGDEBUG("playTrackAndRestore[playTrack]: setVolume(${volume})")
+					device.setVolume(volume)
+					pauseExecution(250)
+				}
+			} else {
+				LOGDEBUG("playTrackAndRestore[playTrack]: setLevel/setVolume is not supported by this device (${device.displayName})")
+			}
+			LOGDEBUG("playTrackAndRestore[playTrack]: playTrack(${uri})")
+			device.playTrack(uri)
+			pauseExecution((duration.toInteger() * 1000))
+			if (supportsSetLevel || supportsSetVolume){
+				if ((curVol > -100) && supportsSetLevel){
+					LOGDEBUG("playTrackAndRestore[playTrack]: setLevel(${curVol})")
+					device.setLevel(curVol)
+					pauseExecution(250)
+				}
+				if ((curVol > -100) && (supportsSetVolume && !supportsSetLevel)){
+					LOGDEBUG("playTrackAndRestore[playTrack]: setVolume(${curVol})")
+					device.setVolume(curVol)
+					pauseExecution(250)
+				}
+			} else {
+				LOGDEBUG("playTrackAndRestore[playTrack]: setLevel/setVolume is not supported by this device (${device.displayName})")
+			}
+			if (!curTrack?.uri == null){
+				LOGDEBUG("playTrackAndRestore[playTrack]: restoreTrack(${curTrack.uri})")
+				if (device.hasCommand("restoreTrack")){
+					device.restoreTrack(curTrack.uri)
+				} else {
+					LOGDEBUG("playTrackAndRestore[playTrack]: restoreTrack() is not supported by this device (${device.displayName})")
+				}
+			}
+		}
+    }
+}
+
+def playTrackAndResume(device, uri, duration, volume, myDelay, phrase) {
+    LOGDEBUG("playTrackAndResume(${device.displayName},${uri},${duration},${volume},${myDelay})")
+    if (state.hubType == "SmartThings") {
+    	device.playTrackAndResume("uri":uri, "duration":duration, "volume":volume, [delay: myDelay])
+    }
+    if (state.hubType == "Hubitat") {
+		def isEchoSpeaksLike = device.hasCommand("setVolumeAndSpeak")
+		def isSonosLike = device.hasCommand("playTrackAndRestore") //Hubitat only supports playTrackAndRestore(uri,volume) for Sonos
+		def supportsPlayTrack = device.hasCommand("playTrack")
+		def supportsSetLevel = device.hasCommand("setLevel")
+		def supportsSetVolume = device.hasCommand("setVolume")
+		def supportsUnmute = device.hasCommand("unmute")
+		def supportsATTRLevel = device.hasAttribute("level")
+		def supportsATTRVolume = device.hasAttribute("volume")
+		def curVol = -100
+		if (supportsATTRLevel){ curVol = device.latestValue("level") }
+		if (supportsATTRVolume){ curVol = device.latestValue("volume") }
+		LOGDEBUG("FINGERPRINT ${device.displayName} cap:${device.getSupportedCapabilities} comm:${device.getSupportedCommands()} att:${device.getSupportedAttributes()}")
+		if (isSonosLike){ //NEED ADDITIONAL SUPPORTED COMMANDS/ATTRIBUTES TO FINGERPRINT!
+			// SONOS SUPPORT
+			LOGDEBUG("playTrackAndRestore: Sonos like device detected, Please send previous debug log entry to Rayzurbock for Fingerprinting.")
+			//LOGDEBUG("playTrackAndRestore: Sonos like device detected, calling playTrackAndRestore(uri,vol)")
+			//device.playTrackAndRestore(uri, volume)  //Hubitat only supports playTrackAndRestore(uri,volume) for Sonos
+			//return
+		}
+		if (isEchoSpeaksLike) {
+			// ECHOSPEAKS SUPPORT
+			// setVolumeSpeakAndRestore - Sets volume, plays message, restores volume
+			LOGDEBUG("playTrackAndResume: EchoSpeaks like device detected, calling setVolumeSpeakAndRestore(volume, message); Resume track not supported")
+			setVolumeSpeakAndRestore(volume, phrase)
+			return
+		}
+		if (supportsPlayTrack) {
+			def curTrack = device.trackData
+			if (supportsUnmute){
+				LOGDEBUG("playTrackAndResume[playTrack]: unmute()")
+				device.unmute()
+				pauseExecution(250)
+			} else {
+				LOGDEBUG("playTrackAndResume[playTrack]: unmute() is not supported by this device (${device.displayName})")
+			}
+			if (supportsSetLevel || supportsSetVolume){
+				if (supportsSetLevel){
+					LOGDEBUG("playTrackAndResume[playTrack]: setLevel(${volume})")
+					device.setLevel(volume)
+					pauseExecution(250)
+				}
+				if (supportsSetVolume && !supportsSetLevel){
+					LOGDEBUG("playTrackAndResume[playTrack]: setVolume(${volume})")
+					device.setVolume(volume)
+					pauseExecution(250)
+				}
+			} else {
+				LOGDEBUG("playTrackAndResume[playTrack]: setLevel/setVolume is not supported by this device (${device.displayName})")
+			}
+			LOGDEBUG("playTrackAndResume[playTrack]: playTrack(${uri})")
+			device.playTrack(uri)
+			pauseExecution((duration.toInteger() * 600))
+			if (supportsSetLevel || supportsSetVolume){
+				if ((curVol > -100) && supportsSetLevel){
+					LOGDEBUG("playTrackAndResume[playTrack]: setLevel(${curVol})")
+					device.setLevel(curVol)
+					pauseExecution(250)
+				}
+				if ((curVol > -100) && (supportsSetVolume && !supportsSetLevel)){
+					LOGDEBUG("playTrackAndResume[playTrack]: setVolume(${curVol})")
+					device.setVolume(volume)
+					pauseExecution(250)
+				}
+			} else {
+				LOGDEBUG("playTrackAndResume[playTrack]: setLevel/setVolume is not supported by this device (${device.displayName})")
+			}
+			if (!curTrack?.uri == null){
+				LOGDEBUG("playTrackAndResume[playTrack]: resumeTrack(${curTrack.uri})")
+				if (device.hasCommand("resumeTrack")){
+					device.resumeTrack(curTrack.uri)
+				} else {
+					LOGDEBUG("playTrackAndRestore[playTrack]: restoreTrack() is not supported by this device (${device.displayName})")
+					if (device.hasCommand("restoreTrack")){
+						device.restoreTrack(curTrack.uri)
+					}
+				}
+			}
+		}
+    }
+}
+
+def version(){
+	//Cobra update code, modified by Rayzurbock
+    resetBtnName()
+	//schedule("0 0 9 ? * FRI *", updateCheck) //  Check for updates at 9am every Friday
+	updateCheck()  
+	//checkButtons()
+    //pauseOrNot()
+    
+}
+
+def checkButtons(){
+	//Cobra update code
+    LOGDEBUG("Running checkButtons")
+    appButtonHandler("updateBtn")
+}
+
+
+def appButtonHandler(btn){
+	//Cobra update code
+    state.btnCall = btn
+    if(state.btnCall == "updateBtn"){
+       log.info "Checking for updates now..."
+        updateCheck()
+        pause(3000)
+  		state.btnName = state.versionBtn
+        runIn(2, resetBtnName)
+    }
+    if(state.btnCall == "updateBtn1"){
+    state.btnName = "Update Available - refresh page" 
+    //httpGet("https://github.com/CobraVmax/Hubitat/tree/master/Apps' target='_blank")
+    }
+    
+}   
+def resetBtnName(){
+	//Cobra update code
+//    log.info "Resetting Update Button Name"
+	if(state.versionStatus != "Current"){
+		state.btnName = state.versionBtn
+	}
+	else{
+		state.btnName = "Check For Update" 
+	}
+}    
+
+def displayVersionStatus(){
+	//Cobra update code, modified by Rayzurbock
+    def formatSettingRootStart = state.formatSettingRootStart
+	def formatSettingRootEnd = state.formatSettingRootEnd
+	def formatSettingOptionalStart = state.formatSettingOptionalStart
+	def formatSettingOptionalEnd = state.formatSettingOptionalEnd
+    def formatUlStart = state.formatUlStart
+	def formatUlEnd = state.formatUlEnd
+    def formatLiStart = state.formatLiStart
+	def formatLiEnd = state.formatLiEnd
+    def formatIStart = state.formatIStart
+	def formatIEnd = state.formatIEnd
+    def formatStrongStart = state.formatStrongStart
+	def formatStrongEnd = state.formatStrongEnd
+    def formatHr = state.formatHr
+    def formatBr = state.formatBr
+    def formatCenterStart = state.formatCenterStart
+    def formatCenterEnd = state.formatCenterEnd
+    def versionInfo = ""
+	versionInfo = "${formatHr}${formatHr}${formatStrongStart}${formatCenterStart}Version Information${formatCenterEnd}${formatStrongEnd}${formatBr}"
+	if(state.versionStatus){
+    	if (state.hubType == "Hubitat") {
+			versionInfo += "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png'</img><BR>${state.ExternalName} - Version: ${state.version} <BR><font face='Lucida Handwriting'>${state.Copyright} </font>"
+		}
+    	if (state.hubType == "SmartThings") {
+			versionInfo += "${state.ExternalName} - Version: ${state.version} ${formatBr} ${state.Copyright?.replace("&#9400;","(c)")}${formatBr}"
+		}
+    }
+	if((state.versionStatus != "${formatStrongStart}** This app is no longer supported by $state.author  **${formatStrongEnd}") & (state.versionStatus != "Current")){
+		input "updateBtn", "button", title: "${state.btnName}"
+    
+		//  section(){
+		//		log.info "app.label = $app.label"
+		//		input "pause1", "bool", title: "Pause This App", required: true, submitOnChange: true, defaultValue: false  
+		//	}
+		//	pauseOrNot()   
+			//if(state.versionStatus != "Current"){
+		versionInfo += "${formatStrongStart}${state.versionStatus}${formatStrongEnd}${formatBr}${state.updateURI}${formatBr}${formatStrongStart}${formatIStart}Release Notes:${formatIEnd}${formatStrongEnd}${state.UpdateInfo}${formatBr}"
+			//}
+		//section(" ") {
+		//	input "updateNotification", "bool", title: "Send a 'Pushover' message when an update is available", required: true, defaultValue: false, submitOnChange: true 
+		//	if(updateNotification == true){ input "speaker", "capability.speechSynthesis", title: "PushOver Device", required: true, multiple: true}
+		//}
+	} else {
+		versionInfo += "${formatIStart}App is up to date${formatIEnd}"
+	}
+    paragraph versionInfo
+}
+
+def updateCheck(){
+	setVersion()
+	def lastKnownVersionStatus = state.versionStatus
+	if (state?.versionStatus == null) { state.versionStatus = "<i>Unknown</i>" }
+	def paramsUD = [uri: "https://lowrance.cc/ST/manifests/RayzurCodeHE.json"]
+	if (updateCheckAllowed() || lastKnownVersionStatus == "<i>Unknown</i>" || lastKnownVersionStatus == null){
+		state.Copyright = ""
+		state.updateURI = ""
+		state.UpdateInfo = ""
+		state.author = ""
+		state.versionBtn = ""
+		def newVerRaw = ""
+		def newVer = ""
+		def currentVer = ""
+		try {
+			httpGet(paramsUD) { respUD ->
+ 			  //log.warn " Version Checking - Response Data: ${respUD.data}"   // Troubleshooting Debug Code 
+				def copyrightRead = (respUD.data.copyright)
+				state.Copyright = copyrightRead
+				def updateUri = (respUD.data.versions.UpdateInfo.GithubFiles.(state.InternalName))
+				state.updateURI = updateUri   
+				newVerRaw = (respUD.data.versions.Application.(state.InternalName))
+				newVer = (respUD.data.versions.Application.(state.InternalName).replace(".", ""))
+				currentVer = state.version.replace(".", "")
+				state.UpdateInfo = (respUD.data.versions.UpdateInfo.Application.(state.InternalName))
+				state.author = (respUD.data.author)
+				log.debug "currentVer=${currentVer}, newVer=${newVer}"
+				if(newVer == "NLS"){
+					state.versionStatus = "<b>** This app is no longer supported by ${state.author}  **</b>"  
+					log.warn "** This app is no longer supported by ${state.author} **" 
+				}
+				else if(currentVer < newVer){
+					state.versionStatus = "New Version Available (Version: ${newVerRaw})"
+					log.warn "** There is a newer version of this app available  (Version: ${newVerRaw}) **"
+					log.warn "** ${state.UpdateInfo} **"
+					state.versionBtn = "UPDATE AVAILABLE"
+					def updateMsg = "There is a new version of '${state.ExternalName}' available (Version: ${newVerRaw})"
+					//pushOverNow(updateMsg)
+				} 
+				else{ 
+					state.versionStatus = "Current"
+					log.info "You are using the current version of this app"
+				}
+			}
+		} catch (e) {
+			log.error "Something went wrong: CHECK THE JSON FILE AND IT'S URI -  $e"
+		}
+		if(state.versionStatus != "Current"){
+			state.versionBtn = "UPDATE AVAILABLE"
+		}
+		else{
+			state.versionBtn = "No Update Available"
+		}
+	} else {
+		return
+	}
+}
+
+def updateCheckAllowed(){
+	// rayzurbock code, used with Cobra update code
+	def proceed = false
+	def updateCheckCurrentDate = new Date().getTime()
+	def updateCheckIntervalInMil = (state.updateActiveUseIntervalMin * 60000)
+	if (state?.updateNextCheckDate == null) { state.updateNextCheckDate = new Date().getTime() }
+	def timeDiff = state?.updateNextCheckDate - updateCheckCurrentDate
+	if (timeDiff <= 0 || timeDiff == null) { proceed = true }
+	if (state?.updateNextCheckDate == null) { proceed = true }
+	//if (!(proceed == true)) { log.debug "updateCheckAllowed() result: not allowed to proceed"}
+	LOGDEBUG("updateCheckAllowed() timeDiff=${timeDiff}, proceed=${proceed}")
+	if (proceed) {
+		//log.debug("updateCheckAllowed(): result: proceed")
+		state.updateNextCheckDate = new Date().getTime() + updateCheckIntervalInMil
+		return true
+	} else { 
+		//log.debug("updateCheckAllowed(): result: do not proceed (${timeDiff})")
+		return false
+	}
+	
+}
+
+def setFormatting(){
+	if (state.hubType == "Hubitat") {
+		state.formatSettingRootStart = "<B><span style='color: blue;'>"
+		state.formatSettingRootEnd = "</span></B>"
+		state.formatSettingOptionalStart = "<B><span style='color: #6897bb;'>"
+		state.formatSettingOptionalEnd = "</font></B>"
+        state.formatUlStart = "<ul>"
+        state.formatUlEnd = "</ul>"
+        state.formatLiStart = "<li>"
+        state.formatLiEnd = "</li>"
+        state.formatIStart = "<i>"
+        state.formatIEnd = "</i>"
+        state.formatStrongStart = "<strong>"
+        state.formatStrongEnd = "</strong>"
+        state.formatHr = "<hr>"
+        state.formatBr = "<br>"
+        state.formatCenterStart = "<center>"
+        state.formatCenterEnd = "</center>"
+	}
+	if (state.hubType == "SmartThings") { 
+		state.formatSettingRootStart = ""
+		state.formatSettingRootEnd = ""
+		state.formatSettingOptionalStart = ""
+		state.formatSettingOptionalEnd = ""
+        state.formatUlStart = "\n"
+        state.formatUlEnd = ""
+        state.formatLiStart = ""
+        state.formatLiEnd = "\n\n"
+        state.formatIStart = ""
+        state.formatIEnd = ""
+        state.formatStrongStart = ""
+        state.formatStrongEnd = ""
+        state.formatHr = ""
+        state.formatBr = "\n"
+        state.formatCenterStart = ""
+        state.formatCenterEnd = ""
+	}
+    /*
+    	Place in PARENT functions that need formatting:
+    	def formatSettingRootStart = state.formatSettingRootStart
+		def formatSettingRootEnd = state.formatSettingRootEnd
+		def formatSettingOptionalStart = state.formatSettingOptionalStart
+		def formatSettingOptionalEnd = state.formatSettingOptionalEnd
+        def formatUlStart = state.formatUlStart
+		def formatUlEnd = state.formatUlEnd
+        def formatLiStart = state.formatLiStart
+		def formatLiEnd = state.formatLiEnd
+        def formatIStart = state.formatIStart
+		def formatIEnd = state.formatIEnd
+        def formatStrongStart = state.formatStrongStart
+		def formatStrongEnd = state.formatStrongEnd
+        def formatHr = state.formatHr
+        def formatBr = state.formatBr
+        def formatCenterStart = state.formatCenterStart
+        def formatCenterEnd = state.formatCenterEnd
+        
+        Place in CHILD functions that need formatting:
+        def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
+    */
+}
+
+def setVersion(){
+		//Cobra update code, modified by Rayzurbock
+		state.version = "2.1.2.0"	 
+		state.InternalName = "BigTalker2-Parent-DEV" 
+		state.ExternalName = "BigTalker2-DEV"
+		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
 }
