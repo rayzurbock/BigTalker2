@@ -1643,9 +1643,9 @@ def pageConfigValve(){
                 defaultSpeechClosed1 = "%devicename% is now %devicechange%"
             }
             input name: "valveDeviceGroup1", type: "capability.valve", title: "${formatSettingRootStart}Valve(s)${formatSettingRootEnd}", required: false, multiple: true
-            input name: "valveTalkOnOpen1", type: "text", title: "${formatSettingRootStart}Say this when valve is opened:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechOn1, submitOnChange: true
+            input name: "valveTalkOnOpen1", type: "text", title: "${formatSettingRootStart}Say this when valve is opened:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechOpen1, submitOnChange: true
             input name: "valveTestOnOpen1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test valve OPENED phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
-            input name: "valveTalkOnClosed1", type: "text", title: "${formatSettingRootStart}Say this when valve is closed:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechOff1, submitOnChange: true
+            input name: "valveTalkOnClosed1", type: "text", title: "${formatSettingRootStart}Say this when valve is closed:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechClosed1, submitOnChange: true
             input name: "valveTestOnClosed1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test valve CLOSED phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
             input name: "valvePersonality1", type: "enum", title: "${formatSettingOptionalStart}Allow Personality (overrides default)?:${formatSettingOptionalEnd}", required: false, options: ["Yes", "No"], submitOnChange: true
             input name: "valveSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${formatSettingOptionalStart}Talk with these text-to-speech devices (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false, submitOnChange: true
@@ -2915,7 +2915,7 @@ def updateCheckAllowed(){
 }
 
 def setVersion(){
-		state.version = "2.1.2.2"	 
+		state.version = "2.1.2.2.1"	 
 		state.InternalName = "BigTalker2-Child-DEV" 
 		state.ExternalName = "BigTalker2 Child-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
