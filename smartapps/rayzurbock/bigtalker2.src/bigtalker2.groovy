@@ -31,6 +31,22 @@ def pageStart(){
         // Do nothing here, but run checkConfig() 
     } 
     dynamicPage(name: "pageStart", title: "Big Talker", install: false, uninstall: (app.getInstallationState() == "COMPLETE")){
+    	def formatSettingRootStart = state.formatSettingRootStart
+		def formatSettingRootEnd = state.formatSettingRootEnd
+		def formatSettingOptionalStart = state.formatSettingOptionalStart
+		def formatSettingOptionalEnd = state.formatSettingOptionalEnd
+        def formatUlStart = state.formatUlStart
+		def formatUlEnd = state.formatUlEnd
+        def formatLiStart = state.formatLiStart
+		def formatLiEnd = state.formatLiEnd
+        def formatIStart = state.formatIStart
+		def formatIEnd = state.formatIEnd
+        def formatStrongStart = state.formatStrongStart
+		def formatStrongEnd = state.formatStrongEnd
+        def formatHr = state.formatHr
+        def formatBr = state.formatBr
+        def formatCenterStart = state.formatCenterStart
+        def formatCenterEnd = state.formatCenterEnd
         section(){
         	LOGDEBUG("install state=${app.getInstallationState()}.")
         	def mydebug_pollnow = ""
@@ -38,7 +54,7 @@ def pageStart(){
                 href "pageConfigureSpeechDeviceType", title:"Configure", description:"Tap to configure"
             } else {
                 //V1Method href "pageConfigureEvents", title: "Configure Events", description: "Tap to configure events"
-                href "pageStatus", title:"Status", description:"Tap to view status"
+                //href "pageStatus", title:"Status", description:"Tap to view status"
                 href "pageConfigureDefaults", title: "Configure Defaults", description: "Tap to configure defaults"
 				href "pageTalkNow", title:"Talk Now", description:"Tap to setup talk now" 
             }
@@ -63,21 +79,27 @@ def pageStart(){
         }
         section("About"){
             def AboutApp = ""
-            AboutApp += '<HR>Big Talker is a SmartApp that can make your house talk depending on various triggered events.\n\n'
-            if (state.hubType == "Hubitat") {AboutApp += 'Pair with a Hubitat compatible audio device such as Sonos, Ubi, LANnouncer, and/or VLC Thing (running on your computer or Raspberry Pi)\n'}
-            if (state.hubType == "SmartThings") {AboutApp += 'Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the "Generic MediaRenderer" SmartApp/Device and/or AskAlexa SmartApp\n'}
+            AboutApp += "${formatHr}Big Talker is a SmartApp that can make your house talk depending on various triggered events.${formatBr}${formatBr}"
+            if (state.hubType == "Hubitat") {AboutApp += "Pair with a Hubitat compatible audio device such as Sonos, Ubi, LANnouncer, and/or VLC Thing (running on your computer or Raspberry Pi)${formatBr}"}
+            if (state.hubType == "SmartThings") {AboutApp += "Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the 'Generic MediaRenderer' SmartApp/Device and/or AskAlexa SmartApp${formatBr}"}
             paragraph(AboutApp)
 			updateCheck()
 			//checkButtons()
 			displayVersionStatus()
         }
-		section("<HR><HR><B><CENTER>Donations</CENTER></B>"){
+		section("${formatHr}${formatHr}${formatStrongStart}${formatCenterStart}Donations${formatCenterEnd}${formatStrongEnd}"){
 				def DonateOptions = ""
-				DonateOptions += "Big Talker is provided to the community for free.  It takes a lot of time to build and support any complex app.  If you wish to support the time and effort put into development you may submit a donation with one of the following:<BR>"
-				DonateOptions += "<ul>"
-				DonateOptions += '<li><B>Cash.me</B> = <a target="_blank" href="https://cash.me/$Lowrance">https://cash.me/$Lowrance</a> (use a debit card, it\'s free for both of us)</li>'
-				DonateOptions += '<li><B>Venmo</B> = <a target="_blank" href="https://venmo.com/code?user_id=2603208862072832399">@BrianLowrance</a></li>'
-				DonateOptions += '<li><B>Paypal.me</B> = <a target="_blank" href="https://paypal.me/brianlowrance">https://paypal.me/brianlowrance</a> (They take a little since I setup my account as a business account)</li>'
+				DonateOptions += "Big Talker is provided to the community for free.  It takes a lot of time to build and support any complex app.  If you wish to support the time and effort put into development you may submit a donation with one of the following:${formatBr}"
+				DonateOptions += "${formatUlStart}"
+                if (state.hubType == "Hubitat"){
+					DonateOptions += "${formatLiStart}${formatStrongStart}Cash.me${formatStrongEnd} = <a target='_blank' href='https://cash.me/$Lowrance'>https://cash.me/$Lowrance</a> (use a debit card, it\'s free for both of us)${formatLiEnd}"
+					DonateOptions += "${formatLiStart}${formatStrongStart}Venmo${formatStrongEnd} = <a target='_blank' href='https://venmo.com/code?user_id=2603208862072832399'>@BrianLowrance</a>${formatLiEnd}"
+					DonateOptions += "${formatLiStart}${formatStrongStart}Paypal.me${formatStrongEnd} = <a target='_blank' href='https://paypal.me/brianlowrance'>https://paypal.me/brianlowrance</a> (They take a little since I setup my account as a business account)${formatLiEnd}"
+                } else {
+                	DonateOptions += "${formatLiStart}${formatStrongStart}Cash.me${formatStrongEnd} = https://cash.me/\$Lowrance (use a debit card, it\'s free for both of us)${formatLiEnd}"
+					DonateOptions += "${formatLiStart}${formatStrongStart}Venmo${formatStrongEnd} @BrianLowrance${formatLiEnd}"
+					DonateOptions += "${formatLiStart}${formatStrongStart}Paypal.me${formatStrongEnd} = https://paypal.me/brianlowrance${formatLiEnd}"
+                }
 				paragraph(DonateOptions)					
 		}
     }
@@ -128,8 +150,8 @@ def pageTalkNow(){
 def getMyVoice(deviceVoice){
     def myVoice = "Not Used"
     if (state?.speechDeviceType == "capability.musicPlayer") {
-    	log.debug "getMyVoice[parent]: deviceVoice=${deviceVoice ? deviceVoice : "Not selected"}"
-        log.debug "getMyVoice[parent]: settings.speechVoice=${settings?.speechVoice}"
+    	LOGDEBUG("getMyVoice[parent]: deviceVoice=${deviceVoice ? deviceVoice : "Not selected"}")
+        LOGDEBUG("getMyVoice[parent]: settings.speechVoice=${settings?.speechVoice}")
 		myVoice = (!(deviceVoice == null || deviceVoice == "")) ? deviceVoice : (settings?.speechVoice ? settings?.speechVoice : "Salli(en-us)")
     }
     return myVoice
@@ -137,36 +159,47 @@ def getMyVoice(deviceVoice){
 
 def pageHelpPhraseTokens(){
 	//KEEP IN SYNC WITH CHILD!
-    dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
+        dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
+    	def formatSettingRootStart = state.formatSettingRootStart
+		def formatSettingRootEnd = state.formatSettingRootEnd
+		def formatSettingOptionalStart = state.formatSettingOptionalStart
+		def formatSettingOptionalEnd = state.formatSettingOptionalEnd
+        def formatUlStart = state.formatUlStart
+		def formatUlEnd = state.formatUlEnd
+        def formatLiStart = state.formatLiStart
+		def formatLiEnd = state.formatLiEnd
+        def formatIStart = state.formatIStart
+		def formatIEnd = state.formatIEnd
+        def formatStrongStart = state.formatStrongStart
+		def formatStrongEnd = state.formatStrongEnd
        section("The following tokens can be used in your event phrases and will be replaced as listed:"){
        	   def AvailTokens = ""
-           if (state.hubType == "SmartThings"){ AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n" }
-           AvailTokens += "<ul>"
-		   AvailTokens += "<li><B>%groupname%</B> = Name that you gave for the event group</li>"
-           AvailTokens += "<li><B>%date%</B> = Current date; January 01 20xx</li>"
-           AvailTokens += "<li><B>%day%</B> = Current day; Monday</li>"
-           AvailTokens += "<li><B>%devicename%</B> = Triggering devices display name</li>"
-           AvailTokens += "<li><B>%devicetype%</B> = Triggering device type; motion, switch, etc</li>"
-           AvailTokens += "<li><B>%devicechange%</B> = State change that occurred; on/off, active/inactive, etc...</li>"
-           AvailTokens += "<li><B>%description%</B> = The description of the event that is to be displayed to the user in the mobile application.</li>"
-           AvailTokens += "<li><B>%locationname%</B> = Hub location name; home, work, etc</li>"
-           AvailTokens += "<li><B>%lastmode%</B> = Last hub mode; home, away, etc</li>"
-           AvailTokens += "<li><B>%mode%</B> = Current hub mode; home, away, etc</li>"
-           AvailTokens += "<li><B>%mp3(url)%</B> = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3"
-               AvailTokens += "<ul><li><I>No other tokens or phrases can be used with %mp3(url)%</I></li></ul>"
-		   AvailTokens += "</li>"
-           AvailTokens += "<li><B>%time%</B> = Current hub time; HH:mm am/pm\n\n</B></li>"
-		   AvailTokens += "</ul>"
-		   if (state.hubType == "SmartThings"){ AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday(00000)% = Today's weather forecast* based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight(00000)% = Tonight's weather* forecast based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow(00000)% = Tomorrow's weather forecast* based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "\n*Weather forecasts provided by Weather Underground" }
+           AvailTokens += "${formatUlStart}"
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%askalexa%{formatStrongEnd} = Send phrase to AskAlexa SmartApp's message queue${formatLiEnd}" }
+		   AvailTokens += "${formatLiStart}${formatStrongStart}%groupname%${formatStrongEnd} = Name that you gave for the event group${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%date%${formatStrongEnd} = Current date; January 01 20xx${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%day%${formatStrongEnd} = Current day; Monday${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%devicename%${formatStrongEnd} = Triggering devices display name${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%devicetype%${formatStrongEnd} = Triggering device type; motion, switch, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%devicechange%${formatStrongEnd} = State change that occurred; on/off, active/inactive, etc...${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%description%${formatStrongEnd} = The description of the event that is to be displayed to the user in the mobile application.${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%locationname%${formatStrongEnd} = Hub location name; home, work, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%lastmode%${formatStrongEnd} = Last hub mode; home, away, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%mode%${formatStrongEnd} = Current hub mode; home, away, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%mp3(url)%${formatStrongEnd} = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3"
+           AvailTokens += "${formatUlStart}${formatLiStart}${formatIStart}No other tokens or phrases can be used with %mp3(url)%${formatIEnd}${formatLiEnd}${formatUlEnd}"
+		   AvailTokens += "${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%time%${formatStrongEnd} = Current hub time; HH:mm am/pm${formatStrongEnd}${formatLiEnd}"
+		   AvailTokens += "${formatUlEnd}"
+		   if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%shmstatus%${formatStrongEnd} = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)${formatLiEnd}" }
+           AvailTokens += "${formatLiStart}${formatStrongStart}%weathercurrent%${formatStrongEnd} = Current weather based on hub location${formatLiEnd}"
+           //AvailTokens += "${formatLiStart}${formatStrongStart}%weathercurrent(00000)%${formatStrongEnd} = Current weather* based on custom zipcode (replace 00000)${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%weathertoday%${formatStrongEnd} = Today's weather forecast* based on hub location${formatLiEnd}"
+           //AvailTokens += "${formatLiStart}${formatStrongStart}%weathertoday(00000)%${formatStrongEnd} = Today's weather forecast* based on custom zipcode (replace 00000)${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%weathertonight%${formatStrongEnd} = Tonight's weather forecast* based on hub location${formatLiEnd}"
+           //AvailTokens += "${formatLiStart}${formatStrongStart}%weathertonight(00000)%${formatStrongEnd} = Tonight's weather* forecast based on custom zipcode (replace 00000)${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%weathertomorrow%${formatStrongEnd} = Tomorrow's weather forecast* based on hub location${formatLiEnd}"
+           //AvailTokens += "${formatLiStart}${formatStrongStart}%weathertomorrow(00000)%${formatStrongEnd} = Tomorrow's weather forecast* based on custom zipcode (replace 00000)${formatLiEnd}"
            paragraph(AvailTokens)
        }
    }
@@ -2224,14 +2257,34 @@ def resetBtnName(){
 
 def displayVersionStatus(){
 	//Cobra update code, modified by Rayzurbock
-	section("<HR><HR><B><CENTER>Version Information</CENTER></B>"){
-	}
+    def formatSettingRootStart = state.formatSettingRootStart
+	def formatSettingRootEnd = state.formatSettingRootEnd
+	def formatSettingOptionalStart = state.formatSettingOptionalStart
+	def formatSettingOptionalEnd = state.formatSettingOptionalEnd
+    def formatUlStart = state.formatUlStart
+	def formatUlEnd = state.formatUlEnd
+    def formatLiStart = state.formatLiStart
+	def formatLiEnd = state.formatLiEnd
+    def formatIStart = state.formatIStart
+	def formatIEnd = state.formatIEnd
+    def formatStrongStart = state.formatStrongStart
+	def formatStrongEnd = state.formatStrongEnd
+    def formatHr = state.formatHr
+    def formatBr = state.formatBr
+    def formatCenterStart = state.formatCenterStart
+    def formatCenterEnd = state.formatCenterEnd
+    def versionInfo = ""
+	versionInfo = "${formatHr}${formatHr}${formatStrongStart}${formatCenterStart}Version Information${formatCenterEnd}${formatStrongEnd}${formatBr}"
 	if(state.versionStatus){
-		section{paragraph "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png''</img><BR>${state.ExternalName} - Version: $state.version <BR><font face='Lucida Handwriting'>$state.Copyright </font>"}
-	}
-
-	if((state.versionStatus != "<b>** This app is no longer supported by $state.author  **</b>") & (state.versionStatus != "Current")){
-		section(){ input "updateBtn", "button", title: "${state.btnName}"}
+    	if (state.hubType == "Hubitat") {
+			versionInfo += "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png'</img><BR>${state.ExternalName} - Version: ${state.version} <BR><font face='Lucida Handwriting'>${state.Copyright} </font>"
+		}
+    	if (state.hubType == "SmartThings") {
+			versionInfo += "${state.ExternalName} - Version: ${state.version} ${formatBr} ${state.Copyright?.replace("&#9400;","(c)")}${formatBr}"
+		}
+    }
+	if((state.versionStatus != "${formatStrongStart}** This app is no longer supported by $state.author  **${formatStrongEnd}") & (state.versionStatus != "Current")){
+		input "updateBtn", "button", title: "${state.btnName}"
     
 		//  section(){
 		//		log.info "app.label = $app.label"
@@ -2239,19 +2292,16 @@ def displayVersionStatus(){
 		//	}
 		//	pauseOrNot()   
 			//if(state.versionStatus != "Current"){
-		section{ 
-			paragraph "<b>${state.versionStatus}</b><BR>${state.updateURI}<BR><B><I>Release Notes:</I></B>${state.UpdateInfo}<BR>"
+		versionInfo += "${formatStrongStart}${state.versionStatus}${formatStrongEnd}${formatBr}${state.updateURI}${formatBr}${formatStrongStart}${formatIStart}Release Notes:${formatIEnd}${formatStrongEnd}${state.UpdateInfo}${formatBr}"
 			//}
-		}
 		//section(" ") {
 		//	input "updateNotification", "bool", title: "Send a 'Pushover' message when an update is available", required: true, defaultValue: false, submitOnChange: true 
 		//	if(updateNotification == true){ input "speaker", "capability.speechSynthesis", title: "PushOver Device", required: true, multiple: true}
 		//}
 	} else {
-		section{
-				paragraph "<i>App is up to date</i>"
-		}
+		versionInfo += "${formatIStart}App is up to date${formatIEnd}"
 	}
+    paragraph versionInfo
 }
 
 def updateCheck(){
@@ -2280,7 +2330,7 @@ def updateCheck(){
 				currentVer = state.version.replace(".", "")
 				state.UpdateInfo = (respUD.data.versions.UpdateInfo.Application.(state.InternalName))
 				state.author = (respUD.data.author)
-			
+				log.debug "currentVer=${currentVer}, newVer=${newVer}"
 				if(newVer == "NLS"){
 					state.versionStatus = "<b>** This app is no longer supported by ${state.author}  **</b>"  
 					log.warn "** This app is no longer supported by ${state.author} **" 
@@ -2340,18 +2390,79 @@ def setFormatting(){
 		state.formatSettingRootEnd = "</span></B>"
 		state.formatSettingOptionalStart = "<B><span style='color: #6897bb;'>"
 		state.formatSettingOptionalEnd = "</font></B>"
+        state.formatUlStart = "<ul>"
+        state.formatUlEnd = "</ul>"
+        state.formatLiStart = "<li>"
+        state.formatLiEnd = "</li>"
+        state.formatIStart = "<i>"
+        state.formatIEnd = "</i>"
+        state.formatStrongStart = "<strong>"
+        state.formatStrongEnd = "</strong>"
+        state.formatHr = "<hr>"
+        state.formatBr = "<br>"
+        state.formatCenterStart = "<center>"
+        state.formatCenterEnd = "</center>"
 	}
 	if (state.hubType == "SmartThings") { 
 		state.formatSettingRootStart = ""
 		state.formatSettingRootEnd = ""
 		state.formatSettingOptionalStart = ""
 		state.formatSettingOptionalEnd = ""
+        state.formatUlStart = "\n"
+        state.formatUlEnd = ""
+        state.formatLiStart = ""
+        state.formatLiEnd = "\n\n"
+        state.formatIStart = ""
+        state.formatIEnd = ""
+        state.formatStrongStart = ""
+        state.formatStrongEnd = ""
+        state.formatHr = ""
+        state.formatBr = "\n"
+        state.formatCenterStart = ""
+        state.formatCenterEnd = ""
 	}
+    /*
+    	Place in PARENT functions that need formatting:
+    	def formatSettingRootStart = state.formatSettingRootStart
+		def formatSettingRootEnd = state.formatSettingRootEnd
+		def formatSettingOptionalStart = state.formatSettingOptionalStart
+		def formatSettingOptionalEnd = state.formatSettingOptionalEnd
+        def formatUlStart = state.formatUlStart
+		def formatUlEnd = state.formatUlEnd
+        def formatLiStart = state.formatLiStart
+		def formatLiEnd = state.formatLiEnd
+        def formatIStart = state.formatIStart
+		def formatIEnd = state.formatIEnd
+        def formatStrongStart = state.formatStrongStart
+		def formatStrongEnd = state.formatStrongEnd
+        def formatHr = state.formatHr
+        def formatBr = state.formatBr
+        def formatCenterStart = state.formatCenterStart
+        def formatCenterEnd = state.formatCenterEnd
+        
+        Place in CHILD functions that need formatting:
+        def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
+    */
 }
 
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
-		state.version = "2.0.8.6.0"	 
+		state.version = "2.1.2.2"	 
 		state.InternalName = "BigTalker2-Parent-DEV" 
 		state.ExternalName = "BigTalker2-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
