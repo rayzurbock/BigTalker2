@@ -28,11 +28,28 @@ preferences {
     page(name: "pageConfigRoutine")
 	page(name: "pageConfigAlarm")
 	page(name: "pageConfigFilterStatus")
+    page(name: "pageConfigValve")
     page(name: "pageHelpPhraseTokens")
 	
 }
 
 def pageConfigureEvents(){
+	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
 	setVersion()
     state.hubType = parent.returnVar("hubType")
     dynamicPage(name: "pageConfigureEvents", title: "Configure Events", install: (!(app?.getInstallationState == true)), uninstall: (app?.getInstallationState == true)) {
@@ -111,6 +128,11 @@ def pageConfigureEvents(){
             } else {
                 href "pageConfigFilterStatus", title: "Filter Status", description:"Tap to configure"
             }
+            if (settings.valveDeviceGroup1 || settings.valveDeviceGroup2 || settings.valveDeviceGroup3) {
+                href "pageConfigValve", title:"Valve", description:"Tap to modify", state:"complete"
+            } else {
+                href "pageConfigValve", title:"Valve", description:"Tap to configure"
+            }
             if (hubType == "SmartThings"){
             	if (settings.SHMTalkOnHome || settings.SHMTalkOnAway || settings.SHMTalkOnDisarm) {
                 	href "pageConfigSHM", title: "Smart Home Monitor", description:"Tap to modify", state:"complete"
@@ -133,7 +155,9 @@ def pageConfigureEvents(){
         }
 		updateCheck()
 		//checkButtons()
-		displayVersionStatus()
+		section(){
+        	displayVersionStatus()
+        }
     }
 }
 
@@ -143,6 +167,18 @@ def pageConfigMotion(){
 		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
 		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
 		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
 		//CONFIGURATION
 		section(){
 			def defaultSpeechActive1 = ""
@@ -165,7 +201,7 @@ def pageConfigMotion(){
             }
         }
 		//RESTRICTIONS
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "motionModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "motionStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "motionEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.motionStartTime1 == null))
@@ -175,7 +211,7 @@ def pageConfigMotion(){
             input name: "motionDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
 		//HELP
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		def phraseTestTogDeviceUpper = "Motion"
@@ -211,6 +247,18 @@ def pageConfigSwitch(){
 		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
 		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
 		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
 		//CONFIGURATION
         section(){
             def defaultSpeechOn1 = ""
@@ -233,7 +281,7 @@ def pageConfigSwitch(){
             }
         }
 		//RESTRICTIONS
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             //IN DEVELOPMENT  input name: "switchOnThreshold", type: "number", title: "${formatSettingOptionalStart}If it's on for more than this many minutes (default 0)${formatSettingOptionalEnd}", required: false, defaultValue: 0
             input name: "switchModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "switchStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
@@ -242,7 +290,7 @@ def pageConfigSwitch(){
             input name: "switchDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
 		//HELP
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -275,9 +323,21 @@ def pageConfigSwitch(){
 
 def pageConfigPresence(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigPresence", title: "Configure talk on presence", install: false, uninstall: false) {
 		//CONFIGURATION
         section(){
@@ -302,7 +362,7 @@ def pageConfigPresence(){
             }
         }
 		//RESTRICTIONS
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "presenceModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "presenceStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "presenceEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.presenceStartTime1 == null))
@@ -310,7 +370,7 @@ def pageConfigPresence(){
             input name: "presenceDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
 		//HELP
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -343,9 +403,21 @@ def pageConfigPresence(){
 
 def pageConfigLock(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigLock", title: "Configure talk on lock", install: false, uninstall: false) {
 		//CONFIGURATION
         section(){
@@ -369,7 +441,7 @@ def pageConfigLock(){
             }
         }
 		//RESTRICTIONS
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "lockModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "lockStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "lockEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.lockStartTime1 == null))
@@ -377,7 +449,7 @@ def pageConfigLock(){
             input name: "lockDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
 		//HELP
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -410,9 +482,21 @@ def pageConfigLock(){
 
 def pageConfigContact(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigContact", title: "Configure talk on contact sensor", install: false, uninstall: false) {
 		//CONFIGURATION
         section(){
@@ -436,7 +520,7 @@ def pageConfigContact(){
             }
         }
 		//RESTRICTIONS
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             //IN DEVELOPMENT input name: "contactOpenThreshold", type: "number", title: "If it's open for more than this many minutes (default 0)", required: false, defaultValue: 0
             input name: "contactModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "contactStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
@@ -445,7 +529,7 @@ def pageConfigContact(){
             input name: "contactDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
 		//HELP
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -483,9 +567,21 @@ def pageConfigMode(){
     }
     LOGDEBUG("locationmodes=${locationmodes}", true)
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigMode", title: "Configure talk on home mode change", install: false, uninstall: false) {
 		//CONFIGURATION
         section(){
@@ -506,14 +602,14 @@ def pageConfigMode(){
             }
         }
 		//RESTRICTIONS
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "modeStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "modeEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: false//(!(settings.modeStartTime1 == null))
             input name: "modeDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "modeDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
 		//HELP
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -537,9 +633,21 @@ def pageConfigMode(){
 
 def pageConfigThermostat(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigThermostat", title: "Configure talk when thermostat state is:", install: false, uninstall: false) {
         section(){
             def defaultSpeechIdle1 = ""
@@ -569,14 +677,14 @@ def pageConfigThermostat(){
                 input name: "thermostatVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "thermostatModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "thermostatStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "thermostatEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.thermostatStartTime1 == null))
             input name: "thermostatDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "thermostatDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -627,9 +735,21 @@ def pageConfigThermostat(){
 
 def pageConfigAcceleration(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigAcceleration", title: "Configure talk on acceleration", install: false, uninstall: false) {
         section(){
             def defaultSpeechActive1 = ""
@@ -651,14 +771,14 @@ def pageConfigAcceleration(){
                 input name: "accelerationVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "accelerationModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "accelerationStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "accelerationEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.accelerationStartTime1 == null))
             input name: "accelerationDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "accelerationDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -691,9 +811,21 @@ def pageConfigAcceleration(){
 
 def pageConfigWater(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigWater", title: "Configure talk on water", install: false, uninstall: false) {
         section(){
             def defaultSpeechWet1 = ""
@@ -715,14 +847,14 @@ def pageConfigWater(){
                 input name: "waterVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "waterModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "waterStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "waterEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.waterStartTime1 == null))
             input name: "waterDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "waterDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -755,9 +887,21 @@ def pageConfigWater(){
 
 def pageConfigSmoke(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigSmoke", title: "Configure talk on smoke", install: false, uninstall: false) {
         section(){
             def defaultSpeechDetect1 = ""
@@ -783,14 +927,14 @@ def pageConfigSmoke(){
                 input name: "smokeVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "smokeModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "smokeStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "smokeEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.smokeStartTime1 == null))
             input name: "smokeDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "smokeDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -832,9 +976,21 @@ def pageConfigSmoke(){
 
 def pageConfigButton(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigButton", title: "Configure talk on button press", install: false, uninstall: false) {
         section(){
             def defaultSpeechButton1 = ""
@@ -856,14 +1012,14 @@ def pageConfigButton(){
                 input name: "buttonVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "buttonModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "buttonStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "buttonEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.buttonStartTime1 == null))
             input name: "buttonDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "buttonDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -896,9 +1052,21 @@ def pageConfigButton(){
 
 def pageConfigAlarm(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigAlarm", title: "Configure talk on alarm", install: false, uninstall: false) {
         section(){
             def defaultSpeechAlarmOff1 = ""
@@ -928,14 +1096,14 @@ def pageConfigAlarm(){
                 input name: "alarmVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "alarmModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "alarmStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "alarmEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.buttonStartTime1 == null))
             input name: "alarmDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "alarmDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -985,9 +1153,21 @@ def pageConfigAlarm(){
 
 def pageConfigFilterStatus(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigFilterStatus", title: "Configure talk on Filter Status change", install: false, uninstall: false) {
         section(){
             def defaultSpeechFilterStatusNormal1 = ""
@@ -1009,14 +1189,14 @@ def pageConfigFilterStatus(){
                 input name: "filterStatusVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "filterStatusModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "filterStatusStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "filterStatusEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.buttonStartTime1 == null))
             input name: "filterStatusDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "filterStatusDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -1049,9 +1229,21 @@ def pageConfigFilterStatus(){
 
 def pageConfigSHM(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigSHM", title: "Configure talk on Smart Home Monitor status change", install: false, uninstall: false) {
     	section(){
         	input name: "SHMPersonality", type: "enum", title: "${formatSettingOptionalStart}Allow Personality (overrides default)?:${formatSettingOptionalEnd}", required: false, options: ["Yes", "No"]
@@ -1117,7 +1309,7 @@ def pageConfigSHM(){
             input name: "SHMEndTimeDisarm", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.SHMStartTimeDisarm == null))
             input name: "SHMDisarmDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch - Deviates from standard template
@@ -1159,9 +1351,21 @@ def pageConfigSHM(){
 
 def pageConfigTime(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigTime", title: "Configure talk at specific time", install: false, uninstall: false) {
         section("Schedule 1"){
             input name: "timeSlotDays1", type: "enum", title: "${formatSettingRootStart}Which day(s)${formatSettingRootEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
@@ -1214,7 +1418,7 @@ def pageConfigTime(){
             input name: "timeSlotModes3", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "timeSlotDisableSwitch3", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch - Deviates from standard template
@@ -1255,9 +1459,21 @@ def pageConfigTime(){
 
 def pageConfigPowerMeter(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigPowerMeter", title: "Configure talk on power consumption", install: false, uninstall: false) {
         section(){
             def defaultSpeechPowerMeterRise1 = ""
@@ -1286,14 +1502,14 @@ def pageConfigPowerMeter(){
                 input name: "powerMeterVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "powerMeterModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "powerMeterStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "powerMeterEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.waterStartTime1 == null))
             input name: "powerMeterDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "powerMeterDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -1335,9 +1551,21 @@ def pageConfigPowerMeter(){
 
 def pageConfigRoutine(){
 	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
-	def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
-	def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
-	def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
     dynamicPage(name: "pageConfigRoutine", title: "Configure talk when routine runs", install: false, uninstall: false) {
         section(){
             def defaultSpeechRoutine1 = ""
@@ -1360,14 +1588,14 @@ def pageConfigRoutine(){
                 input name: "routineVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
             }
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Restrictions</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
             input name: "routineModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
             input name: "routineStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
             input name: "routineEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.buttonStartTime1 == null))
             input name: "routineDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
             input name: "routineDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
         }
-        section("<BR><HR><HR>${formatSettingRootStart}<CENTER>Help</CENTER>${formatSettingRootEnd}"){
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
             href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
         }
 		//Test Phrase Toggle Switch
@@ -1388,39 +1616,133 @@ def pageConfigRoutine(){
 //End pageConfigRoutine()
 }
 
+def pageConfigValve(){
+    dynamicPage(name: "pageConfigValve", title: "Configure talk on valve", install: false, uninstall: false) {
+		def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
+		//CONFIGURATION
+        section(){
+            def defaultSpeechOpen1 = ""
+            def defaultSpeechClosed1 = ""
+            if (!switchDeviceGroup1) {
+                defaultSpeechOpen1 = "%devicename% is now %devicechange%"
+                defaultSpeechClosed1 = "%devicename% is now %devicechange%"
+            }
+            input name: "valveDeviceGroup1", type: "capability.valve", title: "${formatSettingRootStart}Valve(s)${formatSettingRootEnd}", required: false, multiple: true
+            input name: "valveTalkOnOpen1", type: "text", title: "${formatSettingRootStart}Say this when valve is opened:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechOn1, submitOnChange: true
+            input name: "valveTestOnOpen1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test valve OPENED phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "valveTalkOnClosed1", type: "text", title: "${formatSettingRootStart}Say this when valve is closed:${formatSettingRootEnd}", required: false, defaultValue: defaultSpeechOff1, submitOnChange: true
+            input name: "valveTestOnClosed1", type: "bool", title: "${formatSettingOptionalStart}Toggle to test valve CLOSED phrase${formatSettingOptionalEnd}", required: false, defaultValue: false, submitOnChange: true
+            input name: "valvePersonality1", type: "enum", title: "${formatSettingOptionalStart}Allow Personality (overrides default)?:${formatSettingOptionalEnd}", required: false, options: ["Yes", "No"], submitOnChange: true
+            input name: "valveSpeechDevice1", type: parent.returnVar("speechDeviceType"), title: "${formatSettingOptionalStart}Talk with these text-to-speech devices (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false, submitOnChange: true
+            if (parent.returnVar("speechDeviceType") == "capability.musicPlayer") {
+            	input name: "valveVolume1", type: "number", title: "${formatSettingOptionalStart}Set volume to (overrides default):${formatSettingOptionalEnd}", required: false, submitOnChange: true
+            	input name: "valveResumePlay1", type: "bool", title: "${formatSettingOptionalStart}Attempt to resume playing audio?${formatSettingOptionalEnd}", required: false, defaultValue: (parent.returnVar("resumePlay") == false) ? false : true, submitOnChange: true
+                input name: "valveVoice1", type: "enum", title: "${formatSettingOptionalStart}Voice (overrides default):${formatSettingOptionalEnd}", options: parent.returnVar("supportedVoices"), required: false, submitOnChange: true
+            }
+        }
+		//RESTRICTIONS
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Restrictions${formatCenterEnd}${formatSettingRootEnd}"){
+            input name: "valveModes1", type: "mode", title: "${formatSettingOptionalStart}Talk when in these mode(s) (overrides default)${formatSettingOptionalEnd}", multiple: true, required: false
+            input name: "valveStartTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk before (overrides default)${formatSettingOptionalEnd}", required: false, submitOnChange: true
+            input name: "valveEndTime1", type: "time", title: "${formatSettingOptionalStart}Don't talk after (overrides default)${formatSettingOptionalEnd}", required: (!(settings.switchStartTime1 == null))
+            input name: "valveDays1", type: "enum", title: "${formatSettingOptionalStart}Restrict to these day(s)${formatSettingOptionalEnd}", required: false, options: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], multiple: true
+            input name: "valveDisableSwitch1", type: "capability.switch", title: "${formatSettingOptionalStart}Disable when this switch is off${formatSettingOptionalEnd}", required: false, multiple: false
+        }
+		//HELP
+        section("${formatBr}${formatHr}${formatHr}${formatSettingRootStart}${formatCenterStart}Help${formatCenterEnd}${formatSettingRootEnd}"){
+            href "pageHelpPhraseTokens", title:"Phrase Tokens", description:"Tap for a list of phrase tokens"
+        }
+		//Test Phrase Toggle Valve
+		def phraseTestTogDeviceUpper = "Valve"
+		def phraseTestTogDeviceLower = "valve"
+		def phraseTestTogState = ""
+		def testEvent = ""
+		def myVoice = ""
+		phraseTestTogState = "Open"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+		phraseTestTogState = "Closed"
+		if (state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null) {state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = false} //init var
+		if ((!(settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" == null)) && (settings?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" != state?."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1")) { //test toggle switch state
+			testEvent = [displayName: "Big Talker Test", name: "${phraseTestTogDeviceUpper}${phraseTestTogState}Test", value: phraseTestTogState]
+            myVoice = parent.returnVar("speechVoice")
+			if (settings?."${phraseTestTogDeviceLower}Voice1") { myVoice = settings?."${phraseTestTogDeviceLower}Voice1" }
+			sendTalk(app.label, settings."${phraseTestTogDeviceLower}TalkOn${phraseTestTogState}1", settings."${phraseTestTogDeviceLower}SpeechDevice1", settings."${phraseTestTogDeviceLower}Volume1", settings."${phraseTestTogDeviceLower}ResumePlay1", settings."${phraseTestTogDeviceLower}Personality1", myVoice, testEvent)
+			state."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" = settings."${phraseTestTogDeviceLower}TestOn${phraseTestTogState}1" //capture toggle switch state
+        }
+    }
+//End pageConfigValve()
+}
+
 
 def pageHelpPhraseTokens(){
-	//KEEP IN SYNC WITH PARENT!
-    dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
+	//KEEP IN SYNC WITH CHILD!
+        dynamicPage(name: "pageHelpPhraseTokens", title: "Available Phrase Tokens", install: false, uninstall:false){
+    	def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
        section("The following tokens can be used in your event phrases and will be replaced as listed:"){
        	   def AvailTokens = ""
-           if (state.hubType == "SmartThings"){ AvailTokens += "%askalexa% = Send phrase to AskAlexa SmartApp's message queue\n\n" }
-           AvailTokens += "<ul>"
-		   AvailTokens += "<li><B>%groupname%</B> = Name that you gave for the event group</li>"
-           AvailTokens += "<li><B>%date%</B> = Current date; January 01 20xx</li>"
-           AvailTokens += "<li><B>%day%</B> = Current day; Monday</li>"
-           AvailTokens += "<li><B>%devicename%</B> = Triggering devices display name</li>"
-           AvailTokens += "<li><B>%devicetype%</B> = Triggering device type; motion, switch, etc</li>"
-           AvailTokens += "<li><B>%devicechange%</B> = State change that occurred; on/off, active/inactive, etc...</li>"
-           AvailTokens += "<li><B>%description%</B> = The description of the event that is to be displayed to the user in the mobile application.</li>"
-           AvailTokens += "<li><B>%locationname%</B> = Hub location name; home, work, etc</li>"
-           AvailTokens += "<li><B>%lastmode%</B> = Last hub mode; home, away, etc</li>"
-           AvailTokens += "<li><B>%mode%</B> = Current hub mode; home, away, etc</li>"
-           AvailTokens += "<li><B>%mp3(url)%</B> = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3"
-               AvailTokens += "<ul><li><I>No other tokens or phrases can be used with %mp3(url)%</I></li></ul>"
-		   AvailTokens += "</li>"
-           AvailTokens += "<li><B>%time%</B> = Current hub time; HH:mm am/pm\n\n</B></li>"
-		   AvailTokens += "</ul>"
-		   if (state.hubType == "SmartThings"){ AvailTokens += "%shmstatus% = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent% = Current weather based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathercurrent(00000)% = Current weather* based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday% = Today's weather forecast* based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertoday(00000)% = Today's weather forecast* based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight% = Tonight's weather forecast* based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertonight(00000)% = Tonight's weather* forecast based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow% = Tomorrow's weather forecast* based on hub location\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "%weathertomorrow(00000)% = Tomorrow's weather forecast* based on custom zipcode (replace 00000)\n\n" }
-           if (state.hubType == "SmartThings"){ AvailTokens += "\n*Weather forecasts provided by Weather Underground" }
+           AvailTokens += "${formatUlStart}"
+           if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%askalexa%{formatStrongEnd} = Send phrase to AskAlexa SmartApp's message queue${formatLiEnd}" }
+		   AvailTokens += "${formatLiStart}${formatStrongStart}%groupname%${formatStrongEnd} = Name that you gave for the event group${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%date%${formatStrongEnd} = Current date; January 01 20xx${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%day%${formatStrongEnd} = Current day; Monday${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%devicename%${formatStrongEnd} = Triggering devices display name${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%devicetype%${formatStrongEnd} = Triggering device type; motion, switch, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%devicechange%${formatStrongEnd} = State change that occurred; on/off, active/inactive, etc...${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%description%${formatStrongEnd} = The description of the event that is to be displayed to the user in the mobile application.${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%locationname%${formatStrongEnd} = Hub location name; home, work, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%lastmode%${formatStrongEnd} = Last hub mode; home, away, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%mode%${formatStrongEnd} = Current hub mode; home, away, etc${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%mp3(url)%${formatStrongEnd} = Play hosted MP3 file; URL should be http://www.domain.com/path/file.mp3"
+           AvailTokens += "${formatUlStart}${formatLiStart}${formatIStart}No other tokens or phrases can be used with %mp3(url)%${formatIEnd}${formatLiEnd}${formatUlEnd}"
+		   AvailTokens += "${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%time%${formatStrongEnd} = Current hub time; HH:mm am/pm${formatStrongEnd}${formatLiEnd}"
+		   AvailTokens += "${formatUlEnd}"
+		   if (state.hubType == "SmartThings"){ AvailTokens += "${formatLiStart}${formatStrongStart}%shmstatus%${formatStrongEnd} = SmartHome Monitor Status (Disarmed, Armed Home, Armed Away)${formatLiEnd}" }
+           AvailTokens += "${formatLiStart}${formatStrongStart}%weathercurrent%${formatStrongEnd} = Current weather based on hub location${formatLiEnd}"
+           //AvailTokens += "${formatLiStart}${formatStrongStart}%weathercurrent(00000)%${formatStrongEnd} = Current weather* based on custom zipcode (replace 00000)${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%weathertoday%${formatStrongEnd} = Today's weather forecast* based on hub location${formatLiEnd}"
+           //AvailTokens += "${formatLiStart}${formatStrongStart}%weathertoday(00000)%${formatStrongEnd} = Today's weather forecast* based on custom zipcode (replace 00000)${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%weathertonight%${formatStrongEnd} = Tonight's weather forecast* based on hub location${formatLiEnd}"
+           //AvailTokens += "${formatLiStart}${formatStrongStart}%weathertonight(00000)%${formatStrongEnd} = Tonight's weather* forecast based on custom zipcode (replace 00000)${formatLiEnd}"
+           AvailTokens += "${formatLiStart}${formatStrongStart}%weathertomorrow%${formatStrongEnd} = Tomorrow's weather forecast* based on hub location${formatLiEnd}"
+           //AvailTokens += "${formatLiStart}${formatStrongStart}%weathertomorrow(00000)%${formatStrongEnd} = Tomorrow's weather forecast* based on custom zipcode (replace 00000)${formatLiEnd}"
            paragraph(AvailTokens)
        }
    }
@@ -1503,6 +1825,8 @@ def initSubscribe(){
     if (routineDeviceGroup1) { subscribe(location, "routineExecuted", onRoutineEvent) }
     //Subscribe Mode
     if (modePhraseGroup1) { subscribe(location, "mode", onModeChangeEvent) }
+    //Subscribe Valve
+    if (valveDeviceGroup1) { subscribe(valveDeviceGroup1, "valve", onValve1Event) }
     
     LOGDEBUG ("END initSubscribe()", true)
 }
@@ -2328,6 +2652,26 @@ def processScheduledEvent(index, eventtime, alloweddays){
 }
 //END HANDLE TIME SCHEDULE
 
+//BEGIN HANDLE VALVE
+def onValve1Event(evt){
+	def deviceType = "valve" //lowercase first char
+	def deviceState1 = "open"   //on,open,etc
+	def deviceState2 = "closed"  //off,closed,etc
+	def deviceState3 = ""
+	def deviceState4 = ""
+	def index = 1
+	if (!(evt?.device.name == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.name }
+	if (!(evt?.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.displayName }
+	if (!(evt?.device.displayName == null)) { state."${deviceType}${index}EventDisplayName" = evt.device.displayName }
+	state."${deviceType}${index}EventDisplayName" = evt.displayName
+	state."${deviceType}${index}EventName" = evt.name
+	state."${deviceType}${index}EventValue" = evt.value
+	state."${deviceType}${index}EventTime" = now()
+	LOGDEBUG("(on${deviceType}${index}Event)StateSet:" + state."${deviceType}${index}EventName" + "-" + state."${deviceType}${index}EventDisplayName" + "-" + state."${deviceType}${index}EventValue" + "(" + state."${deviceType}${index}EventValue".capitalize() + ")",false)
+    processEvent(deviceType, deviceState1, deviceState2, deviceState3, deviceState4, index, evt)
+}
+//END HANDLE VALVE
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2442,14 +2786,35 @@ def resetBtnName(){
 }    
 
 def displayVersionStatus(){
-	section("<HR><HR><B><CENTER>Version Information<CENTER></B>"){
-	}
+	//Cobra update code, modified by Rayzurbock
+    def formatSettingRootStart = parent.returnVar("formatSettingRootStart")
+		def formatSettingRootEnd = parent.returnVar("formatSettingRootEnd")
+		def formatSettingOptionalStart = parent.returnVar("formatSettingOptionalStart")
+		def formatSettingOptionalEnd = parent.returnVar("formatSettingOptionalEnd")
+        def formatUlStart = parent.returnVar("formatUlStart")
+		def formatUlEnd = parent.returnVar("formatUlEnd")
+        def formatLiStart = parent.returnVar("formatLiStart")
+		def formatLiEnd = parent.returnVar("formatLiEnd")
+        def formatIStart = parent.returnVar("formatIStart")
+		def formatIEnd = parent.returnVar("formatIEnd")
+        def formatStrongStart = parent.returnVar("formatStrongStart")
+		def formatStrongEnd = parent.returnVar("formatStrongEnd")
+        def formatHr = parent.returnVar("formatHr")
+		def formatBr = parent.returnVar("formatBr")
+        def formatCenterStart = parent.returnVar("formatCenterStart")
+		def formatCenterEnd = parent.returnVar("formatCenterEnd")
+    def versionInfo = ""
+	versionInfo = "${formatHr}${formatHr}${formatStrongStart}${formatCenterStart}Version Information${formatCenterEnd}${formatStrongEnd}${formatBr}"
 	if(state.versionStatus){
-		section{paragraph "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png''</img><BR>${state.ExternalName} - Version: $state.version <BR><font face='Lucida Handwriting'>$state.Copyright </font>"}
-	}
-
-	if((state.versionStatus != "<b>** This app is no longer supported by $state.author  **</b>") & (state.versionStatus != "Current")){
-		//section(){ input "updateBtn", "button", title: "${state.btnName}"}
+    	if (state.hubType == "Hubitat") {
+			versionInfo += "<img src='http://lowrance.cc/ST/icons/BigTalker-CurrentVersion.png'</img>${formatBr}${state.ExternalName} - Version: ${state.version} ${formatBr}<font face='Lucida Handwriting'>${state.Copyright} </font>"
+		}
+    	if (state.hubType == "SmartThings") {
+			versionInfo += "${state.ExternalName} - Version: ${state.version} ${formatBr} ${state.Copyright?.replace("&#9400;","(c)")}${formatBr}"
+		}
+    }
+	if((state.versionStatus != "${formatStrongStart}** This app is no longer supported by $state.author  **${formatStrongEnd}") & (state.versionStatus != "Current")){
+		input "updateBtn", "button", title: "${state.btnName}"
     
 		//  section(){
 		//		log.info "app.label = $app.label"
@@ -2457,27 +2822,24 @@ def displayVersionStatus(){
 		//	}
 		//	pauseOrNot()   
 			//if(state.versionStatus != "Current"){
-		section{ 
-			paragraph "<b>${state.versionStatus}</b><BR>${state.updateURI}<BR><BR><B><I>Release Notes:</I></B>${state.UpdateInfo}<BR>"
+		versionInfo += "${formatStrongStart}${state.versionStatus}${formatStrongEnd}${formatBr}${state.updateURI}${formatBr}${formatStrongStart}${formatIStart}Release Notes:${formatIEnd}${formatStrongEnd}${state.UpdateInfo}${formatBr}"
 			//}
-		}
 		//section(" ") {
 		//	input "updateNotification", "bool", title: "Send a 'Pushover' message when an update is available", required: true, defaultValue: false, submitOnChange: true 
 		//	if(updateNotification == true){ input "speaker", "capability.speechSynthesis", title: "PushOver Device", required: true, multiple: true}
 		//}
 	} else {
-		section{
-				paragraph "<i>App is up to date</i>"
-		}
+		versionInfo += "${formatIStart}App is up to date${formatIEnd}"
 	}
+    paragraph versionInfo
 }
 
 def updateCheck(){
 	setVersion()
 	def lastKnownVersionStatus = state.versionStatus
-	if (state?.versionStatus == null) { state.versionStatus = "<i>Unknown</i>" }
+	if (state?.versionStatus == null) { state.versionStatus = "${formatIStart}Unknown${formatIEnd}" }
 	def paramsUD = [uri: "https://lowrance.cc/ST/manifests/RayzurCodeHE.json"]
-	if (updateCheckAllowed() || lastKnownVersionStatus == "<i>Unknown</i>" || lastKnownVersionStatus == null){
+	if (updateCheckAllowed() || lastKnownVersionStatus == "${formatIStart}Unknown${formatIEnd}" || lastKnownVersionStatus == null){
 		state.Copyright = ""
 		state.updateURI = ""
 		state.UpdateInfo = ""
@@ -2498,9 +2860,9 @@ def updateCheck(){
 				currentVer = state.version.replace(".", "")
 				state.UpdateInfo = (respUD.data.versions.UpdateInfo.Application.(state.InternalName))
 				state.author = (respUD.data.author)
-			
+				log.debug "currentVer=${currentVer}, newVer=${newVer}"
 				if(newVer == "NLS"){
-					state.versionStatus = "<b>** This app is no longer supported by ${state.author}  **</b>"  
+					state.versionStatus = "${formatStrongStart}** This app is no longer supported by ${state.author}  **${formatStrongEnd}"  
 					log.warn "** This app is no longer supported by ${state.author} **" 
 				}
 				else if(currentVer < newVer){
@@ -2553,7 +2915,7 @@ def updateCheckAllowed(){
 }
 
 def setVersion(){
-		state.version = "2.0.8.5.8"	 
+		state.version = "2.1.2.2"	 
 		state.InternalName = "BigTalker2-Child-DEV" 
 		state.ExternalName = "BigTalker2 Child-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
