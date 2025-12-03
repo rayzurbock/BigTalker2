@@ -80,8 +80,8 @@ def pageStart(){
         section("About"){
             def AboutApp = ""
             AboutApp += "${formatHr}Big Talker is a SmartApp that can make your house talk depending on various triggered events.${formatBr}${formatBr}"
-            if (state.hubType == "Hubitat") {AboutApp += "Pair with a Hubitat compatible audio device such as Sonos, Ubi, LANnouncer, and/or VLC Thing (running on your computer or Raspberry Pi)${formatBr}"}
-            if (state.hubType == "SmartThings") {AboutApp += "Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the 'Generic MediaRenderer' SmartApp/Device and/or AskAlexa SmartApp${formatBr}"}
+            if (state.hubType == "Hubitat") {AboutApp += "Pair with a Hubitat compatible audio device such as Sonos, Ubi, LANnouncer, Echo, Google Home Speaker and/or VLC Thing (running on your computer or Raspberry Pi)${formatBr}"}
+            if (state.hubType == "SmartThings") {AboutApp += "Pair with a SmartThings compatible audio device such as Sonos, Ubi, LANnouncer, Echo, Google Home Speaker, VLC Thing (running on your computer or Raspberry Pi), a DLNA device using the 'Generic MediaRenderer' SmartApp/Device and/or AskAlexa SmartApp${formatBr}"}
             paragraph(AboutApp)
 			updateCheck()
 			//checkButtons()
@@ -92,7 +92,7 @@ def pageStart(){
 				DonateOptions += "Big Talker is provided to the community for free.  It takes a lot of time to build and support any complex app.  If you wish to support the time and effort put into development you may submit a donation with one of the following:${formatBr}"
 				DonateOptions += "${formatUlStart}"
                 if (state.hubType == "Hubitat"){
-					DonateOptions += "${formatLiStart}${formatStrongStart}Cash.me${formatStrongEnd} = <a target='_blank' href='https://cash.me/$Lowrance'>https://cash.me/$Lowrance</a> (use a debit card, it\'s free for both of us)${formatLiEnd}"
+					DonateOptions += "${formatLiStart}${formatStrongStart}Cash.me${formatStrongEnd} = <a target='_blank' href='https://cash.me/\$Lowrance'>https://cash.me/\$Lowrance</a> (use a debit card, it\'s free for both of us)${formatLiEnd}"
 					DonateOptions += "${formatLiStart}${formatStrongStart}Venmo${formatStrongEnd} = <a target='_blank' href='https://venmo.com/code?user_id=2603208862072832399'>@BrianLowrance</a>${formatLiEnd}"
 					DonateOptions += "${formatLiStart}${formatStrongStart}Paypal.me${formatStrongEnd} = <a target='_blank' href='https://paypal.me/brianlowrance'>https://paypal.me/brianlowrance</a> (They take a little since I setup my account as a business account)${formatLiEnd}"
                 } else {
@@ -215,8 +215,8 @@ def pageConfigureSpeechDeviceType(){
 				paragraph "<font color=red><strong>PROCEED WITH CAUTION!</strong></font>\n<font color=red><strong>WARNING!</strong></font> If you change this setting after the app has been configured, you will need to update your selected default and custom speech devices!\n <strong>To Cancel:</strong> Don't move the switch and press Next (or Done)\n<font color=red><strong>PROCEED WITH CAUTION!</strong></font>"
 			}
             paragraph "${app.label} can support either 'Music Player' or 'Speech Synthesis' devices."
-            if (state.hubType == "SmartThings") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing, Generic Media Renderer.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer.\n\nIf only using with AskAlexa this setting can be ignored.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
-            if (state.hubType == "Hubitat") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing.\n'Speech Synthesis' typically supports devices such as Ubi and LANnouncer."}
+            if (state.hubType == "SmartThings") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing, Generic Media Renderer.\n'Speech Synthesis' typically supports devices such as Echo, Ubi, and LANnouncer.\n\nIf only using with AskAlexa this setting can be ignored.\n\nWARNING: This setting cannot be changed without reinstalling ${app.label}."}
+            if (state.hubType == "Hubitat") { paragraph "'Music Player' typically supports devices such as Sonos, VLCThing.\n'Speech Synthesis' typically supports devices such as Google Home Speaker, Echo, Ubi and LANnouncer."}
             input "speechDeviceType", "bool", title: "ON=Music Player\nOFF=Speech Synthesis", required: true, defaultValue: true, submitOnChange: true
             //paragraph "Click Next to continue configuration...\n"
             if (speechDeviceType == true) {state.speechDeviceType = "capability.musicPlayer"}
@@ -2462,7 +2462,7 @@ def setFormatting(){
 
 def setVersion(){
 		//Cobra update code, modified by Rayzurbock
-		state.version = "2.1.2.2"	 
+		state.version = "2.1.2.3a"	 
 		state.InternalName = "BigTalker2-Parent-DEV" 
 		state.ExternalName = "BigTalker2-DEV"
 		state.updateActiveUseIntervalMin = 30 //time in minutes to check for updates while using the App
